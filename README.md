@@ -15,10 +15,12 @@ For software architecture we adopted Onion Architecture.
 
 # Tech Stack
 - Front end: React | JavaScript
-- Back end: SpringBoot | Java
+- Back end: SpringBoot | Java (Developing Rest APIs + JPA ORM)
 - Databse: H2 Database
 - Testing: Junit, Mockito (For this project, a coverage level of 95% and a mutation of 80% were required. Alot of focus on testing - TDD )
 
+# Last information
+Feel free to drop a message if you have any curiosity about the project :) (dinizpedro01@gmail.com).
 
 
 
