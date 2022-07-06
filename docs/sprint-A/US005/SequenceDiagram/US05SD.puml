@@ -1,0 +1,67 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+actor "Director" as Director
+
+participant ": CreateProjectUI" as UI
+participant ": CreateProjectController" as controller
+participant DataManagement as dm
+participant "projectStatuses : ProjectStatusStore" as pss
+participant "projects : ProjectStore" as ps
+participant "builder : ProjectBuilder" as pb
+
+activate Director
+    Director -> UI : Inputs data.
+    activate UI
+        UI -> controller : createProject(code,name,description,businessSector,dates,numberOfPlannedSprints,budget,customer,typology,sprintDuration)
+        activate controller
+            controller --> dm : projectStatuses = getProjectStatuses()
+            activate dm
+            deactivate dm
+            controller --> pss : defaultStatus = getDefaultProjectStatus()
+            activate pss
+            deactivate pss
+            controller --> dm : projects = getProjectStore()
+            activate dm
+            deactivate dm
+            controller --> ps : createProject(code,name,description,businessSector,dates,numberOfPlannedSprints,budget,customer,typology,sprintDuration,defaultStatus)
+            activate ps
+                ps --> pb : create(code, name, descripton,customer,defaultStatus)
+                ps --> pb : create(businessSector)
+                ps --> pb : create(dates)
+                ps --> pb : create(numberOfPlannedSprints)
+                ps --> pb : create(budget)
+                ps --> pb : create(customer)
+                ps --> pb : create(typology)
+                ps --> pb : create(sprintDuration)
+                ps --> pb : build()
+                create participant "newProject : Project" as np
+                pb --> np : create(builder)
+                ps --> ps : addProject(newProject)
+            ps --> controller : True
+            deactivate ps
+       controller --> UI : True
+       deactivate controller
+       UI --> Director : Creation is successful.
+    deactivate UI
+deactivate Director
+@enduml

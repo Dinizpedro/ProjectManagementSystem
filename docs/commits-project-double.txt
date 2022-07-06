@@ -1,0 +1,15 @@
+US012: Implementation: Create ValueObject Java Interface, as described in the DDD book, resolving issue #11.
+
+US012: Implementation: Create Entity Java Interface, as described in the DDD book, resolving issue #12.
+
+US012: Implementation : Create «TypologyDescription» class, that implements «ValueObject» Java Interface, resolving issue #13.
+
+US012: Implementation : Implement «Entity» Java Interface to «Typology» class (Aggregate Root), resolving issue #14.
+
+US003: Refactor: Request with new dependency ID_Request implement Entity and Value Object interfaces. New DDD changes to aggregate Request implemented, resolving issue #15.
+
+US002: Implementation : Create «ValueObject» Java Interface to «Activation» class, resolving issue #17.
+
+US002: Refactor : Add new tests to Activation Class, resolving issue #18.
+
+US011: Refactor : Create and update tests in the Password Class, resolving issue #16.

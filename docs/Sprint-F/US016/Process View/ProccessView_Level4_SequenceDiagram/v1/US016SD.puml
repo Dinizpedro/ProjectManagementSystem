@@ -1,0 +1,159 @@
+@startuml
+autonumber
+actor "Director/PM/PO/SM" as actor
+boundary ": Route" as route
+control ": ImplProjectController" as controller
+participant ": ImplAppProjectService" as service
+participant ": UserStoryRepository" as usRepository
+participant ": IUserStoryRepositoryJPA" as usRepositoryJPA
+participant ": ImplUserStoryAssemblerJPA" as usAssembleJPA
+
+participant "ImplTaskRepository" as taskRepository
+participant ": ITaskRepositoryJPA" as taskRepositoryJPA
+participant ": ImplTaskAssemblerJPA" as taskAssemblerJPA
+
+
+actor -> route : GET /projects/{projectCode}/activities
+activate actor
+activate route
+
+route -> controller: getStatusOfActivities(projectCode)
+
+activate controller
+
+controller -> service : statusOfActivitiesDTOList = getStatusOfActivities(projectCode)
+
+activate service
+
+service -> service : getUserStoriesInProjectStatus(projectCode, statusesOfActivitiesDTO)
+
+create participant "projectCodeObj: ProjectCode" as projectCode
+
+service -> projectCode : projectCodeObj = createProjectCode(projectCode)
+service -> usRepository : userStoryList = getUserStoryListInProjectOrderedByStatus(projectCodeObj)
+activate usRepository
+create participant "userStoriesJPA: List<UserStory> userStoriesJPA" as  usJPAList
+activate usRepositoryJPA
+usRepositoryJPA -> usJPAList
+deactivate usRepositoryJPA
+
+
+    usRepository -> usRepositoryJPA : userStoriesJPA = findByUserStoryID_ProjectCodeOrderByStatus(projectCode.getCode())
+	activate usRepositoryJPA
+
+	loop
+	usRepositoryJPA -> usJPAList : add userStoryJPA
+	deactivate usRepositoryJPA
+
+	activate usJPAList
+    end
+
+    usRepository <-- usJPAList : add userStoriesJPA
+    deactivate usJPAList
+loop
+	usRepository -> usAssembleJPA : userStory = userStoryJPAtoUserStory(userStoryJPA)
+	activate usAssembleJPA
+	deactivate usAssembleJPA
+ref over usRepository
+[[US016SD-createUserStoryFromUserStoryJPA.puml createUserStoryFromJPA]]
+end
+create participant "userStoryList: List<UserStory>" as usList
+usRepository -> usList
+usRepository --> usList : userStoryList = add(userStory)
+activate usList
+end
+deactivate usList
+usRepository --> service : userStoryList
+deactivate usRepository
+
+ref over service
+[[US016SD-loopUsInUserStoryList.puml createUserStoryStatusOfActivity]]
+end
+
+create participant "statusOfActivitiesDTO : StatusOfActivitiesDTO" as activitiesDTO
+service -> activitiesDTO : statusOfActivitiesDTO = new StatusOfActivitiesDTO(typeOfActivity, activityCode, activityStatus)
+
+service -> service : Link link = linkTo(methodOn(ImplUserStoryController.class).getUserStory(projectCode, activityCode)).withSelRel()
+service -> activitiesDTO : statusOfActivitiesDTO.add(link)
+activate activitiesDTO
+
+create participant "statusOfActivitiesDTOList :List<StatusOfActivitiesDTO>" as listStatusOfActivitiesDTO
+service -> listStatusOfActivitiesDTO
+activitiesDTO -> listStatusOfActivitiesDTO : statusOfActivitiesDTOList.add(statusOfActivitiesDTO)
+deactivate activitiesDTO
+activate listStatusOfActivitiesDTO
+listStatusOfActivitiesDTO --> service : statusOfActivitiesDTOList
+deactivate listStatusOfActivitiesDTO
+
+service -> service : getTasksInProjectStatus(String projectCode, List<StatusOfActivitiesDTO> statusOfActivitiesDTOList)
+service -> "projectCodeObj: ProjectCode" : projectCodeObj = createProjectCode(String projectCode)
+service -> taskRepository : taskList = findTaskInProjectOrderedByStatus(projectCodeObj)
+activate taskRepository
+
+taskRepository -> taskRepositoryJPA : tasksJPA = findTaskJPAByProjectCodeOrderByTaskStatus(projectCode.getCode())
+activate taskRepositoryJPA
+create participant "tasksJPA : Iterable<TaskJPA>" as tasksJPA
+taskRepositoryJPA -> tasksJPA : create
+loop
+taskRepositoryJPA -> tasksJPA : add taskJPA
+activate tasksJPA
+
+deactivate taskRepositoryJPA
+end
+
+tasksJPA -->  taskRepository : add tasksJPA
+
+loop
+
+deactivate tasksJPA
+
+taskRepository -> taskAssemblerJPA : task = toDomain(taskJPA)
+	activate taskAssemblerJPA
+	deactivate taskAssemblerJPA
+
+
+
+ref over taskRepository
+[[US016SD-createTaskFromDB.puml createTaskFromJPA]]
+end
+
+
+create participant "taskList :List<Task>" as taskList
+taskRepository -> taskList
+taskRepository -> taskList : taskList = add(task)
+activate taskList
+end
+
+taskRepository --> service : taskList
+deactivate taskList
+deactivate taskRepository
+ref over service
+[[US016SD-loopUsInTaskList.puml createTaskStatusOfActivity]]
+end
+
+service -> activitiesDTO : statusOfActivitiesDTO = new StatusOfActivitiesDTO(typeOfActivity, activityCode, activityStatus)
+activate activitiesDTO
+deactivate activitiesDTO
+
+service -> service : Link link = linkTo(methodOn(ImplTaskController.class).getTask(activityCode, projectCode)).withSelRel()
+service -> activitiesDTO : statusOfActivitiesDTO.add(link)
+activate activitiesDTO
+activitiesDTO -> listStatusOfActivitiesDTO : statusOfActivitiesDTOList.add(statusOfActivitiesDTO)
+deactivate activitiesDTO
+activate listStatusOfActivitiesDTO
+
+listStatusOfActivitiesDTO --> service : statusOfActivitiesDTOList
+deactivate listStatusOfActivitiesDTO
+
+service -> listStatusOfActivitiesDTO : statusOfActivitiesDTOList = getUserStoriesInProjectStatus(projectCode, statusOfActivitiesDTOList)
+activate listStatusOfActivitiesDTO
+service -> listStatusOfActivitiesDTO : statusOfActivitiesDTOList = getTasksInProjectStatus(projectCode,statusOfActivitiesDTOList)
+deactivate listStatusOfActivitiesDTO
+service --> controller : statusOfActivitiesDTOList
+deactivate service
+controller --> route : ResponseEntity<>(statusOfActivitiesDTOList,HttpStatus.OK)
+deactivate controller
+route --> actor : ResponseEntity<>(statusOfActivitiesDTOList,HttpStatus.OK)
+deactivate route
+
+@enduml

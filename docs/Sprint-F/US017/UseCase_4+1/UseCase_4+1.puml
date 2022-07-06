@@ -1,0 +1,18 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+usecase (UC017 - Get Projects that User is allocated to.)
+
+:User: -- (UC017 - Get Projects that User is allocated to.)
+
+
+
+@enduml

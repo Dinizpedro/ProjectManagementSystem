@@ -1,0 +1,12 @@
+@startuml
+autonumber
+
+actor Administrator
+participant System
+activate Administrator
+activate System
+Administrator -> System : asks for a list with all user accounts and their status
+System -> System : Creates a list with users and their status
+System -> Administrator : shows requested list
+
+@enduml

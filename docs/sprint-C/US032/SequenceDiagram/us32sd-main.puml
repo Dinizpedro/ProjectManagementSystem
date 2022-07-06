@@ -1,0 +1,75 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+actor "ScrumMaster/TeamMember" as SM
+
+participant ": UI" as UI
+participant ": CreateTaskController" as controller
+participant DataManagement as dm
+participant "projects: ProjectStore" as projects
+participant "dto : CreateTaskDto" as dto
+participant "resources: ResourceStore" as resources
+participant "taskStatuses: TaskStatusStore" as taskStatuses
+participant "selectedProject: Project" as project
+
+activate SM
+    SM -> UI : Inputs data.
+    activate UI
+        UI -> controller : createTask(dto)
+        activate controller
+            controller -> dm : projects = getProjects()
+            activate dm
+            deactivate dm
+            controller -> dto : projectCode = projectCodeDto
+            activate dto
+            deactivate dto
+            controller -> projects : selectedProject = getProject(projectCode)
+            activate projects
+            deactivate projects
+            controller -> dm : resources = getResources()
+            activate dm
+            deactivate dm
+            controller -> dto : sprintNumber = sprintNumberDto
+            activate dto
+            deactivate dto
+            controller -> dto : responsibleEmail = responsibleEmailDto
+            activate dto
+            deactivate dto
+            controller -> resources : responsible = getResource(responsibleEmail,selectedProject, sprintNumber)
+            activate resources
+            deactivate resources
+            controller -> dm : taskStatuses = getStatuses()
+            activate dm
+            deactivate dm
+            controller -> taskStatuses : plannedTaskStatus = getPlannedTaskStatus()
+            activate taskStatuses
+            deactivate taskStatuses
+            controller -> project : createTask(dto, plannedTaskStatus, responsible)
+            ref over project : task creation
+            project --> controller : True
+            deactivate project
+            controller --> UI : True
+        deactivate controller
+        UI --> SM : Creation is successful.
+    deactivate UI
+deactivate SM
+@enduml

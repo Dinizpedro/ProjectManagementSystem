@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor "Product Owner" #FFFFFF
+participant "Project Management System" #FFFFFF
+
+activate "Product Owner"
+"Product Owner" -> "Project Management System" ++: Initiates process to create a new user story
+"Project Management System" --> "Product Owner" : Requests the necessary information to create a new user story
+deactivate
+
+"Product Owner" -> "Project Management System" ++: Inserts new user story description
+"Project Management System" --> "Product Owner" : Inform operation result and return information about the newly created user story
+deactivate
+
+@enduml

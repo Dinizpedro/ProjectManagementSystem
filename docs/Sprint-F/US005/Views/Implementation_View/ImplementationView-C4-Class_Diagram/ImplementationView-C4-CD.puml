@@ -1,0 +1,368 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "Project Management SYSTEM"{
+
+    folder "INFRASTRUCTURE"{
+
+        package routes %lighten("white", 30){
+        }
+
+        package persistence{
+            package iRepositories{
+                interface IProjectRepositoryJPA{
+                + existsByCode(String code) : boolean
+                + findByCode(String code) : Optional<ProjectJPA>
+                 }
+            }
+        }
+    }
+
+    package assemblers{
+        package iAssemblers{
+            interface IProjectAssemblerJPA{
+                + toDomain(ProjectJPA projectJPA) : Project
+            }
+        }
+        package implAssemblers{
+            class ImplProjectAssemblerJPA{
+                + toDomain(ProjectJPA projectJPA) : Project
+            }
+        }
+    }
+
+    package dataModel{
+           class ProjectJPA{
+           - code : String
+           - typologyDescription : String
+           - customerName : String
+           - name : String
+           - description : String
+           - businessSector : String
+           - startDate : String
+           - endDate : String
+           - numberOfPlannedSprints : Integer
+           - budget : Double
+           - sprintDuration : Integer
+           - status : String
+           + ProjectJPA(Project project) : ProjectJPA
+          }
+    }
+
+    folder "INTERFACE ADAPTERS"{
+
+        package "Controllers"{
+            package "IControllers"{
+                interface  IProjectController{
+                + createProject(ProjectDTO dto)(@RequestBody ProjectDTO dto) : ResponseEntity<Object>
+                }
+            }
+            package "ImplControllers"{
+                class ImplProjectController{
+                + createProject(@RequestBody ProjectDTO dto) : ResponseEntity<Object>
+                }
+            }
+        }
+
+        package implRepositories{
+                class ImplProjectRepository{
+                    + projectExists(ProjectCode projectCode) : boolean
+                    + findByCode(ProjectCode projectCode) : Optional<Project>
+                    + save(Project newProject) : Project
+                }
+        }
+    }
+
+    package mappers {
+
+        package iMappers{
+            interface IProjectMapper {
+                + toDTO(Project project) : ProjectDTO
+            }
+        }
+
+        package implMappers{
+            class ImplProjectMapper{
+                + toDTO(Project project) : ProjectDTO
+            }
+        }
+
+    }
+
+    package dataTransferObjects{
+        class ProjectDTO {
+            - projectCode : String
+            - projectName : String
+            - projectDescription : String
+            - projectBusinessSector : String
+            - projectNumberOfPlannedSprints : int
+            - projectSprintDuration : int
+            - projectBudget : double
+            - startDate : String
+            - endDate : String
+            - typologyDescription : String
+            - customerName : String
+            - userEmail : String
+            - costPerHour : double
+            - percentageOfAllocation : double
+            - status : Sting
+
+            + ProjectDTO() : ProjectDTO
+        }
+    }
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES"{
+
+        package "AppServices"{
+            package "IAppServices"{
+                interface IAppProjectService {
+                    + createAndSaveProject(ProjectDTO dto) :  ProjectDTO
+                }
+            }
+            package "ImpAppServices"{
+                    class ImplAppProjectService{
+                    + createAndSaveProject(ProjectDTO dto) :  ProjectDTO
+                }
+            }
+        }
+
+        package "IRepositories"{
+            interface IProjectRepository{
+                + projectExists(ProjectCode projectCode) : boolean
+                + findByCode(ProjectCode projectCode) : Optional<Project>
+                + save(Project newProject) : Project
+            }
+        }
+
+    }
+
+    folder "ENTITIES / CORE / DOMAIN"{
+
+        package "Aggregates"{
+            package Project{
+                entity Project{
+                    - ProjectStatus status;
+                    - TypologyDescription typologyDescription;
+                    - CustomerName customerName;
+                    - ProjectCode code;
+                    - ProjectName name;
+                    - ProjectDescription description;
+                    - ProjectBusinessSector businessSector;
+                    - Time dates;
+                    - ProjectNumberOfPlannedSprints numberOfPlannedSprints;
+                    - ProjectBudget budget;
+                    - ProjectSprintDuration sprintDuration;
+                    + sameIdentityAs(final Project other)
+                }
+            }
+        }
+
+        interface Entity{
+            sameIdentityAs(T other) : boolean
+        }
+
+        interface AggregateRoot
+
+        package "Factories"{
+           package "iFactories"{
+                interface IProjectBuilder{
+                    + setCode(final ProjectCode code) : ImplProjectBuilder
+                    + setName(final ProjectName name) : ImplProjectBuilder
+                    + setDescription(final ProjectDescription description) : ImplProjectBuilder
+                    + setBusinessSector(final ProjectBusinessSector businessSector) : ImplProjectBuilder
+                    + setTime(final Time dates) : ImplProjectBuilder
+                    + setSprints(final ProjectNumberOfPlannedSprints numberOfPlannedSprints) : ImplProjectBuilder
+                    + setSprintDuration(final ProjectSprintDuration sprintDuration) : ImplProjectBuilder
+                    + setBudget(final ProjectBudget budget) : ImplProjectBuilder
+                    + setTypology(final TypologyDescription typologyDescription) : ImplProjectBuilder
+                    + setCustomer(final CustomerName customerName) : ImplProjectBuilder
+                    + setStatus(final ProjectStatus status) : ImplProjectBuilder
+                    + build() : Project
+                }
+           }
+
+           package "implFactories"{
+                class ImplProjectBuilder{
+                    + setCode(final ProjectCode code) : ImplProjectBuilder
+                    + setName(final ProjectName name) : ImplProjectBuilder
+                    + setDescription(final ProjectDescription description) : ImplProjectBuilder
+                    + setBusinessSector(final ProjectBusinessSector businessSector) : ImplProjectBuilder
+                    + setTime(final Time dates) : ImplProjectBuilder
+                    + setSprints(final ProjectNumberOfPlannedSprints numberOfPlannedSprints) : ImplProjectBuilder
+                    + setSprintDuration(final ProjectSprintDuration sprintDuration) : ImplProjectBuilder
+                    + setBudget(final ProjectBudget budget) : ImplProjectBuilder
+                    + setTypology(final TypologyDescription typologyDescription) : ImplProjectBuilder
+                    + setCustomer(final CustomerName customerName) : ImplProjectBuilder
+                    + setStatus(final ProjectStatus status) : ImplProjectBuilder
+                    + build() : Project
+                }
+            }
+        }
+
+
+        package "Shared"{
+            package "Value Objects"{
+                class ProjectBudget{
+                    - budget : Double
+                    - ProjectBudget(double budgetInput)  : ProjectBudget
+                    + create(double budgetInput) : ProjectBudget
+                    + sameValueAs(ProjectBudget other) : boolean
+                }
+                class ProjectBusinessSector{
+                    - description : String
+                    - ProjectBusinessSector(String sectorInput) : ProjectBusinessSector
+                    + create(String sector) : ProjectBusinessSector
+                    + sameValueAs(ProjectBusinessSector other)
+                }
+                class ProjectCode{
+                    - code : String
+                    - ProjectCode(String codeInput) : ProjectCode
+                    + create(final String code) : ProjectCode
+                    + sameValueAs(final ProjectCode other) : boolean
+                }
+                class ProjectDescription{
+                    - description : String
+                    - ProjectDescription(String descriptionInput) : ProjectDescription
+                    + create(final String descriptionInput) : ProjectDescription
+                    + sameValueAs(ProjectDescription other) : boolean
+                }
+                class ProjectName{
+                    - name : String
+                    - ProjectName(String nameInput) : projectName
+                    + create(String nameInput) : projectName
+                    + sameValueAs (ProjectName other) : boolean
+                }
+                class ProjectNumberOfPlannedSprints{
+                    - numberOfPlannedSprints : int
+                    - ProjectNumberOfPlannedSprints(int sprints) : ProjectNumberOfPlannedSprints
+                    + create(final int sprints) : ProjectNumberOfPlannedSprints
+                    + sameValueAs(ProjectNumberOfPlannedSprints other) : boolean
+                }
+                class ProjectSprintDuration{
+                    - sprintDuration : int
+                    - ProjectSprintDuration(int duration) : ProjectSprintDuration
+                    + create(int sprintDuration) : ProjectSprintDuration
+                    + sameValueAs(ProjectSprintDuration other) : boolean
+                }
+                enum ProjectStatus{
+                    Planned
+                    Inception
+                    Elaboration
+                    Construction
+                    Transition
+                    Warranty
+                    Closed
+                }
+            }
+        }
+        interface ValueObject{
+            sameValueAs(T other) : boolean
+        }
+    }
+
+' //----INFRAESTRUCTURE----
+
+' ROUTE - CONTROLLER
+"INFRASTRUCTURE" --[hidden]-> "INTERFACE ADAPTERS"
+"INTERFACE ADAPTERS" --[hidden]-> "APPLICATION SERVICES / USE CASE SERVICES"
+"APPLICATION SERVICES / USE CASE SERVICES" --[hidden]> "ENTITIES / CORE / DOMAIN"
+
+routes ....> IProjectController
+
+' ASSEMBLER  - FACTORY
+
+ImplProjectAssemblerJPA .up.|> IProjectAssemblerJPA
+
+ImplProjectAssemblerJPA ..> IProjectBuilder
+
+
+' REPOSITORY_JPA - REPOSITORY
+IProjectRepositoryJPA .> ProjectJPA
+
+ImplProjectRepository .up.> IProjectRepositoryJPA
+ImplProjectRepository .down.> IProjectAssemblerJPA
+
+IProjectAssemblerJPA .up.> ProjectJPA
+IProjectAssemblerJPA ...> Project
+
+IProjectRepository ..> ProjectCode
+IProjectRepository ..> Project
+
+' //----INTERFACE_ADAPTERS----
+
+' CONTROLLER - DTO
+
+IProjectController <|.. ImplProjectController
+
+ImplProjectController .left.> ProjectDTO
+
+ImplProjectController .> IAppProjectService
+
+ImplProjectRepository ..|> IProjectRepository
+' //----APPLICATION SERVICES----
+
+' SERVICE - REPOSITORY
+
+IAppProjectService <|.. ImplAppProjectService
+
+ImplAppProjectService ...> IProjectRepository
+
+ImplAppProjectService ..> IProjectBuilder
+
+ImplAppProjectService ..> IProjectMapper
+
+' MAPPER  - FACTORY
+
+IProjectMapper <|.down. ImplProjectMapper
+
+IProjectMapper ...> ProjectDTO
+
+IProjectMapper ...> Project
+
+' //----ENTITIES/CORE/DOMAIN----
+
+' FACTORIES
+
+ImplProjectBuilder .up.|> IProjectBuilder
+
+IProjectBuilder ..up..> Project
+
+' VALUE OBJECTS
+
+ProjectCode .|> ValueObject
+ProjectBudget .|> ValueObject
+ProjectBusinessSector .|> ValueObject
+ProjectDescription .|> ValueObject
+ProjectName ..|> ValueObject
+ProjectNumberOfPlannedSprints .|> ValueObject
+ProjectSprintDuration .|> ValueObject
+
+
+
+' AGREGGATE ROOT
+Project ..|> AggregateRoot
+
+Project *- ProjectCode
+ProjectBudget -* Project
+ProjectBusinessSector -* Project
+ProjectDescription -* Project
+ProjectName -* Project
+ProjectNumberOfPlannedSprints -* Project
+ProjectSprintDuration -* Project
+ProjectStatus -* Project
+
+AggregateRoot -|> Entity
+
+@enduml

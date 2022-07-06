@@ -1,0 +1,114 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequenceMessageAlign left
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+autoactivate on
+
+actor "Director" as D
+boundary ": ResourceRoute" #FFFFFF
+control ": ImplResourceController" #FFFFFF
+
+activate D
+
+    D -> ": ResourceRoute" ++ : Post(value=\n/api/resources/teamMember) \n(json)
+
+            ": ResourceRoute" -> ": ImplResourceController" ++ : response = \ndefinedTeamMemberOfAProject(dto)
+
+                    activate ": ImplResourceController"
+                    ": ImplResourceController" -> ": ImplAppResourceService"  : optionalResourceDTO = \ndefinedTeamMemberOfAProject(dto)
+
+                        ": ImplAppResourceService" -> ": ProjectCode" : projectCodeVO = \ncreate(dto.projectCodeDto)
+                        ": ProjectCode" -> "projectCodeVO : ProjectCode" ** : create(dto.projectCodeDto)
+                        deactivate  ": ProjectCode"
+
+                        ": ImplAppResourceService" -> "iProjectRepository : ImplProjectRepository" : projectExistsInDB = projectExists(projectCodeVO)
+                        deactivate
+
+                        ": ImplAppResourceService" -> "iUserRepository : ImplUserRepository" : userExistsInDB = userExists(dto.userIdDto)
+deactivate
+                        alt projectExists, userExists
+
+                            ": ImplAppResourceService" -> "iResourceRepository : ImplResourceRepository"  : resourcesList = getResourcesByProjectCode(dto.projectCodeDto)
+                             ref over  "iResourceRepository : ImplResourceRepository"
+                                                            [[SD007_getResourcesByProjectCode.puml getResourceByProjectCode]] ref
+                                                        end
+
+
+                            ": ImplAppResourceService" -> ": Project" : project = findByCode(dto.projectCodeDto).get()
+                            deactivate
+
+deactivate "iResourceRepository : ImplResourceRepository"
+
+                            alt validateNewTeamMemberResource(resourcesList, project, dto) == true
+
+                            ref over ": ImplAppResourceService"
+                                                                                        [[SD007_createVO.puml createValueObjects]]
+                                                                                    end
+
+                                                                                    ": ImplAppResourceService" -> "resourceFactory : ResourceFactory" ++ : newResource = createResource(resourceID, userID, \nprojectCode, dates, costPerHour, allocation, role)
+                                                                                    "resourceFactory : ResourceFactory"  -> "newResource : Resource" ** : create(resourceID, userID, \nprojectCode, dates, costPerHour, \nallocation, role)
+                                                                                    deactivate
+
+                                                                                   ": ImplAppResourceService" -> "iResourceRepository : ImplResourceRepository" : resourceInDB = save(newResource)
+
+                                                                                   ref over "iResourceRepository : ImplResourceRepository"
+                                                                                   [[SD007_saveNewResource.puml saveNewResource]] ref
+                                                                                   end
+                                                                                   deactivate
+
+                                                                                   ": ImplAppResourceService" -> ": ResourceAssembler" ++ : resourceDTO = toDTO(resourceInDB)
+
+                                                                                   ref over ": ResourceAssembler"
+                                                                                   [[SD007-assemblerToDTO.puml assemblerToDTO]] ref
+                                                                                   end
+                            end
+end
+
+create participant "optionalResourceDTO : Optional<ResourceDTO>"  #FFFFFF
+
+": ImplAppResourceService" -> "optionalResourceDTO : Optional<ResourceDTO>" --: create(resourceDTO)
+
+deactivate
+deactivate ": ImplAppResourceService"
+deactivate ": ResourceAssembler"
+
+": ImplResourceController" -> "optionalResourceDTO : Optional<ResourceDTO>" ++-- : resourceDTO = get()
+
+deactivate "optionalResourceDTO : Optional<ResourceDTO>"
+
+participant "resourceDTO : ResourceDTO" #FFFFFF
+
+": ImplResourceController" -> "resourceDTO : ResourceDTO" : add(link)
+
+deactivate "resourceDTO : ResourceDTO"
+
+note left #FFFFFF
+Link to self - "GET" request method
+end note
+
+create participant "response : ResponseEntity<Object>" #FFFFFF
+": ImplResourceController" -> "response : ResponseEntity<Object>" : create(resourceDTO, HttpStatus.CREATED)
+
+
+
+
+
+@enduml

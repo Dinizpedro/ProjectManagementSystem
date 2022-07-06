@@ -1,0 +1,120 @@
+#!/bin/bash
+RESOURCES_IN_SERVER=/var/www/dataManagament/resourceStore
+PROJECTS_IN_SERVER=/var/www/dataManagament/projectStore
+USERS_IN_SERVER=/var/www/dataManagament/userStore
+error_response() {
+  echo "Status: 400 Bad Request"
+  echo "Content-type: text/plain"
+  echo ""
+  echo "ERROR: ${1}"
+  exit
+}
+
+### Get content from JSON into global variables
+if [ -n "$CONTENT_LENGTH" ]; then
+  eval "$(jq -r '@sh "EMAIL_JSON=\(.userEmail) DIRECTOR_EMAIL_JSON=\(.directorEmail) PASS_JSON=\(.password) PROJECT_JSON=\(.project) START_DATE_JSON=\(.startDate) END_DATE_JSON=\(.endDate) COST_PER_HOUR_JSON=\(.costPerHour) PERCENTAGE_OF_ALLOCATION_JSON=\(.percentageOfAllocation) START_SPRINT_JSON=\(.startSprint) END_SPRINT_JSON=\(.endSprint)"')"
+else
+  error_response "No content found on the request"
+fi
+
+if [ "$CONTENT_LENGTH" == "0" ]; then
+  error_response "No content found on the request"
+fi
+
+### If the wrong method is used
+if [ "$REQUEST_METHOD" != "POST" ]; then
+  error_response "Invalid method. The only supported method is POST."
+fi
+
+### Check project in Server
+PROJECT_FOUND=0
+if [ -d "$PROJECTS_IN_SERVER/$PROJECT_JSON" ]; then
+  PROJECT_FOUND=1
+fi
+
+if [ $PROJECT_FOUND -eq 0 ]; then
+  error_response "Project doesn't exist in server"
+fi
+
+### Check if Director exists and has Director Profile
+DIRECTOR_EMAIL_FOUND=0
+if [ -d "$USERS_IN_SERVER/$DIRECTOR_EMAIL_JSON" ]; then
+   DIRECTOR_EMAIL_FOUND=1
+fi
+
+if [ $DIRECTOR_EMAIL_FOUND -eq 0 ]; then
+  error_response "Dircetor email doesn't exist in server"
+fi
+
+DIRECTOR_HAS_DIRECTOR_PROFILE=0
+if [ -f "$USERS_IN_SERVER/$DIRECTOR_EMAIL_JSON/userProfiles/Director" ] ; then
+   DIRECTOR_HAS_DIRECTOR_PROFILE=1
+fi
+
+if [ $DIRECTOR_HAS_DIRECTOR_PROFILE == 0 ]; then
+  error_response "Director email inserted doesn't have the Director profile associated."
+fi
+
+### Hash current password and compare with the one stored in the system
+PASS_MATCH=0
+CURRENT_HASH=$(cat "$USERS_IN_SERVER"/"$DIRECTOR_EMAIL_JSON"/pass)
+CLIENT_HASH=$((0x$(sha1sum <<<"$PASS_JSON")0))
+if [ "$CURRENT_HASH" = "$CLIENT_HASH" ]; then
+  PASS_MATCH=1
+fi
+
+if [ $PASS_MATCH -eq 0 ]; then
+  error_response "The password you have entered is incorrect."
+fi
+
+### Check if User exists
+EMAIL_FOUND=0
+if [ -d "$USERS_IN_SERVER/$EMAIL_JSON" ]; then
+  EMAIL_FOUND=1
+fi
+
+if [ $EMAIL_FOUND -eq 0 ]; then
+  error_response "User doesn't exist in server"
+fi
+
+### Check if Resource was already created and new Start Date is higher than last End Date
+RESOURCE_WAS_CREATED=0
+if [ -d "$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON" ]; then
+  RESOURCE_WAS_CREATED=1
+fi
+
+
+if [ $RESOURCE_WAS_CREATED -eq 1 ]; then
+
+  NEW_START_DATE=$(date -d $START_DATE_JSON +"%Y%m%d")
+  LAST_END_DATE=$(date -d $(tail -1 $RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/endDate) +"%Y%m%d")
+
+  if [ $NEW_START_DATE -gt $LAST_END_DATE ]; then
+      echo "$START_DATE_JSON" >>"$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/startDate"
+      echo "$END_DATE_JSON" >> "$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/endDate"
+      echo "$COST_PER_HOUR_JSON" >> "$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/costPerHour"
+      echo "$PERCENTAGE_OF_ALLOCATION_JSON" >> "$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/percentageOfAllocation"
+      echo "$START_SPRINT_JSON" >> "$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/startSprint"
+      echo "$END_SPRINT_JSON" >> "$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/endSprint"
+  else
+    LAST_END_DATE_FORMATTED=$(tail -1 $RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/endDate)
+    error_response "Start date must be greater than last defined end date ($LAST_END_DATE_FORMATTED) for this resource."
+  fi
+
+else
+  ### Create Resource from scratch
+  mkdir -p "$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON"
+  echo "$START_DATE_JSON" >"$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/startDate"
+  echo "$END_DATE_JSON" >"$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/endDate"
+  echo "$COST_PER_HOUR_JSON" >"$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/costPerHour"
+  echo "$PERCENTAGE_OF_ALLOCATION_JSON" >"$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/percentageOfAllocation"
+  echo "$START_SPRINT_JSON" >"$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/startSprint"
+  echo "$END_SPRINT_JSON" >"$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/endSprint"
+  touch "$RESOURCES_IN_SERVER/$PROJECT_JSON/$EMAIL_JSON/role"
+fi
+
+echo "Content-type: text/plain"
+echo ""
+echo "Resource successfully created"
+###
+

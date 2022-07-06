@@ -1,0 +1,79 @@
+@startuml
+'https://plantuml.com/class-diagram
+header IMPLEMENTATION VIEW
+skinparam monochrome true
+skinparam linetype ortho
+hide empty methods
+top to bottom direction
+
+folder "OPT SYSTEM"{
+    folder "INFRASTRUCTURES"{
+        package persistence{
+            package abstractPersistence {}
+            package concretePersistence {}
+            }
+        package routes {
+            package abstractRoutes{}
+            package concreteRoutes{}
+        }
+    }
+
+    folder "INTERFACE ADAPTERS"{
+        package controllers{
+            package abstractControllers{}
+            package concreteControllers{}
+        }
+        package concreteRepositories{}
+    }
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES"{
+       package services{
+            package abstractAppServices{}
+            package concreteAppServices{}
+       }
+       package abstractRepositories{}
+    }
+
+    folder "ENTITIES / CORE / DOMAIN"{
+        package aggregates{
+            entity Root
+        }
+        package valueObjects{
+            class ObjectX
+        }
+        package factories{
+            package abstractFactories{}
+            package concreteFactories{}
+        }
+     package domainServices{
+        package abstractDomainServices{}
+        package concreteDomainServices{}
+        }
+    }
+}
+
+abstractDomainServices <|.. concreteDomainServices
+
+abstractRoutes <|.d. concreteRoutes
+concreteRoutes ...> abstractControllers
+abstractControllers <|.. concreteControllers
+
+concreteRepositories ..|> abstractRepositories
+
+concreteControllers ...> abstractAppServices
+
+abstractAppServices <|.. concreteAppServices
+
+concreteAppServices ...> Root
+concreteAppServices ...> ObjectX
+concreteAppServices ...> abstractFactories
+abstractFactories <|.. concreteFactories
+concreteAppServices ...> abstractDomainServices
+
+concreteAppServices .> abstractRepositories
+
+concreteRepositories ...> abstractPersistence
+
+concretePersistence ..|> abstractPersistence
+
+@enduml

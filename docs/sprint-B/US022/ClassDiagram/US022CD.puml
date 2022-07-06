@@ -1,0 +1,110 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+package "UI" {
+    class CreateSprintUI{}
+}
+
+package "Controller" {
+    class CreateSprintController {
+	    +createSprint(CreateSprintDto dto) : boolean
+    }
+}
+
+package "Dto" {
+    class CreateSprintDTO {
+	    +projectCodeDto
+	    +sprintGoalDto
+	    +sprintStartDateDto
+	    +sprintEndDateDto
+	    +CreateSprintDto(String codeInput, String goalInput, String startDateInput, String endDateInput)
+    }
+}
+
+package "Mapper"{
+    class SprintDatesMapper{
+        +getSprintTime(CreateSprintDTO dto)
+    }
+}
+
+package "Model" {
+
+class DataManagement {
+	+getInstance() : DataManagement
+	+getProjectStore() : ProjectStore
+	+getSprintStatuses() : SprintStatusStore
+}
+
+package "Stores" {
+    class ProjectStore {
+	    +getProject(String code) : Project
+    }
+
+    class SprintStatusStore {
+	    +getPretendedSprintStatus(String planned) : Status
+    }
+}
+
+class Project {
+	-dates : Time
+	+createSprint(CreateSprintDto dto, Status plannedStatus) : boolean
+	-validateSprintNumber() : boolean
+	-validateSprintDatesInProject(sprintTime) : boolean
+	-validateProjectStatus() : boolean
+}
+
+class ProjectSprintList {
+	-projectSprints : List<Sprint>
+	+createSprint(Description SprintGoal, Time sprintTime, Status plannedStatus) : boolean
+	+generateSprintNumber() : int
+	-validateSprintTimeInSprints(sprintTime) : boolean
+	-addSprint(newSprint) : boolean
+}
+
+class ProjectCode {
+    -code : String
+    +create(String codeInput)
+    +isValidCode(String codeInput) : boolean
+}
+
+
+class Sprint {
+    -number : int
+    -goal : Description
+    -dates : Time
+    -status : Status
+    -sprintBacklog : SprintBacklog
+    -listOfTasks : SprintTaskList
+	+create(int numberInput, Description goalInput, Time datesInput, Status statusInput) : boolean
+}
+
+class Status {
+    -statusDescription : String
+    +create(String statusDescription)
+}
+
+}
+
+Sprint "0...*"--> "1" ProjectSprintList : is part of
+ProjectSprintList "1"----> "1"Project : is part of
+Mapper .> CreateSprintDTO
+Project ..> Mapper
+Project "1"<-- "1"ProjectCode : is part of
+ProjectStore "1"<--"0...*"Project : is part of
+Status "0...*"--> "1" SprintStatusStore : is part of
+SprintStatusStore "1"---> "1" DataManagement : is part of
+ProjectStore "1"----> "1" DataManagement : is part of
+
+CreateSprintController ....> Project
+CreateSprintController ...> DataManagement
+CreateSprintController ...> SprintStatusStore
+CreateSprintController ...> ProjectStore
+CreateSprintController .> CreateSprintDTO
+Project....> CreateSprintDTO
+ProjectSprintList .> CreateSprintDTO
+CreateSprintUI ..> CreateSprintController
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+autonumber
+actor Visitor #FFFFFF
+participant ": RequestNewProfileUI" #FFFFFF
+participant ": RequestNewProfileController" #FFFFFF
+participant ": DataManagement" #FFFFFF
+participant "dataManagement : DataManagement" #FFFFFF
+participant "userStore: UserStore" #FFFFFF
+participant "profileStore: ProfileStore" #FFFFFF
+participant "requestProfileStore: RequestProfileStore" #FFFFFF
+Visitor -> ": RequestNewProfileUI" : Requests new profile
+": RequestNewProfileUI" -> ": RequestNewProfileController" : createNewRequest(requestedProfileDescription,requestedUserEmail)
+": RequestNewProfileController" -> ": DataManagement" : dataManagement = getInstance()
+": RequestNewProfileController" -> "dataManagement : DataManagement" : userStore = getUsers()
+": RequestNewProfileController" -> "dataManagement : DataManagement" : profileStore = getProfiles()
+": RequestNewProfileController" -> "dataManagement : DataManagement" : requestProfileStore = getRequests()
+": RequestNewProfileController" -> "userStore: UserStore" : requestedUser = findUser(requestedUserEmail)
+": RequestNewProfileController" -> "userStore: UserStore" : doesUserHaveVisitorProfile(requestedUser)
+": RequestNewProfileController" -> "profileStore: ProfileStore" : requestedProfile = getProfileByDescription(requestedProfileDescription)
+": RequestNewProfileController" -> "userStore: UserStore" : doesUserAlreadyHaveRequestedProfile(requestedUser,requestedProfile)
+": RequestNewProfileController" -> "requestProfileStore: RequestProfileStore" : createNewRequest(requestedProfile,requestedUser)
+create participant "newRequest: Request" #FFFFFF
+"requestProfileStore: RequestProfileStore" -> "newRequest: Request" : create(requestedProfile, requestedUser)
+"requestProfileStore: RequestProfileStore" -> "requestProfileStore: RequestProfileStore" : addNewRequestToRequestStore(newRequest)
+": RequestNewProfileController" --> ": RequestNewProfileUI" : true
+": RequestNewProfileUI" --> Visitor : shows the request has been sucessfully created
+
+@enduml

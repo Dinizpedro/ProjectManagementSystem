@@ -1,0 +1,16 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+actor "Administrator"
+usecase (UC013 - I want to create user profiles.)
+
+:Administrator: -- (UC013 - I want to create user profiles.)
+@enduml

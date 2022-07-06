@@ -1,0 +1,86 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+autoactivate on
+
+actor "ProjectManager" as PM
+
+activate PM
+    PM -> "Postman \n (API Server Mock)" : Post(value=/api/projects) (jsonInput)
+
+            "Postman \n (API Server Mock)" -> "dtoInput : \n ProjectDTO"** : map2Dto(json_input)
+            "Postman \n (API Server Mock)" -> "projectController : \n ImplProjectController" : createProject (dtoInput)
+
+                    "projectController : \n ImplProjectController" -> "projectService : \n ImplAppProjectService" : createAndSaveProject(dtoInput)
+
+                    ref over "projectService : \n ImplAppProjectService" : Build value objects
+
+                    "projectService : \n ImplAppProjectService" -> "projectRepository : \nImplProjectRepository" : findProject(code)
+                    note right
+                        Validation. With no business logic.
+                    endnote
+                    "projectRepository : \nImplProjectRepository" --> "projectService : \n ImplAppProjectService" : empty
+
+                    "projectService : \n ImplAppProjectService" -> "userRepository : \nImplUserRepository" : findUser(userID)
+                    note right
+                        Validation. With no business logic.
+                    endnote
+
+                    "userRepository : \nImplUserRepository" --> "projectService : \n ImplAppProjectService" : projectManager
+                    "projectService : \n ImplAppProjectService" -> "customerRepository : \nImplCustomerRepository" : findCustomer(customerID)
+                    note right
+                        Validation. With no business logic.
+                    endnote
+                    "customerRepository : \nImplCustomerRepository" --> "projectService : \n ImplAppProjectService" : customer
+
+                    "projectService : \n ImplAppProjectService" -> "typologyRepository : \nImplTypologyRepository" : findTypology(typologyID)
+                    note right
+                       Validation. With no business logic.
+                    endnote
+                    "typologyRepository : \nImplTypologyRepository" --> "projectService : \n ImplAppProjectService" : typology
+
+                    "projectService : \n ImplAppProjectService" -> "builder : \nIProjectBuilder" : create (attr)
+                    ref over  "builder : \nIProjectBuilder" : Create new project
+                    "builder : \nIProjectBuilder" --> "projectService : \n ImplAppProjectService" : newProject
+
+
+                    "projectService : \n ImplAppProjectService" -> "resourceService : \nImplResourceService" : createProjectManager (attr)
+                    "resourceService : \nImplResourceService" -> "resourceFactory : \nImplResourceFactory" : createResource (attr)
+                    "resourceFactory : \nImplResourceFactory" --> "newResource : \nResource"** : create
+                    "resourceFactory : \nImplResourceFactory" --> "resourceService : \nImplResourceService" : newResource
+                    "resourceService : \nImplResourceService" --> "projectService : \n ImplAppProjectService" : newResource
+
+                    "projectService : \n ImplAppProjectService" -> "projectRepository: \nImplProjectRepository" : saveProject(newProject)
+                    deactivate
+                    "projectService : \n ImplAppProjectService" -> "resourceRepository : \nImplResourceRepository" : saveResource(newResource)
+                    deactivate
+
+                    "projectService : \n ImplAppProjectService" -> "assembler : \n ProjectAssembler" : toDTO(attr)
+                    "assembler : \n ProjectAssembler" --> "projectService : \n ImplAppProjectService" : dtoOutput
+
+                    "projectService : \n ImplAppProjectService" --> "projectController : \n ImplProjectController" : dtoOutput
+
+                "projectController : \n ImplProjectController" --> "Postman \n (API Server Mock)" : dtoOutput
+
+            "Postman \n (API Server Mock)" -> "json_output : JSON"** : map2Json(dtoOutput)
+    "Postman \n (API Server Mock)" --> PM : json_output
+
+@enduml

@@ -1,0 +1,312 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "Project Management SYSTEM" {
+
+    package assemblers {
+            package iAssemblers{
+                interface IUserStoryAssemblerJPA {
+                + userStoryJPAtoUserStory(UserStoryJPA userStoryJPA) : UserStory
+                + userStoryToUserStoryJPA(UserStory) : UserStoryJPA
+                }
+            }
+             package implAssemblers{
+                class ImplUserStoryAssembler{
+                - UserStoryFactory userStoryFactory;
+                + userStoryJPAtoUserStory(UserStoryJPA userStoryJPA) : UserStory
+                + userStoryToUserStoryJPA(UserStory userStory) : UserStoryJPA
+            }
+        }
+        }
+
+    folder "INFRASTRUCTURE" %lighten("orchid", 40){
+
+        package persistence %lighten("orchid", 30){
+            package iRepositories  {
+                interface IUserStoryRepositoryJPA{
+                 + save(UserStoryJPA userStoryJPA) : Optional<UserStory>
+                 }
+
+                interface IProjectRepositoryJPA {
+                 + findByCode(String code) : Optional<ProjectJPA>   
+                }
+            }
+        }
+           
+    
+        package routes %lighten("orchid", 30) {
+            package iRoutes{}
+            package implRoutes{}
+        }
+    }
+
+    folder "INTERFACE ADAPTERS" %lighten("aquamarine", 20){
+
+        package "controllers" %lighten("aquamarine", 10){
+            package "IControllers" #white {
+                interface IUserStoryController {
+                + createUserStory(@PathVariable String projectCode, @RequestBody CreateUserStoryDTO description) : ResponseEntity<Object>
+                }
+            }
+            package "implControllers" #white{
+                class ImplUserStoryController {
+                - IAppUserStoryService iAppCreateUserStoryService
+                + createUserStory(@PathVariable String projectCode, @RequestBody CreateUserStoryDTO description) : ResponseEntity<Object>
+                }
+            }
+            package implRepositories #white {
+                class ImplUserStoryRepository {
+                - IUserStoryRepositoryJPA userStoryRepositoryJPA
+                - IUserStoryAssemblerJPA userStoryAssemblerJPA
+                + save(UserStory newUserStory) : Optional<UserStory>
+                }
+
+                class ImplProjectRepository #white {
+                - IProjectRepositoryJPA projectRepositoryJPA
+                - IProjectAssemblerJPA projectAssembler
+                + findByCode(ProjectCode code) : Optional<Project>
+                }
+            
+            }
+            package dataTransObjects #white{
+                class UserStoryDTO {
+                - code : String
+                - effort : Integer
+                - priority : int
+                - description : String
+                - status : String
+                - parentUserStoryCode : String
+                + setCode(String code)
+                + setEffort(Integer effort)
+                + setPriority(int priority)
+                + setDescription(String description)
+                + setStatus(String status)
+                + setParentUserStoryCode(String parentUserStoryCode)
+                }
+            }
+        }
+    }
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES" %lighten("blue", 90){
+        
+        package "appServices"{
+            package "IAppServices" #white {
+                interface IAppUserStoryService {
+                + createAndAddUserStory(String projectCode, String description) : UserStoryDTO
+                }
+            }
+            package "ImpAppServices" #white{
+                class ImplAppUserStoryService{
+                - IUserStoryRepository iUserStoryStore;
+                - UserStoryFactory userStoryFactory;
+                - IProjectRepository iProjectRepository;
+                + createAndAddUserStory(String projectCode, String description) : UserStoryDTO
+                }
+            }
+        }
+
+        package "IRepositories" #white{
+            interface IUserStoryRepository{
+            + save(UserStory newUserStory) : Optional<UserStory>
+            }
+
+            interface IProjectRepository {
+            + findByCode(ProjectCode code) : Optional<Project>
+            }
+        }
+
+    }
+
+    folder "ENTITIES / CORE / DOMAIN" %lighten("lightsalmon", 20){
+
+        package "Aggregates" %lighten("lightsalmon", 30) {
+            package UserStory #white {
+                entity UserStory{
+                - UserStoryID userStoryID;
+                - ProjectCode projectCode;
+                - UserStoryCode userStoryCode;
+                - UserStoryDescription description;
+                - UserStoryCode parentUserStory;
+                - SprintID sprintID;
+                - EffortEstimate effort;
+                - Priority priority;
+                - UserStoryStatus status;
+                }
+            }
+        }
+
+        interface Entity #white
+        interface AggregateRoot #white
+
+        package "Factories" %lighten("lightsalmon", 30){
+           package "iFactories" %lighten("lightsalmon", 30){
+                interface UserStoryFactory {
+                + createUserStory : UserStory
+                }
+           }
+
+           package "implFactories" %lighten("lightsalmon", 30){
+                class UserStoryFactoryImplementation{
+                 + createUserStory : UserStory
+                }
+            }
+        }
+
+        package "Shared" %lighten("lightsalmon", 30){
+            package "Value Objects" %lighten("lightsalmon", 30){
+                 class UserStoryID #white{
+                    - projectCode :String
+                    - userStoryCode : String
+                 }
+                 class ProjectCode #white{
+                    - code : String
+                }
+
+                 class UserStoryCode #white{
+                    - identity : String
+                 }
+
+                 class UserStoryDescription #white{
+                    - description : String
+                 }
+
+                 class SprintID #white{
+                    - projectCode : String
+                    - sprintNumber : Integer
+                 }
+
+                 class EffortEstimate #white{
+                    - effort : Integer
+                 }
+
+                 class Priority #white{
+                    - priority : int
+                 }
+
+                 enum UserStoryStatus #white{
+
+                 }
+            }
+        }
+        interface ValueObject #white
+
+        interface id #white
+
+        interface Serializable #white
+
+        interface TaskContainer #white
+    }
+    }
+    
+
+' //----INFRAESTRUCTURE----
+
+' ROUTE - CONTROLLER
+"INFRASTRUCTURE" --[hidden]-> "INTERFACE ADAPTERS"
+"INTERFACE ADAPTERS" --[hidden]-> "APPLICATION SERVICES / USE CASE SERVICES"
+"APPLICATION SERVICES / USE CASE SERVICES" --[hidden]> "ENTITIES / CORE / DOMAIN"
+
+iRoutes <|.. implRoutes
+
+implRoutes .> IUserStoryController
+
+' REPOSITORY_JPA - REPOSITORY
+
+IProjectRepositoryJPA <.. ImplProjectRepository
+
+IUserStoryRepositoryJPA <. ImplUserStoryRepository
+
+' //----INTERFACE_ADAPTERS----
+
+' CONTROLLER - DTO
+
+IUserStoryController <|. ImplUserStoryController
+
+ImplUserStoryController .> UserStoryDTO
+
+IUserStoryRepository <|.. ImplUserStoryRepository
+
+IProjectRepository <|.. ImplProjectRepository
+
+ImplUserStoryController ..> IAppUserStoryService
+
+' //----APPLICATION SERVICES----
+
+' SERVICE - REPOSITORY
+
+IAppUserStoryService .> IProjectRepository 
+
+
+IAppUserStoryService .> IUserStoryRepository
+
+' ASSEMBLER  - FACTORY
+
+'ImplUserStoryAssembler ..|> UserStoryFactory
+
+ImplUserStoryAssembler .|> IUserStoryAssemblerJPA
+
+' //----ENTITIES/CORE/DOMAIN----
+
+' FACTORIES
+
+UserStoryFactoryImplementation .|> UserStoryFactory
+
+' VALUE OBJECTS
+
+UserStoryID .|> ValueObject
+
+UserStoryID .|> TaskContainer
+
+UserStoryID .|> Serializable
+
+ProjectCode ..|> Serializable
+
+UserStoryCode .|> ValueObject
+
+UserStoryDescription .|> ValueObject
+
+SprintID ..|> ValueObject
+
+SprintID ..|> TaskContainer
+
+EffortEstimate .|> ValueObject
+
+Priority .|> ValueObject
+
+' USER STORY AND VALUE OBJETS
+
+UserStory .> UserStoryID
+
+UserStory .> ProjectCode
+
+UserStory .> UserStoryCode
+
+UserStory .> UserStoryDescription
+
+UserStory .> SprintID
+
+UserStory .> EffortEstimate
+
+UserStory .> Priority
+
+' AGREGGATE ROOT
+
+UserStory ..|> AggregateRoot
+
+AggregateRoot .|> Entity
+
+
+@enduml
+

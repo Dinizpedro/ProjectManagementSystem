@@ -1,0 +1,96 @@
+@startuml
+participant ": ImplUserService" as userService
+
+activate userService
+-> userService : getAllocatedProjects(email)
+create participant "emailVO : Email" as email
+userService -> email : create
+create participant "allocatedProjectsDTOs : List<AllocatedProjectDTO>" as allocatedProjectsDTOs
+userService -> allocatedProjectsDTOs : create
+userService -> userRepository : userExists(emailVO)
+activate userRepository
+userRepository -> userRepositoryJPA : userExists(email)
+activate userRepositoryJPA
+userRepositoryJPA --> userRepository : true
+deactivate userRepositoryJPA
+userRepository --> userService : true
+participant ": ImplUserRepository" as userRepository
+participant ": IUserRepositoryJPA" as userRepositoryJPA
+deactivate userRepository
+userService -> resourceRepository : getResourcesByEmail(emailVO)
+activate resourceRepository
+
+ref over resourceRepository
+[[getResourcesByEmail.puml getResourcesByEmail]]
+end
+
+resourceRepository --> userService :resources
+deactivate resourceRepository
+
+alt !resources.empty()
+
+participant "theResource : Resource" as resource
+loop theResource : resources
+
+userService -> resource : getProjectCode()
+activate resource
+
+participant ": ProjectCode" as resourceProjectCode
+resource -> resourceProjectCode : getCode()
+activate resourceProjectCode
+resourceProjectCode --> resource : projectCode
+deactivate resourceProjectCode
+resource --> userService : projectCode
+deactivate resource
+
+create participant "projectCodeVO : ProjectCode" as projectCodeVO
+userService -> projectCodeVO : createProjectCode(projectCode)
+
+participant ": ImplProjectRepository" as projectRepository
+userService -> projectRepository : findByCode(projectCodeVO)
+activate projectRepository
+
+
+ref over projectRepository
+[[findByCode.puml findByCode]]
+end
+
+projectRepository --> userService : theProject
+deactivate projectRepository
+
+participant "theProject : Optional<Project>" as project
+userService -> project : get()
+activate project
+
+participant "name : ProjectName" as projectName
+project -> projectName : getName()
+activate projectName
+projectName --> project : projectName
+deactivate projectName
+project --> userService : projectName
+deactivate project
+
+participant "resourceMapper : ImplResourceMapper" as resourceMapper
+userService -> resourceMapper : toAllocatedProjectDTO(theResource, projectName)
+activate resourceMapper
+resourceMapper -> userService : allocatedProjectDTO
+note right
+Mapping resource role,project code
+ and project name to allocatedProjectDTO
+endnote
+deactivate resourceMapper
+participant "allocatedProjectsDTOs : List<AllocatedProjectDTO>" as allocatedProjectsDTOs
+userService ->  allocatedProjectsDTOs : add(allocatedProjectsDTO)
+activate allocatedProjectsDTOs
+deactivate allocatedProjectsDTOs
+
+end
+
+end
+
+<-- userService : allocatedProjectDTOs
+deactivate userService
+
+
+
+@enduml

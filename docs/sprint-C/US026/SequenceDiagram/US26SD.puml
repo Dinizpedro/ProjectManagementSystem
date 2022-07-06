@@ -1,0 +1,33 @@
+@startuml
+autonumber
+actor Administrator
+participant ": ActivateAccountUI"
+participant ": SetUserAccountToActiveController"
+participant "singletonDM: Datamanegement"
+participant "userStore : UserStore"
+participant "selectedUser: User"
+Administrator -> ": ActivateAccountUI" : types requested input
+activate Administrator
+activate ": ActivateAccountUI"
+": ActivateAccountUI" -> ": SetUserAccountToActiveController" : activateUserAccount(emailInput)
+activate ": SetUserAccountToActiveController"
+": SetUserAccountToActiveController" -> "singletonDM: Datamanegement" : usertStore = getUsers()
+activate "singletonDM: Datamanegement"
+deactivate "singletonDM: Datamanegement"
+": SetUserAccountToActiveController" -> "userStore : UserStore" : selectedUser = findUser(emailInput)
+activate "userStore : UserStore"
+deactivate "userStore : UserStore"
+": SetUserAccountToActiveController" -> "selectedUser: User" : setToActive()
+activate "selectedUser: User"
+"selectedUser: User" -> "selectedUser: User" : userNotActive = userNotActive()
+opt userNotActive == true
+"selectedUser: User" -> "selectedUser: User" : setActivationStatusToActive()
+"selectedUser: User" -> "selectedUser: User" : setActivationDate()
+end
+"selectedUser: User" --> ": SetUserAccountToActiveController" : true
+deactivate "selectedUser: User"
+": SetUserAccountToActiveController" --> ": ActivateAccountUI" : true
+deactivate ": SetUserAccountToActiveController"
+": ActivateAccountUI" --> Administrator : returns account is sucesfully activated
+
+@enduml

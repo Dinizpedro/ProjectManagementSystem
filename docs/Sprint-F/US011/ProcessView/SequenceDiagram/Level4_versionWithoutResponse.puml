@@ -1,0 +1,71 @@
+@startuml
+autonumber
+boundary ": Route" as route
+
+-> route : PATCH /users/password/{email}
+activate route
+participant ":ImplUserController" as UC
+route -> UC : change password (passwordDTO)
+activate UC
+activate userService
+participant ":ImplAppUserService" as userService
+UC-> userService : changePassword (passwordDTO)
+participant "IUserRepository" as urepo
+activate urepo
+userService->urepo : findUserByEmail(email)
+
+deactivate urepo
+participant ":User" as user
+activate user
+userService-> user : updatePassword (oldPassword, newPassword)
+participant ": Password" as pw
+activate pw
+user -> pw : createPassword (password)
+
+deactivate pw
+user -> user : changePassword
+user -> user ++: updatePassword
+deactivate user
+
+deactivate user
+activate urepo
+userService->urepo : update (user)
+participant ":UserAssembler" as assembler
+activate assembler
+urepo->assembler : toJPA (user)
+participant ": UserJPA" as userJPA
+assembler ->  userJPA ** : Create
+
+deactivate assembler
+participant "IUserRepositoryJPA" as urepojpa
+activate urepojpa
+urepo-> urepojpa : save (userJPA)
+urepojpa-->urepo : userJPA saved
+deactivate urepojpa
+urepo--> userService : user saved
+deactivate urepo
+participant "ImplUserMapper" as mapper
+activate mapper
+userService-> mapper : toDTOWithPassword (user)
+participant ":UserDTO" as userDTO
+mapper ->  userDTO ** : Create
+deactivate mapper
+
+userDTO--> userService : returns userDTO
+userService-->UC : returns userDTO
+deactivate userService
+create participant "link: Link" as linkuser
+UC-> linkuser : create
+ note right
+   linkTo(methodOn(ImplUserController.class)
+ endnote
+UC ->userDTO : add (link)
+activate userDTO
+deactivate userDTO
+create participant "response :ResponseEntity" as res
+UC -> res : create (userDTO, HttpStatus.OK)
+UC --> route : response
+deactivate UC
+<--route : response
+deactivate route
+@enduml

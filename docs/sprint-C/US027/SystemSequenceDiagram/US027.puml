@@ -1,0 +1,59 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+
+scale 500 width
+skinparam SameClassWidth true
+skinparam ClassFontSize 12
+skinparam Linotype orthodox
+scale 600 width
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+
+autonumber
+
+actor "Director" as D
+participant ": System" as System
+Activate D
+
+
+D -> System :  Search for Project (projectCode)
+activate System
+System --> D : Shows project
+deactivate System
+D -> System :  Search for User (email)
+activate System
+System --> D : Shows user
+deactivate System
+D -> System :  Request to define PO
+activate System
+System --> D : request for data (startDate, endDate, costPerHour, percentageOfAllocation)
+deactivate System
+D -> System :  types data (startDate, endDate, costPerHour, percentageOfAllocation)
+activate System
+System --> D : shows the data and requests a confirmation
+deactivate System
+D -> System: confirms the data
+
+activate System
+System -> System : createResourceAndAddAsProductOwner
+System --> D : informs operation success
+deactivate System
+
+
+
+@enduml

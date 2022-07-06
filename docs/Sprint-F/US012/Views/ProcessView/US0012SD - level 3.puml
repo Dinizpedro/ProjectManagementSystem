@@ -1,0 +1,59 @@
+@startuml
+autonumber
+participant "Routing" #FFFFFF
+participant "Controller" #FFFFFF
+participant "DTO" #FFFFFF
+participant "Application Service" #FFFFFF
+participant "Domain Model" #FFFFFF
+participant "Repository" #FFFFFF
+participant "Data Model" #FFFFFF
+participant "Persistence" #FFFFFF
+
+-> "Routing" ++ : POST api/typologies (json)
+"Routing" -> "Controller" ++ : createTypology(dto)
+note left #FFFFFF
+Data Transfer Object with the
+ new typology description as a String
+end note
+
+"Controller" -> "Application Service" ++ : createTypology(dto)
+"Application Service" -> "Repository" ++: check if typology already exists in repo
+"Repository" -> "Persistence" ++ : check if typology already exists in database
+"Persistence" --> "Repository" : boolean
+deactivate "Persistence"
+"Repository" --> "Application Service" : boolean
+deactivate "Repository"
+
+"Application Service" -> "Domain Model" ++ : create new typology
+deactivate
+
+"Application Service" -> "Repository" ++ : save new Typology
+"Repository" -> "Data Model" ++ : create data schema object to store in database
+deactivate "Data Model"
+"Repository" -> "Persistence" ++ : save data schema object in database
+"Persistence" -> "Data Model" ++: create representative data schema object
+deactivate
+
+"Persistence" --> "Repository" : return saved object that was stored in database
+deactivate "Persistence"
+"Repository" -> "Domain Model" ++ : transform data schema object into typology domain model object
+"Domain Model" --> "Repository" : typology domain model object
+deactivate "Domain Model"
+"Repository" --> "Application Service" : return typology domain model object
+deactivate "Repository"
+
+"Application Service" -> "DTO" ++ : transform typology domain model object \n into data transfer object
+"DTO" --> "Application Service" : data transfer object
+deactivate "DTO"
+"Application Service" --> "Controller" : return data transfer object
+
+deactivate "Application Service"
+
+"Controller" -> "DTO" ++ : add link to data transfer object
+deactivate "DTO"
+
+"Controller" --> "Routing" : return data transfer object \n with created http status
+deactivate "Controller"
+<-- "Routing" : return data transfer object \n with created http status
+
+@enduml

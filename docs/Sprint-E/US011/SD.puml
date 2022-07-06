@@ -1,0 +1,78 @@
+@startuml
+'https://plantuml.com/class-diagram
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+
+autonumber
+autoactivate on
+
+actor "User" as User
+
+activate "User"
+User -> ": Route" : Patch /users/password/{email}
+
+": Route" -> ": ImplUserController" :  changePassword(passwordDTO)
+
+": ImplUserController" -> " passwordDTO : ChangePasswordDTO" ** : Create
+
+": ImplUserController" -> ": ImplAppUserService" : changePassword (passwordDTO)
+
+deactivate
+
+": ImplAppUserService" -> ": IUserRepository" : user = findUserByEmail (email)
+
+": ImplAppUserService" -> "user :  User" : updatePassword(oldPassword, newPassword)
+
+"user :  User" -> "user :  User" ++-- : changePassword
+
+"user :  User" -> " : Password" : createPassword (password)
+
+": ImplAppUserService" -> ": IUserRepository" : update (user)
+
+deactivate
+
+": IUserRepository" -> ": UserAssembler" : userJPA = toJPA (user)
+
+": UserAssembler" -> "userJPA : UserJPA" ** : Create
+
+": IUserRepository" ->  " user : IUserRepositoryJPA " : save (userJPA)
+
+deactivate
+
+": ImplAppUserService" -> ": UserAssembler" : userDTO = toDTOWithPassword (user)
+
+": UserAssembler" -> "userDTO : UserDTO" ** : Create
+
+deactivate
+
+": ImplUserController" -> "userDTO : UserDTO" : add [Link]
+deactivate
+
+deactivate
+
+": ImplUserController" --> ": Route" : response
+deactivate ": ImplUserController"
+
+": Route" --> User : response
+deactivate ": Route"
+
+deactivate User
+@enduml

@@ -1,0 +1,69 @@
+#!/bin/bash
+USERS_IN_SERVER=/var/www/dataManagament/userStore
+error_response() {
+  echo "Status: 400 Bad Request"
+  echo "Content-type: text/plain"
+  echo ""
+  echo "ERROR: ${1}"
+  exit
+}
+
+### Get content from JSON into global variables
+if [ -n "$CONTENT_LENGTH" ]; then
+  eval "$(jq -r '@sh "EMAIL_JSON=\(.email) PASS_JSON=\(.pass) ACTIVATION_CODE_JSON=\(.activationCode)"')"
+else
+  error_response "No content found on the request"
+fi
+
+if [ "$CONTENT_LENGTH" == "0" ]; then
+  error_response "No content found on the request"
+fi
+
+### If the wrong method is used
+if [ "$REQUEST_METHOD" != "POST" ]; then
+  error_response "Invalid method. The only supported method is POST."
+fi
+
+### Check if User exists and his account is inactive
+EMAIL_FOUND=0
+if [ -d "$USERS_IN_SERVER/$EMAIL_JSON" ]; then
+  EMAIL_FOUND=1
+fi
+
+if [ $EMAIL_FOUND -eq 0 ]; then
+  error_response "User doesn't exist in server."
+fi
+
+USER_IS_ACTIVE=0
+if [ "1" == "$(cat "$USERS_IN_SERVER/$EMAIL_JSON/status")" ]; then
+  USER_IS_ACTIVE=1
+fi
+
+if [ $USER_IS_ACTIVE == 1 ]; then
+  error_response "User is already active."
+fi
+
+### Hash current password and compare with the one stored in the system
+PASS_MATCH=0
+CURRENT_HASH=$(cat "$USERS_IN_SERVER"/"$EMAIL_JSON"/pass)
+CLIENT_HASH=$((0x$(sha1sum <<<"$PASS_JSON")0))
+if [ "$CURRENT_HASH" = "$CLIENT_HASH" ]; then
+  PASS_MATCH=1
+fi
+
+if [ $PASS_MATCH -eq 0 ]; then
+  error_response "The password you have entered is incorrect."
+fi
+
+### Activate Account if activation code matches
+
+if [ "$ACTIVATION_CODE_JSON" == "$(cat "$USERS_IN_SERVER/$EMAIL_JSON/activation")" ]; then
+  echo "1" > "$USERS_IN_SERVER/$EMAIL_JSON/status"
+else
+  error_response "Incorrect activation code."
+fi
+
+echo "Content-type: text/plain"
+echo ""
+echo "Account activated"
+###

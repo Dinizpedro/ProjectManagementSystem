@@ -1,0 +1,83 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+actor "ProjectManager" as SM
+
+participant ": UI" as UI
+participant ": CreateSprintController" as controller
+participant DataManagement as dm
+participant "projects: ProjectStore" as projects
+participant "sprintStatuses: SprintStatusStore" as sprintStatuses
+participant "selectedProject: Project" as project
+participant "dto : CreateSprintDto" as dto
+participant ": SprintDatesMapper" as mapper
+participant "sprints: ProjectSprintList" as projectSprints
+
+activate SM
+    SM -> UI : Inputs data.
+    activate UI
+        UI -> controller : createSprint(dto)
+        activate controller
+            controller -> dm : projects = getProjects()
+            activate dm
+            deactivate dm
+            controller -> dto : projectCode = projectCodeDto
+            activate dto
+            deactivate dto
+            controller -> projects : selectedProject = getProject(projectCode)
+            activate projects
+            deactivate projects
+            controller -> dm : sprintStatuses = getStatuses()
+            activate dm
+            deactivate dm
+            controller -> sprintStatuses : plannedStatus = getPretendedSprintStatus("planned")
+            activate sprintStatuses
+            deactivate sprintStatuses
+            controller -> project : createSprint(dto, plannedStatus)
+            activate project
+                project -> mapper : sprintTime = getSprintTime(dto)
+                ref over mapper : sprintTime creation
+                project -> project : validateSprintNumber()
+                project -> project : validateSprintDatesInProject(sprintTime)
+                project -> project : validateProjectStatus()
+                project -> dto : sprintGoalStg = sprintGoalDto
+                activate dto
+                deactivate dto
+                create participant "sprintGoal : Description" as sprintGoal
+                project -> sprintGoal : create(sprintGoalStg)
+                project -> projectSprints : createSprint(sprintGoal, sprintTime plannedStatus)
+                activate projectSprints
+                    projectSprints -> projectSprints : validateSprintTimeInSprints(sprintTime)
+                    projectSprints -> projectSprints : sprintNumber = generateSprintNumber()
+                    create participant "newSprint : Sprint" as sprint
+                    projectSprints -> sprint : create(sprintNumber, sprintGoal, sprintTime plannedStatus)
+                    projectSprints -> projectSprints : addSprint(newSprint)
+                    projectSprints --> project : True
+                deactivate projectSprints
+                project --> controller : True
+            deactivate project
+            controller --> UI : True
+        deactivate controller
+        UI --> SM : Creation is successful.
+    deactivate UI
+deactivate SM
+@enduml

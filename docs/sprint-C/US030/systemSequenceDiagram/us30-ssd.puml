@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "TeamMember" as TM
+participant ": System" as System
+Activate TM
+Activate System
+TM -> System : Get Scrum Board of current Sprint of a Project where the Team Member is involved
+TM -> System : Enters Project(projectCode) and User(userEmail)
+System -> System : getScrumBoard
+System --> TM : ScrumBoard
+
+@enduml

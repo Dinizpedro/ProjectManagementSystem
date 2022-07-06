@@ -1,0 +1,246 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "Project Management SYSTEM" {
+
+    folder "INFRASTRUCTURE" %lighten("orchid", 40){
+
+        package persistence %lighten("orchid", 30){
+            package iRepositories  {
+                interface ITypologyRepositoryJPA{
+                + existsByDescription(String description) : boolean
+                + findByDescription(String description) : Optional<TypologyJPA>
+                 }
+            }
+    }
+        package routes %lighten("orchid", 30) {
+        }
+    }
+
+
+    package assemblers {
+                package iAssemblersJPA{
+                    interface ITypologyAssemblerJPA {
+                    + toDomain(TypologyJPA typologyJPA) : Typology
+                    + toData(Typology typology) : TypologyJPA
+                    }
+                }
+                package implAssemblersJPA{
+                    class ImplTypologyAssemblerJPA{
+                    + toDomain(TypologyJPA typologyJPA)  : Typology
+                    + toData(Typology typology) : TypologyJPA
+                    }
+                }
+            }
+
+    package dataModel #white{
+           class TypologyJPA {
+           - description : String
+           + TypologyJPA(String description) : TypologyJPA
+           + getTypologyDescription() : String
+          }
+    }
+
+    folder "INTERFACE ADAPTERS" %lighten("aquamarine", 20){
+
+        package "Controllers" %lighten("aquamarine", 10){
+            package "IControllers" #white {
+                interface  ITypologyController {
+                + createTypology(TypologyDTO dto) : ResponseEntity<Object>
+                }
+            }
+            package "ImplControllers" #white{
+                class ImplTypologyController {
+                + createTypology(@RequestBody final TypologyDTO dto) : ResponseEntity<Object>
+                }
+            }
+        }
+
+
+        package implRepositories %lighten("aquamarine", 10) {
+                class ImplTypologyRepository{
+                + typologyExists(TypologyDescription typologyDescription) : boolean
+                + saveNewTypology(Typology newTypology) : Typology                }
+            }
+        }
+        }
+        package mappers {
+                            package iAssemblers{
+                                interface ITypologyAssembler {
+                                + toDTO(Typology typology) : TypologyDTO
+                                }
+                            }
+                            package implAssemblers{
+                                class TypologyAssembler{
+                                + toDTO(Typology typology) : TypologyDTO
+                                }
+                            }
+                        }
+
+         package dataTransferObjects #white{
+                        class TypologyDTO {
+                        + description : String
+                        + TypologyDTO(String newTypology) : TypologyDTO
+                        }
+                    }
+
+
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES" %lighten("blue", 90){
+
+        package "AppServices"{
+            package "IAppServices" #white {
+                interface IAppTypologyService {
+                + findTypologyByDescription(String description) : Optional<Typology>
+                + addNewTypology(String description) :  Typology
+                }
+            }
+            package "ImpAppServices" #white{
+                class ImplAppTypologyService{
+                + findTypologyByDescription(String description) : Optional<Typology>
+                + addNewTypology(String description) :  Typology
+                }
+            }
+        }
+
+        package "IRepositories" #white{
+            interface ITypologyRepository{
+            + findTypology(TypologyDescription typologyDescription) : Optional<Typology>
+            + saveNewTypology(Typology newTypology) : void
+            }
+        }
+
+    }
+
+    folder "ENTITIES / CORE / DOMAIN" %lighten("lightsalmon", 20){
+
+        package "Aggregates" %lighten("lightsalmon", 30) {
+            package Typology #white {
+                entity Typology{
+                + getDescription()  : String
+                + Typology(TypologyDescription description) : Typology
+                }
+            }
+        }
+
+        interface Entity #white
+        interface AggregateRoot #white
+
+        package "Factories" %lighten("lightsalmon", 30){
+           package "iFactories" %lighten("lightsalmon", 30){
+                interface TypologyFactory {
+                + createTypology(TypologyDescription description) : Typology
+                }
+           }
+
+           package "implFactories" %lighten("lightsalmon", 30){
+                class ImplTypologyFactory{
+                + createTypology(TypologyDescription description) : Typology
+                }
+            }
+        }
+
+
+        package "Shared" %lighten("lightsalmon", 30){
+            package "Value Objects" %lighten("lightsalmon", 30){
+                 class TypologyDescription #white{
+                    - description : String
+                    + create(final String description) : TypologyDescription
+                    + getDescription() : String
+                 }
+            }
+        }
+        interface ValueObject #white
+    }
+
+' //----INFRAESTRUCTURE----
+
+' ROUTE - CONTROLLER
+"INFRASTRUCTURE" --[hidden]-> "INTERFACE ADAPTERS"
+"INTERFACE ADAPTERS" --[hidden]-> "APPLICATION SERVICES / USE CASE SERVICES"
+"APPLICATION SERVICES / USE CASE SERVICES" --[hidden]> "ENTITIES / CORE / DOMAIN"
+
+routes .> ITypologyController
+
+' ASSEMBLER  - FACTORY
+
+ImplTypologyAssemblerJPA ..|> ITypologyAssemblerJPA
+
+ImplTypologyAssemblerJPA ..> TypologyFactory
+
+
+' REPOSITORY_JPA - REPOSITORY
+ITypologyRepositoryJPA ..> TypologyJPA
+
+ImplTypologyRepository .up.> ITypologyRepositoryJPA
+ImplTypologyRepository .down.> ITypologyAssemblerJPA
+
+ITypologyAssemblerJPA .> TypologyJPA
+ITypologyAssemblerJPA ...> Typology
+
+ITypologyRepository ..> TypologyDescription
+ITypologyRepository ..> Typology
+
+' //----INTERFACE_ADAPTERS----
+
+' CONTROLLER - DTO
+
+ITypologyController <|. ImplTypologyController
+
+ImplTypologyController .> TypologyDTO
+
+ImplTypologyController ...> IAppTypologyService
+
+ImplTypologyRepository ..|> ITypologyRepository
+' //----APPLICATION SERVICES----
+
+' SERVICE - REPOSITORY
+
+IAppTypologyService <|. ImplAppTypologyService
+
+ImplAppTypologyService .> ITypologyRepository
+
+ImplAppTypologyService ..> TypologyFactory
+
+ImplAppTypologyService ..> ITypologyAssembler
+
+' MAPPER  - FACTORY
+
+ITypologyAssembler <|. TypologyAssembler
+
+ITypologyAssembler ...> TypologyDTO
+
+ITypologyAssembler ...> Typology
+
+' //----ENTITIES/CORE/DOMAIN----
+
+' FACTORIES
+
+ImplTypologyFactory .left.|> TypologyFactory
+
+TypologyFactory .> Typology
+
+' VALUE OBJECTS
+
+TypologyDescription ..|> ValueObject
+
+
+' AGREGGATE ROOT
+Typology .|> AggregateRoot
+
+Typology .> TypologyDescription
+
+AggregateRoot ..|> Entity
+@enduml

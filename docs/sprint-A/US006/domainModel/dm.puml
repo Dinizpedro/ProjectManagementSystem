@@ -1,0 +1,16 @@
+@startuml
+class User {
+	-name
+	-function
+	-password
+	-email
+}
+
+class Profile {
+	-code
+	-description
+}
+
+
+User "1" -- "1..*" Profile
+@enduml

@@ -1,0 +1,61 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+autoactivate on
+
+
+": IResourceController" -> ": IAppResourceService" : definedTeamMemberOfAProject(dto)
+
+group ref
+
+": IAppResourceService" -> ": ProjectCode" : create(dto.projectCodeDto)
+": ProjectCode" -> "projectCode : ProjectCode"  ** : create
+deactivate
+
+": IAppResourceService" -> ": ResourceID" : createResourceID()
+": ResourceID" -> "resourceID : ResourceID"  ** : create
+deactivate
+
+": IAppResourceService" -> ": UserID" : createUserID(dto.userIdDto)
+": UserID" -> "userID : Email"  ** : create
+deactivate
+
+": IAppResourceService" ->  ": Time" : create(dto.startDate, dto.endDate)
+": Time" -> "dates : Time"  ** : create
+deactivate
+
+": IAppResourceService" -> ": ResourceCostPerHour" : create(dto.costPerHourDto)
+": ResourceCostPerHour" -> "costPerHour : ResourceCostPerHour"  ** : create
+deactivate
+
+": IAppResourceService" -> ": ResourcePercentageOfAllocation" : create(dto.percentageOfAllocationDto)
+": ResourcePercentageOfAllocation" -> "allocation : ResourcePercentageOfAllocation"  ** : create
+deactivate
+
+": IAppResourceService" -> ": Role" : Role.TeamMember
+": Role" -> "role : Role"  ** : create
+deactivate
+
+deactivate ": IAppResourceService"
+
+
+
+@enduml

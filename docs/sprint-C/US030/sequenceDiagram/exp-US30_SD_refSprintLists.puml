@@ -1,0 +1,25 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+autonumber
+participant "currentSprint: Sprint" #FFFFFF
+participant ": ScrumBoardMapper" #FFFFFF
+participant ": UserStoryListMapper" #FFFFFF
+participant ": TasksListMapper" #FFFFFF
+"currentSprint: Sprint" -> ": ScrumBoardMapper" : scrumBoardDTO = toScrumBoardDTO(plannedUserStories, runningUserStories, blockedUserStories, finishedUserStories, plannedTasks, runningTasksDTO, blockedTasks, finishedTasks)
+group ref
+": ScrumBoardMapper" -> ": UserStoryListMapper" : plannedUserStoriesDTO = toUserStoryListDTO(plannedUserStories)
+": ScrumBoardMapper" -> ": UserStoryListMapper" : runningUserStoriesDTO = toUserStoryListDTO(runningUserStories)
+": ScrumBoardMapper" -> ": UserStoryListMapper" : blockedUserStoriesDTO = = toUserStoryListDTO(blockedUserStories)
+": ScrumBoardMapper" -> ": UserStoryListMapper" : finishedUserStoriesDTO = toUserStoryListDTO(finishedUserStories)
+": ScrumBoardMapper" -> ": TasksListMapper" : plannedTaskListDTO = toTaskListDTO(plannedTasks)
+": ScrumBoardMapper" -> ": TasksListMapper" : runningTasks = toTaskListDTO(runningTasks)
+": ScrumBoardMapper" -> ": TasksListMapper" : blockedTaskListDTO = toTaskListDTO(blockedTasks)
+": ScrumBoardMapper" -> ": TasksListMapper" : finishedTaskListDTO = toTaskListDTO(finishedTasks)
+create participant "scrumBoardDTO: ScrumBoardDTO" #FFFFFF
+": ScrumBoardMapper" -> "scrumBoardDTO: ScrumBoardDTO" : create(plannedUserStoriesDTO, runningUserStoriesDTO, blockedUserStoriesDTO, finishedUserStoriesDTO, plannedTasksDTO, runningTasksDTO, blockedTasksDTO, finishedTasksDTO)
+end group
+@enduml

@@ -1,0 +1,40 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+autonumber
+actor "Team member" #FFFFFF
+participant ": ScrumBoardUI" #FFFFFF
+participant ": ScrumBoardController" #FFFFFF
+participant DataManagement #FFFFFF
+participant "dataManagement: DataManagement" #FFFFFF
+participant "projectStore: ProjectStore" #FFFFFF
+participant "selectedProject: Project" #FFFFFF
+participant "projectSprintList: ProjectSprintList" #FFFFFF
+participant "currentSprint: Sprint" #FFFFFF
+participant ": ScrumBoardMapper" #FFFFFF
+"Team member" -> ": ScrumBoardUI" : Get scrum board of current sprint pf a project where the user is involved
+": ScrumBoardUI" -> ": ScrumBoardController" : getScrumBoardOfCurrentSprint(userEmail, projectCode)
+": ScrumBoardController" -> DataManagement : dataManagement = getInstance()
+": ScrumBoardController" -> "dataManagement: DataManagement" : projectStore = getProjectStore()
+": ScrumBoardController" -> "projectStore: ProjectStore" : selectedProject = getProjectByProjectCode(projectCode)
+": ScrumBoardController" -> "selectedProject: Project" : isUserInProjectTeam(userEmail)
+": ScrumBoardController" -> "selectedProject: Project" : currentSprint = getCurrentSprint()
+"selectedProject: Project" -> "projectSprintList: ProjectSprintList" : getCurrentSprint()
+": ScrumBoardController" -> "currentSprint: Sprint" : scrumBoardDTO = generateScrumBoard()
+"currentSprint: Sprint" -> "currentSprint: Sprint" : plannedUserStories = getPlannedUserStories()
+"currentSprint: Sprint" -> "currentSprint: Sprint" : runningUserStories = getRunningUserStories()
+"currentSprint: Sprint" -> "currentSprint: Sprint" : blockedUserStories = getBlockedUserStories()
+"currentSprint: Sprint" -> "currentSprint: Sprint" : finishedUserStories = getFinishedUserStories()
+"currentSprint: Sprint" -> "currentSprint: Sprint" : plannedTasks = getPlannedTasks()
+"currentSprint: Sprint" -> "currentSprint: Sprint" : runningTasks = getRunningTasks()
+"currentSprint: Sprint" -> "currentSprint: Sprint" : finishedTasks = getFinishedTasks()
+"currentSprint: Sprint" -> "currentSprint: Sprint" : blockedTasks = getBlockedTasks()
+"currentSprint: Sprint" -> ": ScrumBoardMapper" : toScrumBoardDTO(plannedUserStories, runningUserStories, blockedUserStories, finishedUserStories, plannedTasks, runningTasksDTO, blockedTasks, finishedTasks)
+ref over ": ScrumBoardMapper" : scrumBoardDTO creation
+": ScrumBoardController" --> ": ScrumBoardUI" : scrumBoardDTO
+": ScrumBoardUI" --> "Team member" : Show scrum board data of the current sprint of the selected project
+
+@enduml

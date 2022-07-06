@@ -1,0 +1,71 @@
+#!/bin/bash
+USERS_IN_SERVER=/var/www/dataManagament/userStore
+PROJECTS_IN_SERVER=/var/www/dataManagament/projectStore
+RESOURCES_IN_SERVER=/var/www/dataManagament/resourceStore
+error_response() {
+  echo "Status: 400 Bad Request"
+  echo "Content-type: text/plain"
+  echo ""
+  echo "ERROR: ${1}"
+  exit
+}
+
+### Get content from JSON into global variables
+if [ -n "$CONTENT_LENGTH" ]; then
+  eval "$(jq -r '@sh "EMAIL_JSON=\(.emailDirector) PASS_DIRECTOR_JSON=\(.directorPass)"')"
+else
+  error_response "No content found on the request"
+fi
+
+if [ "$CONTENT_LENGTH" == "0" ]; then
+  error_response "No content found on the request"
+fi
+
+### If the wrong method is used
+if [ "$REQUEST_METHOD" != "POST" ]; then
+  error_response "Invalid method. The only supported method is POST."
+fi
+
+### Check if User exists and has the Director Profile
+EMAIL_FOUND=0
+if [ -d "$USERS_IN_SERVER/$EMAIL_JSON" ]; then
+   EMAIL_FOUND=1
+fi
+
+if [ $EMAIL_FOUND -eq 0 ]; then
+  error_response "User doesn't exist in server."
+fi
+
+USER_HAS_DIRECTOR_PROFILE=0
+if [ -f "$USERS_IN_SERVER/$EMAIL_JSON/userProfiles/Director" ] ; then
+   USER_HAS_DIRECTOR_PROFILE=1
+fi
+
+if [ $USER_HAS_DIRECTOR_PROFILE == 0 ]; then
+  error_response "User doesn't have the Director profile associated."
+fi
+
+### Hash current password and compare with the one stored in the system
+PASS_MATCH=0
+CURRENT_HASH=$(cat "$USERS_IN_SERVER"/"$EMAIL_JSON"/pass)
+CLIENT_HASH=$((0x$(sha1sum <<<"$PASS_DIRECTOR_JSON")0))
+if [ "$CURRENT_HASH" = "$CLIENT_HASH" ]; then
+  PASS_MATCH=1
+fi
+
+if [ $PASS_MATCH -eq 0 ]; then
+  error_response "The password you have entered is incorrect."
+fi
+
+### Get all Projects in Store
+echo "Content-type: text/plain"
+echo ""
+
+ITERATOR=1
+while read line; do
+  PROJECT_DESCRIPTION="$(cat $PROJECTS_IN_SERVER/$line/description)"
+  echo "<p>"
+  echo " $ITERATOR) <b>Project Code</b> in Server: $line, with <b>description</b>: $PROJECT_DESCRIPTION"
+  ITERATOR=$((ITERATOR+1))
+done <<<"$(ls $PROJECTS_IN_SERVER)"
+###

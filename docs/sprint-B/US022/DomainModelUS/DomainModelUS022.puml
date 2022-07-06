@@ -1,0 +1,38 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+
+class Project{
+    -code
+    -name
+    -description
+    -startDate
+    -endDate
+    -sprintDuration
+    -numberOfPlannedSprints
+    -budget
+    -projectStatus
+    -businessSector
+}
+
+class ProjectSprintList{
+    -projectSprints
+ }
+
+ class Sprint {
+ 	-number
+ 	-goal
+ 	-dates
+ 	-status
+ 	-sprintBacklog
+ 	-listOfTasks
+ }
+
+Sprint "0.*" -> "1" ProjectSprintList : is part of
+ProjectSprintList "1" -> "1" Project : owned by
+
+@enduml

@@ -1,0 +1,16 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+actor "Director"
+usecase (UC012 - I want to create a new project typology.)
+
+:Director: -- (UC012 - I want to create a new project typology.)
+@enduml

@@ -1,0 +1,115 @@
+@startuml
+participant ": ImplTaskRepository" as taskRepository
+participant ": ImplTaskAssemblerJPA" as taskAssemblerJPA
+participant ":TaskJPA" as taskJPA
+participant ": ImplTaskFactory" as taskFactory
+
+taskRepository -> taskAssemblerJPA : Task task = toDomain(TaskJPA taskJPA)
+activate taskRepository
+activate taskAssemblerJPA
+taskAssemblerJPA -> taskJPA : String taskCode = getTaskCode()
+activate taskJPA
+create participant ":TaskCode" as taskCode
+taskJPA -> taskCode : Integer  taskCodeJPA = TaskCode.createTaskCode(taskCode)
+taskAssemblerJPA -> taskJPA : String projectCodeJPA = getProjectCode()
+
+
+alt if(taskJPA.getSprintNumber() != null)
+taskAssemblerJPA -> taskJPA : Integer sprintNumberJPA = getSprintNumber()
+deactivate taskJPA
+
+create participant ":SprintID" as sprintID
+taskAssemblerJPA -> sprintID : sprintIDJPA = createSprintID(projectCodeJPA, sprintNumberJPA)
+
+create participant ":TaskID" as taskID
+taskAssemblerJPA -> taskID : taskID = TaskID.createIDTask(taskCodeJPA,sprintIDJPA)
+
+end
+
+alt else
+taskAssemblerJPA -> taskJPA : String userStoryCodeJPA = getUserStoryCode()
+activate taskJPA
+deactivate taskJPA
+create participant ":UserStoryID" as usID
+taskAssemblerJPA -> usID :  userStoryIDJPA = UserStoryID.createUserStoryID(projectCodeJPA,userStoryCodeJPA);
+
+
+create participant ":TaskID" as taskID
+taskAssemblerJPA -> taskID : taskID = TaskID.createIDTask(taskCodeJPA,userStoryIDJPA)
+activate taskID
+deactivate taskID
+end
+
+taskAssemblerJPA -> taskJPA : String name = getName()
+activate taskJPA
+deactivate taskJPA
+create participant ":TaskName" as taskName
+taskAssemblerJPA -> taskName : taskName = TaskName.createTaskName(name)
+
+taskAssemblerJPA -> taskJPA : String description = getDescription()
+activate taskJPA
+deactivate taskJPA
+create participant ":TaskDescription" as taskDescription
+taskAssemblerJPA -> taskDescription : taskDescription = TaskDescription.createTaskDescription(description)
+
+
+taskAssemblerJPA -> taskJPA : String startDate = getStartDate()
+activate taskJPA
+taskAssemblerJPA -> taskJPA : String endDate = getEndDate()
+deactivate taskJPA
+Create participant ":Time" as time
+taskAssemblerJPA -> time : time = Time.create(startDate,endDate)
+
+
+taskAssemblerJPA -> taskJPA : double hoursSpent = getHoursSpent()
+activate taskJPA
+deactivate taskJPA
+create participant ":Hour" as hour
+taskAssemblerJPA -> hour : hoursSpent = Hour.createHour(hoursSpent)
+
+
+taskAssemblerJPA -> taskJPA : Integer effortEstimate = getEffortEstimate()
+activate taskJPA
+deactivate taskJPA
+create participant ":EffortEstimate" as effort
+taskAssemblerJPA -> effort : effortEstimate = EffortEstimate.createEffortEstimate(effortEstimate)
+
+taskAssemblerJPA -> taskJPA : double percentageOfExecution = getPercentageOfExecution()
+activate taskJPA
+deactivate taskJPA
+create participant ":PercentageOfExecution" as percentage
+taskAssemblerJPA -> percentage : taskPercentageOfExecution = TaskPercentageOfExecution.createPercentage(percentageOfExecution)
+
+
+taskAssemblerJPA -> taskJPA : List<TaskIDJPA> precedenceList = getPrecedenceList()
+activate taskJPA
+taskAssemblerJPA -> taskJPA : String typeOfTask = getTypeOfTask()
+deactivate taskJPA
+create participant ":TypeOfTask" as typeOfTask
+taskAssemblerJPA -> typeOfTask : typeOfTask = TypeOfTask.valueOf(typeOfTask)
+
+taskAssemblerJPA -> taskJPA : String resourceResponsible = getResourceResponsible()
+activate taskJPA
+deactivate taskJPA
+create participant ":ResourceID" as resource
+taskAssemblerJPA -> resource : resourceID = ResourceID.createResourceID(resourceResponsible)
+
+taskAssemblerJPA -> taskJPA : List<Log> logList = getTaskLogs()
+activate taskJPA
+taskAssemblerJPA -> taskJPA : String taskStatus = getTaskStatus()
+deactivate taskJPA
+create participant ":TaskStatus" as status
+taskAssemblerJPA -> status : taskStatus = TaskStatus.valueOf(taskStatus)
+
+create participant "task: Task" as task
+activate taskFactory
+taskFactory -> task : createTaskFromDB(taskID,taskName,taskDescription,time,hoursSpent,effortEstimate,taskPercentageOfExecution, precedenceList,,typeOfTask,resourceID,logList,taskStatus)
+task --> taskAssemblerJPA : task
+deactivate taskFactory
+activate task
+deactivate task
+
+
+
+
+@enduml

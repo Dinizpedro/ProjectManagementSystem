@@ -1,0 +1,69 @@
+@startuml
+
+package "UI" {
+class ": UpdateUserStoryStatusSbUI" as ui
+}
+
+package "Controller" {
+class ": UpdateUserStoryStatusSbController" as controller {
+	+updateUserStoryStatusSb(dto)
+}
+}
+
+package "Model" {
+class ": Project" as project {
+	+getProjectSprint()
+}
+
+class ": ProjectSprintList" as sprintList {
+	+getCurrentSprint()
+}
+
+class ": SprintBacklog" as sprintBacklog {
+	+updateUserStoryStatusSprintBacklog()
+	#findUserStoryStatusInList()
+}
+
+class ": DataManagement" as dataManagement {
+	+getProjectStore()
+}
+
+class "Sprint" as sprint {
+	+getSprintBacklog()
+}
+
+class ": UserStory" as userStory{
+	-status : Status
+	+updateStatus()
+}
+
+class ": UserStoryStatusStore" as statusStore {
+	-userStoryStatusList : Set
+	+findUserStoryStatus()
+}
+
+class "ProjectStore" as projectStore {
+	+getProject(projectCode)
+}
+}
+
+skinparam nodesep 150
+skinparam ranksep 75
+
+ui ..> controller
+controller ..> dataManagement
+dataManagement "1" --> "projectStore  1" projectStore
+projectStore "1" --> "projectList   0..*" project
+project "1" --right> "projectSprints   1" sprintList
+sprintList "1" --> "projectSprintList    0..*" sprint
+sprint "1" --left> "1 sprintBacklog" sprintBacklog
+sprintBacklog "1" --> "userStoryList  0..*" userStory
+sprintBacklog "1" --> "userStoryStatusList 0..*" statusStore
+controller ..> project
+controller ..> projectStore
+
+
+
+
+
+@enduml

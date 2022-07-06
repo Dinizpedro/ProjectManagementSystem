@@ -1,0 +1,80 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam roundcorner 20
+skinparam monochrome true
+
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Apex
+}
+
+autonumber
+actor Director as d
+
+participant DefinedProductOwnerUI as ui
+participant DefinedProductOwnerController as controller
+participant " DataManagement" as dm
+participant "singletonDM: DataManagement" as sdm
+participant "projects: ProjectStore" as ps
+participant "users: UserStore" as us
+participant ": Project" as p
+participant "resourceFactory : ResourceFactoryImplementation" as rf
+
+
+activate d
+
+d -> ui : Inputs data
+note left controller
+   String email,
+   String projectCode,
+   TimeDTO dates,
+   double costPerHour,
+   double percentageOfAllocation.
+   end note
+activate ui
+ui -> controller : definedProductOwnerOfAProject(dto)
+activate controller
+controller -> dm : singletonDM = getInstance()
+activate dm
+deactivate dm
+controller -> sdm : projects = getProjectStore()
+activate sdm
+deactivate sdm
+controller -> ps : selectedProject = getProject(projectCode)
+activate ps
+deactivate ps
+controller -> sdm : users = getUser()
+activate sdm
+deactivate sdm
+controller -> us : selectedUser = findUser(email)
+activate us
+deactivate us
+
+controller -> p : createResourceAndAddAsProductOwner(selectedUser, dto)
+activate p
+
+p -> rf : newResource = createResource(selectedUser, startDate, endDate, costPerHour, percentageOfAllocation)
+create "newResource : Resource"
+activate rf
+rf -->> "newResource : Resource" : create(selectedUser, startDate, endDate, costPerHour, percentageOfAllocation)
+deactivate rf
+p -->> controller : True
+deactivate p
+
+
+controller -->> ui: True
+ui -->> d : Shows data
+
+deactivate ui
+deactivate d
+
+@enduml

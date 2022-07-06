@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+participant "projects : ProjectSprintList" as project
+participant ": TaskTimeMapper" as mapper
+participant "dto : CreateTaskDto" as dto
+
+project -> mapper : taskTime = getTime(dto)
+activate mapper
+group ref
+mapper -> dto : startDateStg = startDateDto
+mapper -> mapper : startDate = getDate(startDateStg)
+mapper -> dto : endDateStg = endDateDto
+mapper -> mapper : endDate = getDate(endDateStg)
+create participant "taskTime : Time" as time
+mapper -> time : create(startDate,endDate)
+end ref
+
+@enduml

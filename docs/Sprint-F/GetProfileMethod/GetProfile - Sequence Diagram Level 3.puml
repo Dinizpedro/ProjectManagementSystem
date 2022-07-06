@@ -1,0 +1,64 @@
+@startuml
+autonumber
+participant "Routing" #FFFFFF
+participant "Controller" #FFFFFF
+participant "DTO" #FFFFFF
+participant "Application Service" #FFFFFF
+participant "Domain Model" #FFFFFF
+participant "Domain Model WS" #FFFFFF
+participant "Repository" #FFFFFF
+participant "WEBRepository" #FFFFFF
+participant "Data Model" #FFFFFF
+participant "Data Model WS" #FFFFFF
+participant "Persistence" #FFFFFF
+participant "REST Repository" #FFFFFF
+
+-> "Routing" ++ : GET api/profiles/{profileDescription}
+"Routing" -> "Controller" ++ : get Profile
+
+"Controller" -> "Application Service" ++ : get Profile
+"Application Service" -> "Repository" ++: find Profile with the input description
+"Repository" -> "Persistence" ++ : find Profile with the input description in database
+
+alt If Profile is found in "SGBD"
+
+    "Persistence" -> "Data Model" ++: create representative data schema object
+    deactivate
+    "Persistence" --> "Repository" : return representative data schema object
+    deactivate "Persistence"
+    "Repository" -> "Domain Model" ++ : transform data schema object into profile domain model object
+    "Domain Model" --> "Repository" : profile domain model object
+    deactivate "Domain Model"
+    "Repository" --> "Application Service" : return profile domain model object
+    deactivate "Repository"
+
+else if If Profile is not found in "SGBD"
+
+    "Application Service" -> "WEBRepository" ++: find Profile with the input description
+    "WEBRepository" -> "REST Repository" ++ : find Profile with the input description in external API
+    "REST Repository" -> "Data Model WS" ++: create representative data schema object
+    deactivate
+    "REST Repository" --> "WEBRepository" : return representative data schema object
+    deactivate "REST Repository"
+    "WEBRepository" -> "Domain Model WS" ++ : transform data schema object into profile domain model WS object
+    "Domain Model WS" --> "WEBRepository" : profile domain model WS object
+    deactivate "Domain Model WS"
+    "WEBRepository" --> "Application Service" : return profile domain model WS object
+    deactivate "WEBRepository"
+end
+
+"Application Service" -> "DTO" ++ : transform profile domain model object \n or domain model WS object into \n data transfer object
+"DTO" --> "Application Service" : data transfer object
+deactivate "DTO"
+"Application Service" --> "Controller" : return data transfer object
+
+deactivate "Application Service"
+
+"Controller" -> "DTO" ++ : add link to data transfer object
+deactivate "DTO"
+
+"Controller" --> "Routing" : return data transfer object \n with OK http status
+deactivate "Controller"
+<-- "Routing" : return data transfer object \n with OK http status
+
+@enduml

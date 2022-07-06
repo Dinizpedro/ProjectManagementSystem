@@ -1,0 +1,153 @@
+@startuml
+'https://plantuml.com/class-diagram
+header IMPLEMENTATION VIEW
+skinparam linetype ortho
+hide empty methods
+top to bottom direction
+
+package "OPT SYSTEM"{
+    package "INFRASTRUCTURES"{
+        package route{
+            class Route
+        }
+        package persistence{
+            package assemblers{
+                package abstractAssemblers{
+                    interface IProjectAssemblerJPA
+                }
+                package concreteAssemblers{
+                    class ImplProjectAssemblerJPA
+                }
+            }
+            package data{
+                class ProjectJPA
+            }
+            package abstractJpaRepositories{
+                interface IProjectRepositoryJPA
+            }
+        }
+    }
+
+    package "INTERFACE ADAPTERS"{
+        package "controllers"{
+            package "abstractControllers"{
+                interface IProjectController
+            }
+            package "concreteControllers"{
+                class ImplProjectController
+            }
+        }
+        package "concreteRepositories"{
+            class ImplProjectRepository
+            class ImplUserRepository
+            class ImplResourceRepository
+            class ImplCustomerRepository
+            class ImplTypologyRepository
+            }
+    }
+
+    package "APPLICATION SERVICES / USE CASE SERVICES"{
+        package "abstractRepositories"{
+           interface IProjectRepository
+           interface IUserRepository
+           interface IResourceRepository
+           interface ICustomerRepository
+           interface ITypologyRepository
+        }
+
+       package "appServices"{
+            package "abstractAppServices"{
+                interface IAppProjectService
+                interface IAppResourceService
+            }
+            package "concreteAppServices"{
+                class ImplAppProjectService
+            }
+       }
+    }
+
+
+    package "ENTITIES / CORE / DOMAIN"{
+        package aggregates{
+            package project{
+                entity Project
+            }
+        }
+
+        package factories{
+            package abstractFactories{
+                interface IProjectBuilder
+            }
+
+            package concreteFactories{
+                class ImplProjectBuilder
+            }
+        }
+
+        package shared{
+            package dddTypes{
+                interface Entity
+                interface AggregateRoot
+                interface ValueObject
+                interface ID
+            }
+            package valueObjects{
+                class ProjectBudget
+                class ProjectBusinessSector
+                class ProjectCode
+                class ProjectDescription
+                class ProjectName
+                class ProjectNumberOfPlannedSprints
+                class ProjectSprintDuration
+                enum ProjectStatus
+                class ProjectCode
+            }
+        }
+    }
+
+    Route ....> IProjectController
+    ImplProjectController ....up|> IProjectController
+    ImplProjectRepository .......|> IProjectRepository
+    ImplUserRepository ..|> IUserRepository
+    ImplResourceRepository .|> IResourceRepository
+    ImplCustomerRepository ........|> ICustomerRepository
+    ImplTypologyRepository .|> ITypologyRepository
+    IAppProjectService <|.up... ImplAppProjectService
+
+    ImplAppProjectService ......> Project
+    Project .|> AggregateRoot
+    AggregateRoot ..o Entity
+    ImplAppProjectService ..down> IProjectBuilder
+    ImplAppProjectService .> IProjectRepository
+    ImplAppProjectService .....> IUserRepository
+    ImplAppProjectService .up...> ICustomerRepository
+    ImplAppProjectService .up...> ITypologyRepository
+    ImplAppProjectService .up...> IResourceRepository
+    ImplProjectBuilder ..up|> IProjectBuilder
+    IAppProjectService <.. ImplProjectController
+    ImplAppProjectService ..> IAppResourceService
+    ProjectBudget .|> ValueObject
+    ProjectBusinessSector .|> ValueObject
+    ProjectDescription .|> ValueObject
+    ProjectName ....|> ValueObject
+    ProjectNumberOfPlannedSprints .|> ValueObject
+    ProjectSprintDuration .|> ValueObject
+    ProjectStatus .|> ValueObject
+    Project *- ProjectCode
+    ProjectBudget -* Project
+    ProjectBusinessSector -* Project
+    ProjectDescription -* Project
+    ProjectName -* Project
+    ProjectNumberOfPlannedSprints -* Project
+    ProjectSprintDuration -* Project
+    ProjectStatus -* Project
+    ProjectCode ..|> ID
+    ID ..o ValueObject
+
+    IProjectAssemblerJPA <|..up. ImplProjectAssemblerJPA
+    ImplProjectRepository ..> IProjectRepositoryJPA
+    ImplProjectRepository ..up> IProjectAssemblerJPA
+    ImplProjectAssemblerJPA .> ProjectJPA
+}
+
+@enduml

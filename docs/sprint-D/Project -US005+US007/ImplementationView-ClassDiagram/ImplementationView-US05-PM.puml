@@ -1,0 +1,114 @@
+@startuml
+'https://plantuml.com/class-diagram
+header IMPLEMENTATION VIEW
+skinparam linetype ortho
+hide empty methods
+top to bottom direction
+
+package "OPT SYSTEM"{
+    package "INFRASTRUCTURES"{
+        class Route
+    }
+
+    package "INTERFACE ADAPTERS"{
+        package "controllers"{
+            package "abstractControllers"{
+                interface IProjectController
+            }
+            package "concreteControllers"{
+                class ImplProjectController
+            }
+        }
+        package "concreteRepositories"{
+            class ImplResourceRepository
+            }
+    }
+
+    package "APPLICATION SERVICES / USE CASE SERVICES"{
+        package "abstractRepositories"{
+           interface IResourceRepository
+        }
+
+       package "appServices"{
+            package "abstractAppServices"{
+                interface IAppProjectService
+                interface IAppResourceService
+            }
+            package "concreteAppServices"{
+                class ImplAppProjectService
+                class ImplAppResourceService
+            }
+       }
+    }
+
+
+    package "ENTITIES / CORE / DOMAIN"{
+        package aggregates{
+            package resource{
+                entity Resource
+            }
+        }
+
+        package factories{
+            package abstractFactories{
+                interface IResourceFactory
+            }
+
+            package concreteFactories{
+                class ImplResourceFactory
+            }
+        }
+
+        package shared{
+            package dddTypes{
+                interface Entity
+                interface AggregateRoot
+                interface ValueObject
+                interface ID
+            }
+            package valueObjects{
+                class ResourceID
+                class UserID
+                class ProjectCode
+                class Time
+                class ResourceCostPerHour
+                class ResourcePercentageOfAllocation
+                enum Role
+            }
+        }
+    }
+
+    Route ...> IProjectController
+    ImplProjectController .up..|> IProjectController
+    IAppProjectService <|..... ImplAppProjectService
+    ImplAppProjectService .....> IAppResourceService
+    ImplAppResourceService .up.|> IAppResourceService
+    ImplAppResourceService ..> IResourceFactory
+    ImplResourceFactory ..up|> IResourceFactory
+    ImplResourceRepository ..|> IResourceRepository
+    ImplAppResourceService ..> Resource
+    Resource .|> AggregateRoot
+    AggregateRoot .o Entity
+    ImplAppResourceService .up...> IResourceRepository
+    IAppProjectService <.up..... ImplProjectController
+    Resource *- ResourceID
+    ResourceID ...|> ID
+    ValueObject o.up. ID
+    Resource *-- UserID
+    UserID ..|> ID
+    Resource *- ProjectCode
+    ProjectCode ....|> ID
+    Resource *- Time
+    Resource *- ResourceCostPerHour
+    Resource *- ResourcePercentageOfAllocation
+    Resource *- Role
+    Time .|> ValueObject
+    ResourceCostPerHour .|> ValueObject
+    ResourcePercentageOfAllocation .|> ValueObject
+    Role .|> ValueObject
+
+
+
+}
+
+@enduml

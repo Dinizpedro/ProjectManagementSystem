@@ -1,0 +1,17 @@
+@startuml
+autonumber
+
+participant "iTypologyRepository : ImplTypologyRepository" #FFFFFF
+activate "iTypologyRepository : ImplTypologyRepository"
+participant "iTypologyRepositoryJPA: ITypologyRepositoryJPA" #FFFFFF
+
+
+-> "iTypologyRepository : ImplTypologyRepository" : typologyJPA = findTypology(theTypologyDescription)
+
+"iTypologyRepository : ImplTypologyRepository" -> "iTypologyRepositoryJPA: ITypologyRepositoryJPA" ++ : typologyJPA = findByDescription(typologyDescription.getDescription()).get()
+deactivate
+
+deactivate "iTypologyRepository : ImplTypologyRepository"
+
+
+@enduml

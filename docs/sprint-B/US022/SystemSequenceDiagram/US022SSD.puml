@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "ProjectManager" as TMSM
+participant ": System" as System
+Activate TMSM
+Activate System
+TMSM -> System :  Create a sprint
+TMSM -> System :  Enters data: projectCode, sprintGoal, startDate, endDate
+System -> System : createSprint
+System --> TMSM : Sprint
+
+@enduml

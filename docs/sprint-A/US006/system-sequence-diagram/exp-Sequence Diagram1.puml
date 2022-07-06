@@ -1,0 +1,13 @@
+@startuml
+autonumber
+actor Administrator
+participant System
+Administrator -> System : Types user email
+System -> System : search for user
+System --> Administrator : show users information
+Administrator -> System : selects actual profile
+Administrator -> System : selects pretended profile
+System -> System : updates user profile
+System --> Administrator : shows information has been sucesfully updated
+
+@enduml

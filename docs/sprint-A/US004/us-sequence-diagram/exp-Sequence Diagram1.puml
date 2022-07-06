@@ -1,0 +1,68 @@
+@startuml
+autonumber
+actor Administrator #FFFFFF
+participant ": SearchUserUI" #FFFFFF
+participant ": SearchUserController" #FFFFFF
+participant ": DataManagement"
+participant ": UserStore" #FFFFFF
+participant "currentUser: User" #FFFFFF
+participant ": Profile" #FFFFFF
+participant ": Email" #FFFFFF
+Administrator -> ": SearchUserUI" : inputs data
+activate Administrator
+activate ": SearchUserUI"
+": SearchUserUI" -> ": SearchUserController" : searchUser(typeOfSearch, textOfSearch)
+activate ": SearchUserController"
+": SearchUserController" -> ": DataManagement" : getUser()
+activate ": DataManagement"
+deactivate ": DataManagement"
+alt typeOfSearch == profile
+": SearchUserController" -> ": UserStore" : getListOfUsersByProfile(textOfSearch)
+activate ": UserStore"
+
+	create participant "resultList: List<User>" #FFFFFF
+	": UserStore" -> "resultList: List<User>"
+	loop for each User in UserStore
+	": UserStore" -> "currentUser: User" : hasProfile = compareProfileDesignation(textOfSearch)
+	activate "currentUser: User"
+
+	"currentUser: User" -> ": Profile" : getProfileDescription()
+	activate ": Profile"
+	deactivate ": Profile"
+	"currentUser: User" --> ": UserStore" : true/false
+	deactivate "currentUser: User"
+	opt hasProfile == true
+
+
+	": UserStore" -> "resultList: List<User>" : add(currentUser)
+	activate "resultList: List<User>"
+	deactivate "resultList: List<User>"
+
+	end
+	deactivate ": UserStore"
+	end
+else typeOfSearch == email
+": SearchUserController" -> ": UserStore" : getUserByEmail(searchField)
+activate ": UserStore"
+	create participant "resultList: List<User>" #FFFFFF
+	": UserStore" -> "resultList: List<User>"
+	loop
+
+	": UserStore" -> "currentUser: User" : hasEmail = compareEmail(textOfSearch)
+	activate "currentUser: User"
+	"currentUser: User" -> ": Email" : getEmail()
+	activate ": Email"
+	deactivate ": Email"
+	"currentUser: User" --> ": UserStore" : true/false
+	deactivate "currentUser: User"
+	opt hasEmail == true
+	": UserStore" -> "resultList: List<User>" : add(currentUser)
+	activate "resultList: List<User>"
+    	deactivate "resultList: List<User>"
+	end
+	end
+deactivate ": UserStore"
+end
+": SearchUserController" --> ": SearchUserUI" : return list
+": SearchUserUI" --> Administrator : display resultList
+@enduml

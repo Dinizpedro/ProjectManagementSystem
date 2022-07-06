@@ -1,0 +1,142 @@
+@startuml
+header IMPLEMENTATION VIEW
+hide empty methods
+left to right direction
+
+package "Infrastructure" #FFFFFF {
+    package Routes #FFFFFF {
+        class RequestRoute #FFFFFF
+    }
+
+}
+
+package "Interface Adapters" #FFFFFF {
+
+    package "Controllers" {
+        package ImplControllers #FFFFFF {
+                class ImplRequestController #FFFFFF {
+            	    +createNewProfileRequest(requestCreationDTO) : ResponseEntity<Object>
+                }
+        }
+
+        package IControllers #FFFFFF {
+                interface IRequestController #FFFFFF {
+                    +createNewProfileRequest(requestCreationDTO) : ResponseEntity<Object>
+        }
+    }
+
+    package "Repositories" {
+        class RequestProfileStore #FFFFFF {
+        + getRequestByUserIDAndProfileID(userIDObj, profileIDObj) : Optional<Request>
+        + addNewRequestToRequestStore(newRequest) : boolean
+        }
+
+        class ProfileStore #FFFFFF {
+        + getProfileByID(profileIDObj) : Optional<Request>
+        }
+
+        class ImpUserRepository #FFFFFF {
+        + findUser(userIDObj) : Optional<User>
+        }
+
+    }
+}
+
+package "Application Services / Use Case Services" #FFFFFF {
+
+    package "App Services" #FFFFFF {
+
+        package "ImplAppServices" #FFFFFF {
+                class ImplAppRequestService #FFFFFF {
+                + createNewProfileRequest(userID, profileID) : Optional<String>
+                }
+        }
+
+        package "IAppServices" #FFFFFF {
+                interface IAppRequestService #FFFFFF {
+                + createNewProfileRequest(userID, profileID) : Optional<String>
+                }
+        }
+    }
+
+    package "IRepositories" #FFFFFF {
+        interface IRequestRepository #FFFFFF {
+        + getRequestByUserIDAndProfileID(userIDObj, profileIDObj) : Optional<Request>
+        + addNewRequestToRequestStore(newRequest) : boolean
+        }
+
+        interface IProfileRepository #FFFFFF {
+        + getProfileByID(profileIDObj) : Optional<Request>
+        }
+
+        interface IUserRepository #FFFFFF {
+        + findUser(userIDObj) : Optional<User>
+        }
+
+    }
+}
+
+
+package "Entities / Core / Domain" #FFFFFF {
+    package "Aggregates" #FFFFFF {
+
+        class Request #FFFFFF {
+            - creationDate : LocalDate
+            - isApproved : boolean
+        }
+    }
+
+    package "Value Objects" #FFFFFF {
+        class ProfileID #FFFFFF {
+            -identity : int
+        }
+
+        class RequestID #FFFFFF {
+            - identity : UUID
+        }
+
+        class UserID #FFFFFF {
+            -identity : int
+        }
+    }
+
+    package "Factories" #FFFFFF {
+
+        package iFactories #FFFFFF {
+            interface RequestFactory #FFFFFF {
+                + createNewRequest (requestID, userIDObj, profileIDObj) : Request
+            }
+        }
+
+        package implFactories #FFFFFF {
+               class RequestFactoryImplementation #FFFFFF {
+               + createNewRequest (requestID, userIDObj, profileIDObj) : Request
+               }
+        }
+    }
+
+    interface AggregateRoot #FFFFFF
+    interface ValueObject #FFFFFF
+}
+
+RequestRoute ..> IRequestController
+ImplRequestController ..|> IRequestController
+ImplRequestController ..> IAppRequestService
+ImplAppRequestService ..|> IAppRequestService
+ImplAppRequestService ..> IRequestRepository
+RequestProfileStore ..|> IRequestRepository
+ImpUserRepository ..|> IUserRepository
+ProfileStore ..|> IProfileRepository
+ImplAppRequestService ..> RequestFactory
+RequestFactoryImplementation ..|> RequestFactory
+RequestFactory ..> Request
+Request ..|> AggregateRoot
+Request ..> UserID
+Request ..> RequestID
+Request ..> ProfileID
+ProfileID ..|> ValueObject
+UserID ..|> ValueObject
+RequestID ..|> ValueObject
+
+
+@enduml

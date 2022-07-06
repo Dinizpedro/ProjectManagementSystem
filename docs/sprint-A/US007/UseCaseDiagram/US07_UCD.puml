@@ -1,0 +1,7 @@
+@startuml
+skinparam monochrome true
+actor Director
+usecase (UC07 - Associate a human resource to a project.)
+
+:Director: -- (UC07 - Associate a human resource to a project.)
+@enduml

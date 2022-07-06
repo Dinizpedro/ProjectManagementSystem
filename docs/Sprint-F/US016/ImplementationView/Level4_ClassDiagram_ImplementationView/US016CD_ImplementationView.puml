@@ -1,0 +1,316 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "Project Management SYSTEM" {
+
+
+    folder assemblers {
+            package iAssemblers{
+                interface ITaskAssemblerJPA{
+                + toDomain(TaskJPA taskJPA) : Task
+                }
+                interface IUserStoryAssemblerJPA {
+                + userStoryJPAtoUserStory(UserStoryJPA userStoryJPA) : UserStory
+                }
+            }
+
+            package implAssemblers{
+                class ImplUserStoryAssemblerJPA{
+                - UserStoryFactory userStoryFactory;
+                + userStoryJPAtoUserStory(UserStoryJPA userStoryJPA) : UserStory
+                }
+                class ImplTaskAssemblerJPA{
+                - ITaskFactory taskFactory;
+                + toDomain(TaskJPA taskJPA) : Task
+                }
+            }
+        }
+
+
+ folder dataTransferObjects #white{
+    class ActivityDTO {
+        - typeOfActivity : String
+        - activityCode : String
+        - activityStatus : String
+        + ActivityDTO(String typeOfActivity, String activityCode, String activityStatus)
+        }
+    }
+
+folder dataModel #white {
+
+    class TaskJPA {
+    - taskCode : String
+    - projectCode : String
+    - taskStatus : String
+   }
+
+   class TaskIDJPA {
+     - taskCode : String
+     - projectCode : String
+   }
+
+   class UserStoryJPA {
+    - userStoryID : UserStoryID
+   }
+
+}
+    folder "INFRASTRUCTURE" %lighten("orchid", 40){
+
+        package persistence %lighten("orchid", 30){
+            package iRepositories  {
+                interface IUserStoryRepositoryJPA{
+                 + findByUserStoryID_ProjectCodeOrderByStatus(String projectCode) : List<UserStoryJPA>
+                 }
+                 interface ITaskRepositoryJPA{
+                 + findTaskJPAByProjectCodeOrderByTaskStatus(String projectCode) : List<TaskJPA>
+                 }
+            }
+    }
+
+        package routes %lighten("orchid", 30) {
+            package iRoutes{}
+            package implRoutes{}
+        }
+    }
+
+    folder "INTERFACE ADAPTERS" %lighten("aquamarine", 20){
+
+        package "Controllers" %lighten("aquamarine", 10){
+            package "IControllers" #white {
+                interface  IProjectController {
+                + getActivitiesStatus(@PathVariable String projectCode) : ResponseEntity<Object>
+                }
+            }
+            package "ImplControllers" #white{
+                class ImplProjectController {
+                - IAppProjectService projectService;
+                + getActivitiesStatus(@PathVariable String projectCode) : ResponseEntity<Object>
+                }
+            }
+            }
+            package implRepositories #white {
+                class ImplTaskRepository{
+                - ITaskRepositoryJPA iTaskRepositoryJPA;
+                - ITaskAssemblerJPA iTaskAssemblerJPA;
+                + findTaskAndOrderByStatus(ProjectCode projectCode) : List<Task>
+                }
+                class implUserStoryRepository {
+                - IUserStoryRepositoryJPA userStoryRepositoryJPA;
+                - IUserStoryAssemblerJPA userStoryAssemblerJPA;
+                + getUserStoriesOrderedByStatus(ProjectCode projectCode) : List<UserStory>
+                }
+            }
+
+        }
+
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES" %lighten("blue", 90){
+
+        package "AppServices"{
+            package "IAppServices" #white {
+                interface IAppProjectService {
+                + getActivitiesStatuses(String projectCode) : List<ActivityDTO>
+                }
+            }
+            package "ImpAppServices" #white{
+                class ImplAppProjectService{
+                - IUserStoryRepository userStoryRepository;
+                - ITaskRepository taskRepository;
+                + getActivitiesStatuses(String projectCode) : List<ActivityDTO>
+                + getUserStoriesStatus(String projectCode, List<ActivityDTO> activitiesDTO) : List<ActivityDTO>
+                + getTasksStatus(String projectCode, List<ActivityDTO> activitiesDTO) : List<ActivityDTO>
+                }
+            }
+        }
+
+        package "IRepositories" #white{
+            interface IUserStoryRepository{
+            + getUserStoriesOrderedByStatus(ProjectCode projectCode) : List<UserStory>
+            }
+            interface ITaskRepository {
+            + findTaskAndOrderByStatus(ProjectCode projectCode) : List<Task>
+            }
+        }
+
+    }
+
+    folder "ENTITIES / CORE / DOMAIN" %lighten("lightsalmon", 20){
+
+        package "Aggregates" %lighten("lightsalmon", 30) {
+            package Task #white {
+                entity Task{
+                + TaskID idTask;
+                }
+                interface TaskContainer {
+                +  getProjectCode() : String
+                +  getTaskContainerID() : Object
+                }
+            entity UserStory {
+             + UserStoryID userStoryID;
+            }
+            }
+        }
+
+        interface Entity #white
+        interface AggregateRoot #white
+
+        package "Factories" %lighten("lightsalmon", 30){
+           package "iFactories" %lighten("lightsalmon", 30){
+                interface UserStoryFactory {
+                + createUserStory : UserStory
+                }
+                interface TaskFactory {
+                + createTaskFromDB : Task
+                }
+           }
+
+           package "implFactories" %lighten("lightsalmon", 30){
+                class ImplTaskFactory{
+                + createTaskFromDB : Task
+                }
+                class UserStoryFactoryImplementation{
+                 + createUserStory : UserStory
+                }
+            }
+        }
+
+
+        package "Shared" %lighten("lightsalmon", 30){
+            package "Value Objects" %lighten("lightsalmon", 30){
+                 class TaskID #white{
+                    - taskContainer : TaskContainer
+                    - taskCode : TaskCode
+                 }
+                 class TaskCode #white{
+                    - code : String
+                }
+
+                 class UserStoryID #white{
+                    - projectCode : String
+                    - userStoryCode : String
+                 }
+
+                 class SprintID #white{
+                    - projectCode : String
+                    - sprintNumber : Integer
+                 }
+            }
+        }
+        interface ValueObject #white
+    }
+
+' //----INFRAESTRUCTURE----
+
+' ROUTE - CONTROLLER
+"INFRASTRUCTURE" --[hidden]-> "INTERFACE ADAPTERS"
+"INTERFACE ADAPTERS" --[hidden]-> "APPLICATION SERVICES / USE CASE SERVICES"
+"APPLICATION SERVICES / USE CASE SERVICES" --[hidden]> "ENTITIES / CORE / DOMAIN"
+
+iRoutes <|.. implRoutes
+
+implRoutes .> IProjectController
+
+' ASSEMBLER  - FACTORY
+
+ImplTaskAssemblerJPA .|> ITaskAssemblerJPA
+
+ImplUserStoryAssemblerJPA ..|> IUserStoryAssemblerJPA
+
+ImplTaskAssemblerJPA ..|> TaskFactory
+
+ImplUserStoryAssemblerJPA .......|> UserStoryFactory
+
+' DATA MODEL - ASSEMBLER '
+
+ITaskRepositoryJPA ..> TaskJPA
+ITaskRepositoryJPA ..> TaskIDJPA
+IUserStoryRepositoryJPA ..> UserStoryJPA
+
+ITaskAssemblerJPA ..> TaskJPA
+ITaskAssemblerJPA ..> TaskIDJPA
+IUserStoryAssemblerJPA ..> UserStoryJPA
+
+' REPOSITORY_JPA - REPOSITORY
+
+IUserStoryRepositoryJPA <..... implUserStoryRepository
+
+ITaskRepositoryJPA <.. ImplTaskRepository
+
+
+' //----INTERFACE_ADAPTERS----
+
+' CONTROLLER - DTO
+
+IProjectController <|. ImplProjectController
+
+ImplProjectController ..> ActivityDTO
+
+ImplProjectController ..> IAppProjectService
+
+' //----APPLICATION SERVICES----
+
+' SERVICE - REPOSITORY
+
+IAppProjectService <|. ImplAppProjectService
+
+ImplAppProjectService .> IUserStoryRepository
+
+ImplAppProjectService .> ITaskRepository
+
+ImplAppProjectService .> Task
+
+ImplAppProjectService .> UserStory
+
+implUserStoryRepository ..|> IUserStoryRepository
+
+ImplTaskRepository ..|> ITaskRepository
+
+' //----ENTITIES/CORE/DOMAIN----
+
+' FACTORIES
+
+UserStoryFactoryImplementation .left.|> UserStoryFactory
+
+ImplTaskFactory ..|> TaskFactory
+
+' VALUE OBJECTS
+
+TaskID ..|> ValueObject
+
+UserStoryID ..|> ValueObject
+
+Task o- TaskID
+
+UserStory o- UserStoryID
+
+TaskID o- TaskCode
+
+TaskCode .|> ValueObject
+
+SprintID ..|> ValueObject
+
+SprintID ..|> TaskContainer
+
+UserStoryID .|> TaskContainer
+
+' AGREGGATE ROOT
+
+Task ..|> AggregateRoot
+
+UserStory ..|> AggregateRoot
+
+AggregateRoot ..|> Entity
+@enduml
+

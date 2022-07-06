@@ -1,0 +1,47 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+package "UI"{
+class CreateActivationUI{}
+}
+package "Controller"{
+class CreateActivationController {
++activateAccount(String inputCode, String selectedUserEmail) : boolean
+}
+}
+
+package "Model" {
+class DataManagement{
++getInstance() : DataManagement
++getUserStore() : UserStore
+}
+
+class User {
++activateAccount(String inputCode) : boolean
+}
+
+class Activation {
+- code : String
+- isActivated : boolean
++Activation()
+-generateCode() : String
+-compareActivationCode(String inputCode) : boolean
++validateActivation(String inputCode) : boolean
+}
+package "Stores" {
+class UserStore {
+	+findUser(String email) : User
+}
+}
+
+"UI" ..> "Controller"
+"Controller" ..> "DataManagement"
+"Controller" ..> "UserStore"
+Activation "1 belongs to " --> "1" User
+User "1.* is part of" ---> "1" UserStore
+DataManagement "1" ----> "1" UserStore : UserStore
+
+@enduml

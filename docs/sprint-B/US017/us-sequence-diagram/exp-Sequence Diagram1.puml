@@ -1,0 +1,47 @@
+@startuml
+autonumber
+actor AuthenticatedUser
+participant ": GetListOfProjectsThatAUserIsAllocatedUI" #FFFFFF
+participant ": GetListOfProjectThatAUserIsAllocatedController" #FFFFFF
+participant ": DataManagement" #FFFFFF
+participant ": singleton: DataManagement" #FFFFFF
+participant ": ProjectStore" #FFFFFF
+participant "selectedProject: Project" #FFFFFF
+AuthenticatedUser -> ": GetListOfProjectsThatAUserIsAllocatedUI" : types requesteddata
+activate AuthenticatedUser
+activate ": GetListOfProjectsThatAUserIsAllocatedUI"
+": GetListOfProjectsThatAUserIsAllocatedUI" -> ": GetListOfProjectThatAUserIsAllocatedController" : GetListOfProjectsThatUserIsAllocated(email)
+activate ": GetListOfProjectThatAUserIsAllocatedController"
+": GetListOfProjectThatAUserIsAllocatedController" -> ": DataManagement" : singletonDM = getInstance()
+activate ": DataManagement"
+": DataManagement" --> ": GetListOfProjectThatAUserIsAllocatedController" : DataManagement instance
+deactivate ": DataManagement"
+
+": GetListOfProjectThatAUserIsAllocatedController" -> ": singleton: DataManagement" : getProjectStore()
+activate ": singleton: DataManagement"
+": GetListOfProjectThatAUserIsAllocatedController" <-- ": singleton: DataManagement" : projects
+deactivate ": singleton: DataManagement"
+": GetListOfProjectThatAUserIsAllocatedController" -> ": ProjectStore" : GetListOfProjectsThatUserIsAllocated(email)
+activate ": ProjectStore"
+create participant "resultList: List<Project>" #FFFFFF
+
+": ProjectStore" -> "resultList: List<Project>" : create list
+loop for each Project in ProjectStore
+": ProjectStore" -> "selectedProject: Project" : userInProject = isUserInProject(email)
+"selectedProject: Project" -> "selectedProject: Project" : isUserProjectManager(email)
+"selectedProject: Project" -> "selectedProject: Project" : isUserScrumMaster(email)
+"selectedProject: Project" -> "selectedProject: Project" : isUserProductOwner(email)
+"selectedProject: Project" -> "selectedProject: Project" : isUserInProjectTeam(email)
+"selectedProject: Project" --> ": ProjectStore" : true / false
+opt isUserInProject == true
+": ProjectStore" -> "resultList: List<Project>" : add(selectedProject)
+end
+end
+
+": ProjectStore" --> ": GetListOfProjectThatAUserIsAllocatedController" : return resultList
+deactivate ": ProjectStore"
+": GetListOfProjectThatAUserIsAllocatedController" --> ": GetListOfProjectsThatAUserIsAllocatedUI" : return resultList
+deactivate ": GetListOfProjectThatAUserIsAllocatedController"
+": GetListOfProjectsThatAUserIsAllocatedUI" --> AuthenticatedUser : display resultList
+
+@enduml

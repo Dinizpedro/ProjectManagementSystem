@@ -1,0 +1,24 @@
+@startuml
+
+participant "ImplAppProjectService" as service
+participant "userStoryList:List<UserStory>" as usList
+participant "userStory : UserStory" as  US
+
+loop
+service -> usList
+activate service
+activate usList
+usList -> US : String typeOfActivity = "User Story"
+activate US
+usList -> US : String activityCode = userStory.getUserStoryCode()
+usList -> US : String activityStatus = userStory.getStatus()
+deactivate usList
+US --> service : userStory
+deactivate US
+deactivate service
+end
+
+@enduml
+
+
+

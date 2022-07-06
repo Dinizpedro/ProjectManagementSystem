@@ -1,0 +1,23 @@
+@startuml
+autonumber
+actor "Director/PM/PO/SM" as actor
+activate actor
+participant "Project Management UI" as UI
+activate UI
+actor-> UI : Chooses project
+participant "Project Management Business Logic" as BL
+UI -> BL : get data from project
+activate BL
+BL --> UI : returns HttpStatus.OK and project data
+deactivate BL
+UI --> actor : returns HttpStatus.OK and project data
+deactivate UI
+actor -> UI : Initiates process to get status of all the activities in the selected project
+activate UI
+UI -> BL : get data from activities status in the selected project
+activate BL
+BL --> UI : returns HttpStatus.OK and activities status data
+deactivate BL
+UI --> actor : returns HttpStatus.OK and activities status data
+deactivate UI
+@enduml

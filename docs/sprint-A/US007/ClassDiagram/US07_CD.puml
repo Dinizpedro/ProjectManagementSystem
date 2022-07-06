@@ -1,0 +1,60 @@
+@startuml
+'https://plantuml.com/class-diagram
+skinparam SameClassWidth true
+skinparam ClassFontSize 10
+skinparam ArrowFontSize 10
+skinparam nodesep 150
+skinparam ranksep 20
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor White
+ArrowColor Black
+BorderColor Black
+}
+
+package "UI" {
+    class AssociateResourceUI{}
+}
+
+package "Controller" {
+class CreateResourceController{
++createResource(selectedUser, selectedProject, dates, costPerHour, percentageOfAllocation) : boolean
+}
+}
+package "Model" {
+class AssociateResourceUI
+class CreateResourceController
+class DataManagement
+class Resource
+
+package "Stores" {
+class ResourceStore {
++getResources() : DataManagement
+}
+}
+CreateResourceController <.up. AssociateResourceUI
+DataManagement <.up. CreateResourceController
+Resource "0..*   resources  " <|---up-- "1    " DataManagement
+CreateResourceController .down.> Resource
+ResourceStore "1           "<|-left- "  1.*   is part of "Resource
+CreateResourceController .down.> ResourceStore
+
+
+
+class DataManagement {
++getDataManagement() : DataManagement
+-associateResource(newResource) : boolean)
+}
+
+class Resource {
+-user : User
+-project : Project
+-dates : Time
+-costPerHour : ResourceCostPerHour
+-percentageOfAllocation : ResourcePercentageOfAllocation
+--
++Resource(selectedUser, selectedProject, dates, costPerHour, percentageOfAllocation) : boolean
+}
+
+@enduml

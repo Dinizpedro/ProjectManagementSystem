@@ -1,0 +1,61 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+
+activate ": ImplResourceRepository"
+-> ": ImplResourceRepository" : saveResource(newResource)
+
+    group ref
+
+        ": ImplResourceRepository" -> ": ImplResourceAssemblerJPA" ++ : toData(newResource)
+
+        ": ImplResourceAssemblerJPA" --> ": ImplResourceRepository" : resourceJPA
+
+        deactivate
+
+        ": ImplResourceRepository" -> ": IResourceRepositoryJPA" ++ : save(resourceJPA)
+
+        ": IResourceRepositoryJPA" -> "resourceJPAResult : ResourceJPA" ** : create
+
+        ": IResourceRepositoryJPA" --> ": ImplResourceRepository" : resourceJPAResult
+
+        deactivate
+
+        ": ImplResourceRepository" -> ": ImplResourceAssemblerJPA" ++ : toDomain(resourceJPAResult)
+
+        ": ImplResourceAssemblerJPA" -> "newResourceInDB : Resource" **
+
+        note left
+            Before 'newResourceInDB creation',
+            map 'resourceJPAResult' to domain
+            Value Objects
+        endnote
+
+        ": ImplResourceAssemblerJPA" --> ": ImplResourceRepository" : newResourceInDB
+
+    end ref
+
+deactivate
+
+<-- ": ImplResourceRepository" : newResourceInDB
+
+@enduml

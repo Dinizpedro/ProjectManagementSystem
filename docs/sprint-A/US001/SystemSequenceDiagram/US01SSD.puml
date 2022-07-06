@@ -1,0 +1,10 @@
+@startuml
+autonumber
+actor "Non Registered User"
+participant "System"
+activate "Non Registered User"
+activate "System"
+"Non Registered User"->"System" : Inserts data for account creation)
+"System" -> "Non Registered User" : Data is validated
+"System" -> "Non Registered User" : Confirms that account has been created
+@enduml

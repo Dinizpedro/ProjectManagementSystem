@@ -1,0 +1,23 @@
+@startuml
+autonumber
+actor "Director" as actor #FFFFFF
+activate actor
+participant "Project Management UI" as UI #FFFFFF
+activate UI
+actor -> UI :  Initiates process to get all the resources in the selected project
+participant "Project Management Business Logic" as BL #FFFFFF
+UI -> BL : get data from resources in the selected project
+activate BL
+participant "SGBD" as BD #FFFFFF
+BL -> BD : does project exists?
+activate BD
+BD --> BL : boolean
+deactivate BD
+BL -> BD : get resources data from selected project
+activate BD
+BD --> BL : retrieve data successfully
+deactivate BD
+BL --> UI : inform operation result (REST - json and HttpStatos.OK)
+deactivate BL
+UI --> actor :  Inform operation result and \nreceives data of the resources in the selected project
+@enduml

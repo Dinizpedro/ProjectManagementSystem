@@ -1,0 +1,38 @@
+@startuml
+autonumber
+actor Administrator #FFFFFF
+participant "Project Management UI" #FFFFFF
+participant "Project Management Business Logic" #FFFFFF
+participant "SGBD" #FFFFFF
+participant "External Group 2 API" #FFFFFF
+
+activate "Administrator"
+"Administrator" -> "Project Management UI" ++: Initiates process to get Profile
+"Project Management UI" --> "Administrator" : Requests the necessary information to get a Profile
+deactivate "Project Management UI"
+
+"Administrator" -> "Project Management UI" ++: Inserts description of the Profile to be found
+
+"Project Management UI" -> "Project Management Business Logic" ++: get Profile (REST)
+
+"Project Management Business Logic" -> "SGBD" ++ : find Profile with the input description
+
+alt If Profile is found in "SGBD"
+
+    "SGBD" --> "Project Management Business Logic" : return representation of Profile
+    deactivate "SGBD"
+else if Profile is not found in "SGBD"
+
+    "Project Management Business Logic"  -> "External Group 2 API" ++: find Profile with the input description
+    "External Group 2 API" --> "Project Management Business Logic"  : return representation of Profile
+    deactivate
+end
+
+"Project Management Business Logic" -> "Project Management UI" : Inform operation result and return \n information about the requested Profile (REST - json and Http Status)
+deactivate
+
+"Project Management UI" -> "Administrator" : Show requested Profile
+
+
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+
+autonumber
+
+actor AuthenticatedUser as user
+boundary ": Route" as route
+control ": ImplUserController" as userController
+participant ": ImplUserService" as userService
+participant " allocatedProjectDTO : AllocatedProjectDTO" as allocatedProjectDTO
+
+
+
+activate user
+user -> route : Get users/{email}/projects/
+activate route
+route -> userController :getAllocatedProjects(email)
+activate userController
+userController -> userService : getAllocatedProjects(email)
+activate userService
+
+ref over userService
+[[getAllocatedProjects.puml getAllocatedProjects]]
+end
+
+userService --> userController : allocatedProjectDTOs
+deactivate userService
+
+
+loop for each allocatedProjectDTO in allocatedProjectDTOs
+userController -> allocatedProjectDTO :getProjectCode
+activate allocatedProjectDTO
+allocatedProjectDTO --> userController :projectCode
+deactivate allocatedProjectDTO
+create participant "link : Link" as link
+userController -> link : create
+deactivate link
+note right
+linkTo(methodOn(ImplProjectController.class).
+getProject(projectCode)).withSelfRel()
+endnote
+userController -> allocatedProjectDTO : add(link)
+activate allocatedProjectDTO
+deactivate allocatedProjectDTO
+create participant "response :ResponseEntity<Object>" as RE
+userController -> RE : create(allocatedProjectDTOs. HttpStatus.OK)
+userController --> route : response
+route --> user : jsonOutput
+end
+
+
+
+
+@enduml

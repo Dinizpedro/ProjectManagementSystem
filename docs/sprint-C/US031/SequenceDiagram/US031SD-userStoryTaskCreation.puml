@@ -1,0 +1,83 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+participant "selectedProject: Project" as project
+participant "sprints: ProjectSprintList" as projectSprints
+participant "dto : CreateUserStoryTaskDto" as dto
+participant "selectedSprint: Sprint" as sprint
+participant "sprintBacklog: SprintBacklog" as sprintBacklog
+participant "sprintTasks: SprintTaskList" as sprintTasks
+
+project -> projectSprints : createUserStoryTask(dto, plannedTaskStatus, responsible)
+activate projectSprints
+    group ref
+ projectSprints -> dto : sprintNumber = sprintNumberDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> dto : startDateStg = startDateDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> dto : endDateStg = endDateDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> projectSprints : startDate = getDate(startDateStg)
+                    projectSprints -> projectSprints : endDate = getDate(endDateStg)
+                    create participant "taskTime : Time" as taskTime
+                    projectSprints -> taskTime : taskTime = create (startDate, endDate)
+                    projectSprints -> projectSprints : selectedSprint = validateAndGetSprint(sprintNumber, taskTime)
+                    projectSprints -> dto :  name = nameDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> dto :  description = descriptionDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> dto : precendence= precedenceDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> dto : effort = effortDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> dto : typeOfTask = typeOfTaskDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> dto : parentUserStoryCode = parentUserStoryCodeDto
+                    activate dto
+                    deactivate dto
+                    projectSprints -> sprint : createUserStoryTask(name, description, precedence, effort, typeOfTask, taskTime, parentUserStory, plannedTaskStatus, responsible)
+                    activate sprint
+                        sprint -> sprintBacklog : parentUserStory = getUserStoryIfStatusIsNotFinished(parentUserStoryCode)
+                        activate sprintBacklog
+                        deactivate sprintBacklog
+                        sprint -> sprintTasks : createUserStoryTask(name, description, precendence, effort, typeOfTask, taskTime, plannedTaskStatus, responsible, parentUserStory)
+                        activate sprintTasks
+                            sprintTasks -> sprintTasks : number = generateTaskNumber()
+                            create participant "newUserStoryTask: UserStoryTask" as task
+                            sprintTasks -> task : newUserStoryTask = create(number, name, description, parentUserStory, taskTime, effort, precedence, typeOfTask, responsible,plannedTaskStatus)
+                            sprintTasks -> sprintTasks : add(newUserStoryTask)
+                            sprintTasks --> sprint : True
+                            deactivate sprintTasks
+                        sprint --> projectSprints : True
+                   deactivate sprint
+           end ref
+        projectSprints --> project : True
+    deactivate projectSprints
+@enduml

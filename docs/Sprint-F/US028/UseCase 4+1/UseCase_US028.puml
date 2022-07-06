@@ -1,0 +1,16 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+actor "Director"
+usecase (UC028 - Get a list of all human resources in a project.) as uc
+
+:Director: -- (uc)
+@enduml

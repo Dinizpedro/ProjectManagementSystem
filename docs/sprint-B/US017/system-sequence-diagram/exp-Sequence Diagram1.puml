@@ -1,0 +1,12 @@
+@startuml
+autonumber
+actor Administrator
+
+participant System
+activate System
+
+Administrator -> System : types user email
+System -> System : search for projects that user email is envolved
+System --> Administrator : return a list with the result
+
+@enduml

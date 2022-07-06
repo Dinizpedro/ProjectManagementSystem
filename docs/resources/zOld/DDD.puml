@@ -1,0 +1,177 @@
+@startuml
+left to right direction
+hide members
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+FontSize 20
+}
+
+package User  {
+
+	class "<<Value Object>> Password"
+
+	class "<<Value Object>> Function"
+
+	class "<<Value Object>> Activation"
+
+	class "**<<Aggregate Root>> User**" #CE9DD9
+
+	class "<<Value Object>> UserName"
+
+	class "<<Value Object>> Email"
+
+	class "<<Value Object>> Photo"
+}
+
+package Profile {
+	class "**<<Aggregate Root>> Profile**" #CE9DD9
+	class "<<Value Object>> ProfileDescription"
+}
+
+package Request {
+	class "<<Aggregate Root>> Request" {
+		-isApproved : boolean
+		-creationDate : LocalDate
+	}
+
+}
+
+class "<<Value Object>> ProfileID" #CBC3E3
+class "<<Value Object>> RequestID" #CBC3E3
+class "<<Value Object>> UserID" #CBC3E3
+package Resource {
+	class "<<Value Object>> PercentageOfAllocation"
+	class "<<Value Object>> Role"
+	class "**<<Aggregate Root>> Resource**" #CE9DD9
+	class "<<Value Object>> CostPerHour"
+	class "<<Value Object>> ResourceTime"
+}
+
+class "<<Value Object>> ResourceID" #CBC3E3
+package Sprint {
+	class "**<<Aggregate Root>> Sprint**" #CE9DD9 {
+		-status : enum
+	}
+	class "<<Value Object>> SprintDescription"
+    class "<<Value Object>> SprintTime"
+}
+
+package Task {
+	class "<<Value Object>> Log"
+	class "**<<Aggregate Root>> Task**" #CE9DD9 {
+		-precedenceList : Set
+		-taskType : String
+		-statusOfTask : enum
+	}
+	class "<<Value Object>> TaskName"
+    class "<<Value Object>> TaskTime"
+	class "<<Entity>> UserStoryTask" #CE9DD9
+}
+
+class "<<Value Object>> TaskID" #CBC3E3
+class "<<Value Object>> UserStoryID" #CBC3E3
+class "<<Value Object>> SprintID" #CBC3E3
+class "<<Value Object>> EffortEstimate"
+
+package UserStory {
+	class "**<<Aggregate Root>> UserStory**"  #CE9DD9 {
+		-status : enum
+	}
+    class "<<Value Object>> UserstoryDescription"
+	class "<<Value Object>> Priority"
+	class "<<Entity>> UserStoryInSprint" #CE9DD9
+}
+
+package Project {
+	class "<<Value Object>> Budget"
+	class "<<Value Object>> BusinessSector"
+	class "**<<Aggregate Root>> Project**" #CE9DD9 {
+		-status : enum
+	}
+	class "<<Value Object>> ProjectDescription"
+    class "<<Value Object>> ProjectName"
+	class "<<Value Object>> NumberOfPlannedSprints"
+	class "<<Value Object>> SprintDuration"
+	class "<<Value Object>> ProjectTime"
+	class "<<Value Object>> ProjectCode"
+}
+
+package Customer {
+	class "**<<Aggregate Root>> Customer**" #CE9DD9 {
+		-identificationNumber : String
+	}
+	class "<<Value Object>> CustomerDescription"
+
+}
+
+class "<<Value Object>> CustomerID" #CBC3E3
+package Typology {
+	class "**<<Aggregate Root>> Typology**" #CE9DD9
+	class "<<Value Object>> TypologyDescription"
+}
+
+class "<<Value Object>> ProjectID" #CBC3E3
+class "<<Value Object>> TypologyID" #CBC3E3
+
+"**<<Aggregate Root>> Profile**" "1" -> "1" "<<Value Object>> ProfileDescription"
+"**<<Aggregate Root>> Resource**" "1" -> "1" "<<Value Object>> ResourceTime"
+"**<<Aggregate Root>> Typology**" "1" -> "1" "<<Value Object>> TypologyDescription"
+"**<<Aggregate Root>> Customer**" "1" -> "1" "<<Value Object>> CustomerDescription"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> SprintDuration"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> ProjectCode"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> NumberOfPlannedSprints"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> Budget"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> BusinessSector"
+"<<Value Object>> ProjectTime" "1" <- "1" "**<<Aggregate Root>> Project**"
+"<<Value Object>> ProjectDescription" "1" <- "1" "**<<Aggregate Root>> Project**"
+"<<Value Object>> ProjectName" "1" <- "1" "**<<Aggregate Root>> Project**"
+"**<<Aggregate Root>> Task**" --> "**<<Aggregate Root>> Task**"
+"**<<Aggregate Root>> Task**" "1" --> "1" "<<Value Object>> Log"
+"<<Value Object>> TaskTime" "1" <- "1" "**<<Aggregate Root>> Task**"
+"<<Value Object>> TaskName" "1" <-- "1" "**<<Aggregate Root>> Task**"
+"<<Value Object>> SprintTime" "1" <- "1" "**<<Aggregate Root>> Sprint**"
+"<<Value Object>> SprintDescription" "1" <- "1" "**<<Aggregate Root>> Sprint**"
+"**<<Aggregate Root>> UserStory**" "1" --> "1" "<<Value Object>> Priority"
+"<<Value Object>> UserstoryDescription" "1" <- "1" "**<<Aggregate Root>> UserStory**"
+"<<Value Object>> EffortEstimate" "1" <--- "1" "**<<Aggregate Root>> UserStory**"
+"**<<Aggregate Root>> Task**" "1" --> "1" "<<Value Object>> EffortEstimate"
+"**<<Aggregate Root>> Resource**" "1" --> "1" "<<Value Object>> Role"
+"**<<Aggregate Root>> Resource**" "1" --> "1" "<<Value Object>> CostPerHour"
+"**<<Aggregate Root>> Resource**" "1" --> "1" "<<Value Object>> PercentageOfAllocation"
+"**<<Aggregate Root>> User**" "1" --> "1" "<<Value Object>> Photo"
+"**<<Aggregate Root>> User**" "1" --> "1" "<<Value Object>> Activation"
+"**<<Aggregate Root>> User**" "1" --> "1" "<<Value Object>> Email"
+"**<<Aggregate Root>> User**" "1" --> "1" "<<Value Object>> Function"
+"**<<Aggregate Root>> User**" "1" --> "1" "<<Value Object>> UserName"
+"**<<Aggregate Root>> User**" "1" --> "1" "<<Value Object>> Password"
+"<<Value Object>> TypologyID" "1" <--- "1" "**<<Aggregate Root>> Project**"
+"**<<Aggregate Root>> Typology**" "1" --> "1" "<<Value Object>> TypologyID"
+"**<<Aggregate Root>> Resource**" "1" --> "1" "<<Value Object>> ProjectID"
+"**<<Aggregate Root>> Sprint**" "1" --> "1" "<<Value Object>> ProjectID"
+"**<<Aggregate Root>> UserStory**" "1" ----> "1" "<<Value Object>> ProjectID"
+"<<Value Object>> SprintID" "1" <---- "1" "<<Entity>> UserStoryInSprint"
+"<<Value Object>> UserStoryID" "1" <-- "1" "**<<Aggregate Root>> UserStory**"
+"**<<Aggregate Root>> UserStory**" <|-- "<<Entity>> UserStoryInSprint"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> ProjectID"
+"<<Value Object>> ProjectCode" "1" <-- "1" "<<Value Object>> ProjectID"
+"<<Value Object>> CustomerID" "1" <--- "1" "**<<Aggregate Root>> Project**"
+"**<<Aggregate Root>> Customer**" "1" --> "1" "<<Value Object>> CustomerID"
+"**<<Aggregate Root>> Sprint**" "1" --> "1" "<<Value Object>> SprintID"
+"<<Value Object>> TaskID" "1" <-- "1" "**<<Aggregate Root>> Task**"
+"<<Entity>> UserStoryTask" "1" --> "1" "<<Value Object>> UserStoryID"
+"<<Value Object>> ResourceID" "1" <--- "1" "**<<Aggregate Root>> Task**"
+"**<<Aggregate Root>> Task**" <|-- "<<Entity>> UserStoryTask"
+"**<<Aggregate Root>> Task**" ----> "<<Value Object>> SprintID"
+"**<<Aggregate Root>> Resource**" "1" -> "1" "<<Value Object>> ResourceID"
+"<<Aggregate Root>> Request" "1" -> "1" "<<Value Object>> UserID"
+"<<Aggregate Root>> Request" "1" ---> "1" "<<Value Object>> ProfileID"
+"<<Value Object>> ProfileID" "1..*" <-- "1" "**<<Aggregate Root>> User**"
+"**<<Aggregate Root>> Profile**" "1" -> "1" "<<Value Object>> ProfileID"
+"<<Aggregate Root>> Request" "1" -> "1" "<<Value Object>> RequestID"
+"<<Value Object>> UserID" "1" <- "1" "**<<Aggregate Root>> Resource**"
+"**<<Aggregate Root>> User**" "1" -> "1" "<<Value Object>> UserID"
+"<<Value Object>> UserID" "1" -> "1" "<<Value Object>> Email"
+@enduml

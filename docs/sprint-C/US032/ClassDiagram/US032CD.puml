@@ -1,0 +1,141 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+package "UI" {
+    class CreateTaskUI{}
+}
+
+package "Controller" {
+    class CreateTaskController {
+	    +createTask(CreateTaskDto dto) : boolean
+    }
+}
+
+package "Dto" {
+    class CreateTaskDTO {
+	    +nameDTO : String
+	    +descriptionDTO : String
+	    +startDateDto : String
+	    +endDateDto : String
+	    +precedenceDto : List<Integer>
+	    +responsibleEmailDto : String
+	    +typeOfTaskDto : String
+	    +projectCodeDto : String
+	    +sprintNumberDto : int
+	    +effortDto : int
+	    +CreateTaskDto(String nameInput, String descriptionInput, String startDateInput, String endDateInput, List<Integer> precedenceListInput, String responsibleEmailInput, String typeOfTaskInput, String projectCodeInput, int sprintNumberInput, int effortEstimateInput)
+    }
+}
+
+package "Mapper"{
+    class TaskTimeMapper{
+        +getTime(CreateTaskDTO dto)
+    }
+}
+
+package "Model" {
+
+class DataManagement {
+	+getInstance() : DataManagement
+	+getProjectStore() : ProjectStore
+	+getResources() : ResourceStore
+	+getTaskStatuses() : TaskStatusStore
+}
+
+package "Stores" {
+    class ProjectStore {
+	    +getProject(String code) : Project
+    }
+
+    class TaskStatusStore {
+	    +getPlannedTaskStatus(String pretendedStatus) : Status
+    }
+
+    class ResourceStore {
+	    +getResource(String userEmail, Project project, int sprintNumber) : Resource
+    }
+}
+
+class Resource{
+    -userInput : User
+    -projectInput : Project
+    -datesInput : Time
+}
+
+class Project {
+	-dates : Time
+	+createTask(CreateTaskDto dto, Status plannedTaskStatus, Resource responsible) : boolean
+}
+
+class ProjectCode {
+    -code : String
+    +create(String codeInput)
+    +isValidCode(String codeInput)
+}
+
+class ProjectSprintList {
+	+createTask(CreateTaskDTO dto, Status plannedTaskStatus, Resource responsible) : boolean
+}
+
+class Sprint {
+    -number : int
+    -dates : Time
+    -status : Status
+	+createTask(String name, String description, List<Integer> precedence, int effort, String typeOfTask, Time taskTime, Status plannedTaskStatus, Resource responsible) : boolean
+}
+
+class SprintTaskList {
+	+createTask(String nameInput, String descriptionInput, List<Integer> precedenceListInput, int effortEstimateInput, String typeOfTask, Time taskTime, Status plannedInput, Resource responsibleInput) : boolean
+	+generateTaskNumber() : int
+	+getPrecedenceTaskList(List precedenceListInput) : Set<Task>
+}
+
+class Task {
+	- number : int
+	- name : Name
+	- description : Description
+	- taskTime : Time
+	- hoursSpent : Hour
+	- effortEstimate : EffortEstimate
+	- percentageOfExecution : double
+	- precedenceList : Set<Task>
+	- typeOfTask : String
+	- responsible : Resource
+	- statusOfTask : Status
+	+Task(int numberInput, Name nameInput, Description descriptionInput, Time taskTimeInput, EffortEstimate effortEstimateInput, Set<Task> precedenceListInput, String taskTypeInput, Resource responsibleInput, Status statusOfTaskInput)
+}
+
+class Status {
+    -statusDescription : String
+    +create(String statusDescription)
+}
+}
+
+Task "0...*"--> "1" SprintTaskList : is part of
+SprintTaskList "1"--> "1" Sprint : is part of
+Sprint "0...*"--> "1" ProjectSprintList : is part of
+Mapper ...> CreateTaskDTO
+ProjectSprintList ...> Mapper
+ProjectSprintList "1"----> "1"Project : is part of
+Project "1"<-- "1"ProjectCode : is part of
+ProjectStore "1"<--"0...*"Project : is part of
+Resource "0...*"--> "1" ResourceStore : is part of
+Status "0...*"--> "1" TaskStatusStore : is part of
+TaskStatusStore "1"---> "1" DataManagement : is part of
+ResourceStore "1"----> "1" DataManagement : is part of
+ProjectStore "1"----> "1" DataManagement : is part of
+
+CreateTaskController ....> Project
+CreateTaskController ...> DataManagement
+CreateTaskController ...> TaskStatusStore
+CreateTaskController ...> ResourceStore
+CreateTaskController ...> ProjectStore
+CreateTaskController .> CreateTaskDTO
+Project....> CreateTaskDTO
+ProjectSprintList ..> CreateTaskDTO
+CreateTaskUI ...> CreateTaskController
+@enduml

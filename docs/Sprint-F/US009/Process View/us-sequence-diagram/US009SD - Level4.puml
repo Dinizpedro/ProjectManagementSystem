@@ -1,0 +1,77 @@
+@startuml
+autonumber
+!pragma teoz true
+boundary ": ProfileRoute" #FFFFFF
+
+participant ": ImplUserStoryController" #FFFFFF
+
+-> ": ProfileRoute" ++ : POST api/userStories/projectCode/{projectCode} (json)
+
+": ProfileRoute" -> ": ImplUserStoryController" ++ : response = createUserStory\n(@PathVariable projectCode, createUserStoryDTO description)
+note left
+createUserStoryDTO : CreateUserStoryDTO
+with the new profile description as a String
+end note
+
+participant "createUserStoryDTO : \nCreateUseStoryDTO" #FFFFFF
+participant "iAppUserStoryService : \nImplAppUserStoryService" #FFFFFF
+
+": ImplUserStoryController" -> "createUserStoryDTO : \nCreateUseStoryDTO" ++: description = CreateUserStoryDTO.description
+deactivate "createUserStoryDTO : \nCreateUseStoryDTO"
+
+": ImplUserStoryController" -> "iAppUserStoryService : \nImplAppUserStoryService" ++ : userStoryOutput = createAndAddUserStory(projectCode, description)
+
+participant ": ProjectCode" #FFFFFF
+"iAppUserStoryService : \nImplAppUserStoryService" -> ": ProjectCode" ++ : projCode = create(projectCode)
+create participant "projCode : \nProjectCode" #FFFFFF
+": ProjectCode" -> "projCode : \nProjectCode" -- :create
+
+participant "iProjectRepository : \nImplProjectRepository" #FFFFFF
+
+"iAppUserStoryService : \nImplAppUserStoryService" -> "iProjectRepository : \nImplProjectRepository" : opProject = findByCode(projCode)
+activate "iProjectRepository : \nImplProjectRepository"
+
+ref over "iProjectRepository : \nImplProjectRepository"
+[[US009SD-findByCode.puml findByCode]] ref
+end
+deactivate "iProjectRepository : \nImplProjectRepository"
+
+ref over "iAppUserStoryService : \nImplAppUserStoryService"
+[[US009SD-valueObjects.puml build value objects]] ref
+end
+
+participant "UserStoryFactory : \nUserStoryFactoryImplementation" #FFFFFF
+
+"iAppUserStoryService : \nImplAppUserStoryService" -> "UserStoryFactory : \nUserStoryFactoryImplementation" ++ : newUserStory = createUserStory(userStoryID, projCode, code, priority, userStoryDescription)
+
+create participant "newUserStory : UserStory" #FFFFFF
+"UserStoryFactory : \nUserStoryFactoryImplementation" -> "newUserStory : UserStory" ** : create
+deactivate "UserStoryFactory : \nUserStoryFactoryImplementation"
+
+"iAppUserStoryService : \nImplAppUserStoryService" -> "iUserStoryRepository : \nImplUserStoryRepository" ++: userStorySaved = save(newUserStory)
+
+participant "iUserStoryRepository : \nImplUserStoryRepository" #FFFFFF
+ref over "iUserStoryRepository : \nImplUserStoryRepository"
+[[US009SD-saveNewUserStory.puml saveNewUserStory]] ref
+end
+deactivate "iUserStoryRepository : \nImplUserStoryRepository"
+
+participant " : UserStoryMapper" #FFFFFF
+"iAppUserStoryService : \nImplAppUserStoryService" -> " : UserStoryMapper" ++ : toUserStoryDTO(userStorySaved)
+
+participant "profileDTO : \nProfileDTO" #FFFFFF
+": ImplUserStoryController" -> "profileDTO : \nProfileDTO" ++ : add(link)
+deactivate "profileDTO : \nProfileDTO"
+note left #FFFFFF
+Link to self - "GET" request method
+end note
+
+create participant "response : \nResponseEntity<Object>" #FFFFFF
+": ImplUserStoryController" -> "response : \nResponseEntity<Object>" : create(userStoryOutput)
+deactivate ": ImplUserStoryController"
+note left #FFFFFF
+HTTP status created associated
+in the response
+end note
+
+@enduml

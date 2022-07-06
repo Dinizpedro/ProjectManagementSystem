@@ -1,0 +1,61 @@
+@startuml
+class DataManagement #FFFFFF {
+	+getInstance(): DataManagement
+	+getProfiles(): ProfileStore
+	+getUsers(): UserStore
+	+getRequests(): RequestProfileStore
+}
+
+class RequestProfileStore #FFFFFF {
++createNewRequest(requestedUser, requestedProfile)
+}
+
+class ProfileStore #FFFFFF {
++getProfileByDescription(requestedProfileDescription) : Profile
+}
+
+class UserStore #FFFFFF {
++findUser(requestedUserEmail) : User
+}
+
+class RequestNewProfileUI #FFFFFF
+class RequestNewProfileController #FFFFFF {
+	+createNewRequest(requestedProfileDescription, requestedUserEmail) : boolean
+}
+
+class Request #FFFFFF {
+	-creationDate : LocalDate
+	-user : User
+	-requestedProfile : Profile
+	-isApproved : boolean
+	+Request(selectedUser, requestedProfile)
+}
+
+class User #FFFFFF {
++compareEmail(requestedUserEmail) : boolean
++doesUserHaveVisitorProfile() : boolean
++doesUserAlreadyHaveRequestedProfile(requestedProfile) : boolean
+}
+
+class Profile #FFFFFF {
++compareProfileDesignation(requestedProfileDescription) : boolean
+}
+
+
+RequestNewProfileController ..> DataManagement
+RequestNewProfileController ..> ProfileStore
+RequestNewProfileController ..> UserStore
+RequestNewProfileController ..> User
+RequestNewProfileController ..> Profile
+RequestNewProfileController ..> RequestProfileStore
+DataManagement "1" ---> "profiles 1" ProfileStore
+DataManagement "1" ---> "users 1" UserStore
+DataManagement "1" ---> "requests 1" RequestProfileStore
+UserStore "1" --> "userList *" User
+ProfileStore "1" --> "profileList *" Profile
+Request ..up> User
+Request ..up> Profile
+User ..> Profile
+RequestProfileStore "1" -- "requestList *" Request
+RequestNewProfileUI ..> RequestNewProfileController
+@enduml

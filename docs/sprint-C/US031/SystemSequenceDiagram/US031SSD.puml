@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "TeamMember" as TM
+participant ": System" as System
+Activate TM
+Activate System
+TM -> System : Creates Task in a User Story
+TM -> System : Enters data (name, description,startDate, endDate, hoursSpent, estimateEffort,typeOfTask, responsible,status, parentUserStory)
+System -> System : createUserStoryTask
+System --> TM : UserStory Task Created Successfully
+
+@enduml

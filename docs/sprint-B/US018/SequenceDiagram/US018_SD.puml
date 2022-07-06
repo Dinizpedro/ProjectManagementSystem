@@ -1,0 +1,37 @@
+@startuml
+autonumber
+actor "PO/SM/TM" as actor
+participant ": GetUserStoryByPriorityUI" as ui
+participant "controller: GetUserStoryByPriorityController" as controller
+participant ": GetUSbyPriotityMapper" as mapper
+participant ": UserStoryDTO" as dto
+participant ": DataMangement" as dataManagement
+participant "singletonDM: DataMangement" as singleton
+participant "projects: ProjectStore" as projectStore
+participant "project: Project" as project
+participant "productBacklog: ProductBacklog" as productBacklog
+participant "userStory: UserStory" as userStory
+actor -> ui : Inputs data
+ui -> controller : usListByPriority(projectCode)
+controller -> dataManagement : singletonDM = DataManagement.getInstance()
+controller -> singleton : projects = getProjectStore()
+controller -> projectStore : project = getProject(projectCode)
+controller -> project : productBacklog = getProductBacklog()
+controller -> productBacklog : getUserStoryListByPriority()
+create participant "userStoryListByPriority: List<UserStory>" as creation
+productBacklog -> creation : create(listOfUSSorted)
+productBacklog --> controller : userStoryListByPriority
+controller -> mapper : userStoryDTOList(userStoryListByPriority)
+create participant "userStoryDTOList: Arraylist<userStoryDTO>" as userStoryDTOList
+mapper -> userStoryDTOList : create(userStoryDTOList)
+loop
+mapper -> dto : userStoryToDTO(userStory)
+dto -> userStory : getUserStoryAtributtes()
+dto --> mapper : userStoryDTO
+end
+mapper -> mapper : add(userStoryDTOList)
+mapper --> controller : userStoryDTO
+controller --> ui : listOfUserStoryDTO
+ui --> actor : Shows Data
+
+@enduml

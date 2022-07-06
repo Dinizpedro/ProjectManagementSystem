@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+alt iProjectRepository.findByCode(projectCode)).isPresent() == true && iUserRepository.findUserByEmal(dto.userIdDto)).isPresent() == true
+"resourceService : ImplAppResourceService"  -> "iProjectRepository : IProjectRepository" : project = findByCode(projectCodeVO).get()
+activate "iProjectRepository : IProjectRepository"
+"iProjectRepository : IProjectRepository" -> "iResourceRepositoryJPA : IResourceRepositoryJPA" : resourceListJPA = getResourceJPAByProjectCode(projectCode)
+
+
+activate "iResourceRepositoryJPA : IResourceRepositoryJPA"
+deactivate "iResourceRepositoryJPA : IResourceRepositoryJPA"
+create participant "resourceList : ArrayList<Resource>" as resourceList
+"iResourceRepository : IResourceRepository" -> resourceList
+loop
+	"iResourceRepository : IResourceRepository" -> "iResourceAssemblerJPA : IResourceAssemblerJPA"  : resource = toDomain(resourceJPA)
+	activate "iResourceAssemblerJPA : IResourceAssemblerJPA"
+
+ref over "iResourceAssemblerJPA : IResourceAssemblerJPA"
+[[SD027-toDomain.puml]]
+
+end
+"iResourceRepository : IResourceRepository" -> resourceList : resourceList = add(resource)
+deactivate "iResourceRepositoryJPA : IResourceRepositoryJPA"
+
+end
+deactivate "iResourceRepository : IResourceRepository"
+	deactivate "iResourceAssemblerJPA : IResourceAssemblerJPA"
+
+"resourceService : ImplAppResourceService"  -> "iProjectRepository : IProjectRepository" :  project = findByCode(projectCodeVO).get()
+activate "iProjectRepository : IProjectRepository"
+deactivate "iProjectRepository : IProjectRepository"
+@enduml

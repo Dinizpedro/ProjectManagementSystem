@@ -1,0 +1,37 @@
+@startuml
+class GetListOfProjectThatAUserIsAllocatedUI #FFFFFF
+class GetListOfProjectsThatAUserIsAllocatedController #FFFFFF {
+	-DataManagement singletonDM
+	+getListOfProjectsThatAUserIsAllocated(email) : List
+}
+
+
+class ProjectStore #FFFFFF {
+	+getListOfProjectsThatAUserIsAllocated(email) : List
+}
+
+class DataManagement #FFFFFF {
+	+getProjectStore() : ProjectStore
+}
+
+class Project #FFFFFF {
+	-projectManager : Resource
+	-productOwner : Resource
+	-scrumMaster : Resource
+	-projectTeam : list<Resouce>
+	+isUserInProject(email) : boolean
+	+isUserProjectManager(email) : boolean
+	+isUserProductOwner(email) : boolean
+	+isUserScrumMaster(email) : boolean
+	+isUserInProjectTeam(email) : boolean
+}
+
+
+GetListOfProjectThatAUserIsAllocatedUI ..> GetListOfProjectsThatAUserIsAllocatedController
+
+
+ProjectStore "1" -- "*" Project : has
+
+GetListOfProjectsThatAUserIsAllocatedController ..> DataManagement
+DataManagement ..> ProjectStore
+@enduml

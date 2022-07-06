@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "Director" as Director
+participant ": System" as System
+Activate Director
+Activate System
+Director -> System :  Create a new project.
+Director -> System :  Enters data: code, description, businessSector, startDate, endDate, numberOfPlannedSprints, budget, customer, typology, sprintDuration.
+System -> System : createProject
+System --> Director : Project successfully created.
+
+@enduml

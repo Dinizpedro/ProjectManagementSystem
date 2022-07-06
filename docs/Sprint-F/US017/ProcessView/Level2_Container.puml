@@ -1,0 +1,21 @@
+@startuml
+autonumber
+actor "User" as actor
+activate actor
+participant "Project Management UI" as UI
+activate UI
+actor -> UI : Selects User
+participant "Project Management Business Logic" as BL
+UI -> BL : Gets data from selected user allocated projects
+activate BL
+participant "DBMS" as BD
+BL -> BD : search if user exists
+activate BD
+BD --> BL : true
+BL -> BD : get data from selected user allocated projects
+BD --> BL : retrieve data successfully
+deactivate BD
+BL --> UI : returns data from selected user allocated projects
+deactivate BL
+UI --> actor : receives data from selected user allocated projects
+@enduml

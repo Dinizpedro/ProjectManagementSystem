@@ -1,0 +1,56 @@
+@startuml
+autonumber
+
+": implUserStoryRepository" as USRepo -> ": IUserStoryRepositoryJPA" as usRepoJPA : findByUserStoryID_\nProjectCodeOrderByStatus\n(projectCode.getCode())
+activate USRepo
+activate usRepoJPA
+
+    create participant ": List<UserStory>\n userStoriesJPA" as usJPAList
+	usRepoJPA -> usJPAList
+loop
+	usRepoJPA -> usJPAList : add userStoryJPA
+    activate usJPAList
+
+	usJPAList --> usRepoJPA : userStoriesJPA
+    deactivate usJPAList
+    usRepoJPA --> USRepo : userStoriesJPA
+	deactivate usRepoJPA
+end
+
+loop
+
+    USRepo -> ": ImplUserStoryAssemblerJPA" as usAssembleJPA : userStoryJPAtoUserStory
+    activate usAssembleJPA
+    usAssembleJPA -> ": UserStoryFactoryImplementation" as usFactory : UserStoryID userStoryID = getUserStoryIdFromUserStoryJPA(UserStoryJPA userStoryJPA)
+    activate usFactory
+    usAssembleJPA -> usFactory : ProjectCode projectCode = getProjectCodeFromUserStoryJPA(UserStoryJPA userStoryJPA)
+    usAssembleJPA -> usFactory : UserStoryCode userStoryCode = getUserStoryCodeFromUserStoryJPA(UserStoryJPA userStoryJPA)
+    usAssembleJPA -> usFactory : UserStoryDescription userStoryDescription = getUserStoryDescriptionFromUserStoryJPA(UserStoryJPA userStoryJPA)
+    usAssembleJPA -> usFactory : SprintID sprintID = getSprintIdFromUserStoryJPA(UserStoryJPA userStoryJPA)
+    usAssembleJPA -> usFactory : EffortEstimate effortEstimate = getEffortEstimateFromUserStoryJPA(userStoryJPA)
+    usAssembleJPA -> usFactory : Priority priority = getPriorityFromUserStoryJPA(userStoryJPA)
+    usAssembleJPA -> usFactory : UserStoryStatus userStoryStatus = getStatusFromUserStoryCodeJPA(userStoryJPA)
+    usAssembleJPA -> usFactory : UserStoryCode parentUserStoryCode = getParentUserStoryCodeFromUserStoryJPA(userStoryJPA)
+    create participant "userStory: UserStory" as us
+    usFactory -> us : createUserStory
+
+    usFactory --> usAssembleJPA : userStory
+    deactivate usFactory
+
+    usAssembleJPA --> USRepo : userStory
+    deactivate usAssembleJPA
+
+    create participant "userStories: List<UserStory>" as usList
+    USRepo -> usList
+    USRepo -> usList : add(userStory)
+    activate usList
+    end
+    usList --> USRepo : userStories
+
+deactivate usList
+    deactivate USRepo
+
+
+
+
+@enduml

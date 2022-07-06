@@ -1,0 +1,128 @@
+@startuml
+'https://plantuml.com/class-diagram
+header IMPLEMENTATION VIEW
+skinparam linetype ortho
+hide empty methods
+top to bottom direction
+
+package "OPT SYSTEM"{
+    package "INFRASTRUCTURES"{
+        class Route
+    }
+
+    package "INTERFACE ADAPTERS"{
+        package "concreteRepositories"{
+            class ResourceRepository
+            class UserRepository
+            class ProjectRepository
+        }
+
+        package "controllers"{
+            package "abstractControllers"{
+                interface IResourceController {
+                +definedTeamMemberOfAProject(dto : ResourceCreationDTO)
+            }
+            package "concreteControllers"{
+                class ResourceController
+                {
+               +definedTeamMemberOfAProject(dto : ResourceCreationDTO)
+            }
+        }
+    }
+
+    package "APPLICATION SERVICES / USE CASE SERVICES"{
+        package "abstractRepositories"{
+           interface IResourceRepository
+           interface IProjectRepository
+           interface IUserRepository
+        }
+
+       package "appServices"{
+            package "abstractAppServices"{
+                interface IAppResourceService
+
+            }
+            package "concreteAppServices"{
+                class AppResourceService
+            }
+       }
+    }
+
+    package "ENTITIES / CORE / DOMAIN"{
+        package aggregates{
+            package resource{
+                entity Resource
+                class ResourceCostPerHour
+                class ResourceID
+                class ResourcePercentageOfAllocation
+                enum Role
+            }
+
+            package user{
+                class User
+            }
+
+            package project{
+                class Project
+
+            }
+
+
+        }
+            package domainServices{
+                class ResourceDomainService
+                        }
+        package valueObjects{
+            class Time
+        }
+
+        package factories{
+            package abstractFactories{
+                interface IResourceFactory
+            }
+
+            package concreteFactories{
+                class ResourceFactory
+            }
+        }
+
+        interface ValueObject
+        interface Entity
+        interface AggregateRoot
+    }
+
+    Route ..> IResourceController
+    ResourceController ..up.|> IResourceController
+    ResourceRepository .up.|> IResourceRepository
+    AppResourceService .up..|> IAppResourceService
+    ResourceController .down.> IAppResourceService
+    AppResourceService .down.> Resource
+    AppResourceService ..> IProjectRepository
+    AppResourceService ..> IUserRepository
+    ProjectRepository ..|> IProjectRepository
+    UserRepository ..|> IUserRepository
+    AppResourceService ..> ResourceDomainService
+    ResourceDomainService ..> Project
+    ResourceDomainService ..> Resource
+    Resource .|> AggregateRoot
+    AggregateRoot .u.o Entity
+    Resource *-- ResourceID
+    ResourceID ...|> ValueObject
+    Resource *-down- ResourceCostPerHour
+    ResourceCostPerHour ...|> ValueObject
+    Resource *-down- ResourcePercentageOfAllocation
+    ResourcePercentageOfAllocation ...|> ValueObject
+    Resource *-down- Role
+    Role ...|> ValueObject
+    Resource *-- Time
+    Time ..|> ValueObject
+
+    AppResourceService ..down> IResourceFactory
+    AppResourceService .up..> IResourceRepository
+
+    ResourceFactory ..up|> IResourceFactory
+    ResourceFactory ..> Resource
+
+}
+
+@enduml

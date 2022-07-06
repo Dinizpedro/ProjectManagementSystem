@@ -1,0 +1,11 @@
+@startuml
+autonumber
+actor "Director" as actor  #FFFFFF
+participant "<<system(C4)>>Project Management System" as PMS  #FFFFFF
+actor -> PMS : Initiates process to define a new Resource
+activate actor
+activate PMS
+PMS --> actor : Requests the necessary information to define a newResource
+actor -> PMS : Inserts data
+PMS --> actor : Inform operation result and return information about the newly created Resource
+@enduml

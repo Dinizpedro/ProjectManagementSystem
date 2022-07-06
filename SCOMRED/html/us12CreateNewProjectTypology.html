@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Create Typology</title>
+    <title>Create project typology</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!--jquery-->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- CSS Files -->
+    <link href="./styles.css" rel="stylesheet" />
+
+    <script src="./scripts.js"></script>
+
+
+    <script>
+        var noResponse = "<h3>Sorry, no response from the backend, please try again.</h3>";
+
+        function sendRequest(email, password, description) {
+            var request = new XMLHttpRequest();
+            request.onload = function okCase() {
+                var msg = "";
+                if (this.status == 200) {
+                    msg += "Result from Server: "
+                } else {
+                    msg += "Sorry, error " + this.status + " reported by the backend:";
+                }
+                document.getElementById("result").innerHTML = msg + this.responseText;
+            };
+
+            request.ontimeout = function timeoutCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+            request.onerror = function errorCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+
+            request.open("POST", "/cgi-bin/us12-bash", true);
+            request.timeout = 2000;
+            var data = JSON.stringify({
+                "email": email.value,
+                "password": password.value,
+                "typology": description.value
+            });
+            request.send(data);
+        }
+
+        function submit(email, password, description) {
+            if (validateEmail(email)) {
+                if (stringLengthCheck("Description", description, 1, 50)) {
+                    sendRequest(email, password, description);
+                }
+            }
+            return false;
+        }
+    </script>
+
+</head>
+<header>
+    <div id="mySidenav" class="sidenav">
+        <a id="brand" href="#">swITch</a>
+        <ul class="nav nav-pills nav-justified">
+            <li class="nav-item">
+                <a class="nav-link" href="./us01CreateAccount.html">Create account</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us02ActivateAccount.html">Activate account</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us03CreateNewProfileRequest.html">Request profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us04SearchUsers.html">Search users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us05CreateProject.html">Create project</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us08UpdateProject.html">Edit project</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us06UpdateProfile.html">Update profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us07createResource.html">Associate resource</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us10UpdateUser.html">Update user</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us11ChangePassword.html">Change password</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="./us12CreateNewProjectTypology.html">Create project typology</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us13CreateUserProfile.html">Create user profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us14DefineScrumMasterOfAProject.html">Define Scrum Master</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us15GetListOfAllProjects.html">Get list of projects</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us24GetUsersAndStatus.html">Get Users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us25InactivateUser.html">Inactivate user</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us26ActivateUser.html">Activate user</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us27DefineProductOwnerOfAProject.html">Define Product Owner</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us28GetListOfAllHumanResourcesInAProject.html">Get list of resources</a>
+            </li>
+        </ul>
+    </div>
+</header>
+
+<body>
+
+    <!-- Main div code -->
+    <div id="main">
+        <div class="h-tag">
+            <h1>Create New Project Typology</h1>
+        </div>
+        <!-- create account div -->
+        <div class="login">
+            <table cellspacing="2" cellpadding="8" border="0">
+                <tr>
+                    <td align="right">Insert your email (director):</td>
+                    <td><input type="text" id="email" placeholder="Insert Director email" class="tb" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Insert Password (director):</td>
+                    <td><input type="password" placeholder="Insert Password here" id="password" class="tb" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Description:</td>
+                    <td><input type="text" placeholder="Description" class="tb" id="description" /></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type="submit" style="background-color: lightgray;" value="Submit" class="btn" onclick="submit(email,password,description)" />
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <div id="result"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

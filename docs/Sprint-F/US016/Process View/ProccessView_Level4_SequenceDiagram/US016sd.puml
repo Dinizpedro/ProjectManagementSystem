@@ -1,0 +1,129 @@
+@startuml
+autonumber
+boundary ": Route" as route
+
+ -> route : GET /projects/{projectCode}/activities
+activate route
+route -> ": ImplProjectController" as ProjectController : getActivitiesStatus\n(projectCode)
+activate ProjectController
+ProjectController -> ": ImplAppProjectService" as ProjectService: getActivitiesStatus\n(projectCode,activitiesDTO)
+activate ProjectService
+
+ProjectService -> ProjectService : getUserStoriesStatus\n(projectCode,activitiesDTO)
+activate ProjectService #ADD8E6
+create participant "projecCodeObj :ProjectCode" as ProjectCode
+ProjectService -> ProjectCode
+ProjectService -> ": implUserStoryRepository" as USRepo : userStories = getUserStoriesOrderedByStatus(projectCodeObj)
+activate USRepo
+ref over USRepo
+[[US016_getUserStoriesOrderedByStatus.puml getUserStories]]
+end
+create participant ":List<UserStory>" as usList
+USRepo -> usList
+deactivate USRepo
+
+loop
+ProjectService -> usList : userStory
+activate usList
+usList -> ":UserStory" as US : typeOfActivity = "User Story"
+activate US
+usList -> US : activityCode = userStory.getUserStoryCode()
+usList -> US : activityStatus = userStory.getStatus()
+deactivate usList
+deactivate US
+end
+create participant "activityDTO :ActivityDTO" as ADTO
+ProjectService -> ADTO : typeOfActivity,activityCode, activityStatus
+
+
+create participant "activitiesDTO :List<ActivityDTO>" as activitiesDTO
+ProjectService -> activitiesDTO
+ProjectService -> activitiesDTO : activitiesDTO = activitiesDTO.add(activityDTO)
+activate activitiesDTO
+deactivate activitiesDTO
+deactivate ProjectService #ADD8E6
+
+ProjectService -> ProjectService : getTasksStatus\n(projectCode,activitiesDTO)
+activate ProjectService #ADD8E6
+
+ProjectService -> ProjectCode : projectCodeObj = create(projectCode)
+activate ProjectCode
+deactivate ProjectCode
+
+ProjectService -> ": ImplTaskRepository" as TaskRepo : tasks = findTaskAndOrderByStatus(projectCodeObj)
+activate TaskRepo
+ref over TaskRepo
+[[US016_findTasksOrderedByStatus.puml getTasks]]
+end
+create participant ":List<Task>" as tasks
+TaskRepo -> tasks
+deactivate TaskRepo
+
+loop
+ProjectService -> tasks : task
+activate tasks
+tasks -> ":Task" as task : typeOfActivity = "Task"
+activate task
+task -> taskID : taskID = getIdTask()
+activate taskID
+deactivate taskID
+tasks -> task : activityCode = taskID.getTaskCode()
+tasks -> task : activityStatus = taskID.getTaskStatus()
+deactivate tasks
+deactivate task
+end
+
+ProjectService -> ADTO : activityDTO = ActivityDTO(typeOfActivity, activityCode, activityStatus)
+activate ADTO
+deactivate ADTO
+
+ProjectService -> activitiesDTO : activitiesDTO = activitiesDTO.add(activityDTO)
+activate activitiesDTO
+deactivate activitiesDTO
+deactivate ProjectService #ADD8E6
+
+ProjectService -> activitiesDTO : activitiesDTO = getUserStoriesStatus(projectCode, statusOfActivitiesDTOList)
+activate activitiesDTO
+ProjectService -> activitiesDTO : activitiesDTO = getTasksStatus(projectCode,statusOfActivitiesDTOList)
+deactivate activitiesDTO
+deactivate ProjectService
+loop
+ProjectController -> activitiesDTO : activityDTO
+alt
+ProjectController -> ADTO : activityDTO = getTypeOfActivity().equals("User Story")
+activate ADTO
+deactivate ADTO
+create participant " link :Link" as linkUS
+ProjectController -> linkUS : create
+ note right
+  linkTo(methodOn(ImplUserStoryController.class)
+    .getUserStory(projectCode,
+      activityDTO.getActivityCode())).withSelfRel();
+ endnote
+ProjectController -> ADTO : add(link)
+activate ADTO
+
+deactivate ADTO
+else else
+ProjectController -> ADTO : activityDTO = getTypeOfActivity().equals("Task")
+activate ADTO
+deactivate ADTO
+create participant "link: Link" as linkTask
+ProjectController -> linkTask : create
+ note right
+  linkTo(methodOn(ImplTaskController.class).
+    getTask(activityDTO.getActivityCode(),
+       projectCode)).withSelfRel();
+ endnote
+ProjectController -> ADTO : add(link)
+activate ADTO
+deactivate ADTO
+end
+end
+create participant "response :ResponseEntity" as res
+ProjectController -> res : create(activitiesDTO,HttpStatus.OK)
+ProjectController --> route : response
+deactivate ProjectController
+<-- route  : response
+deactivate route
+@enduml

@@ -1,0 +1,51 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+actor "Director" as Director
+
+participant ": CreateTypologyUI" as UI
+participant ": CreateTypologyController" as controller
+participant DataManagement as dm
+participant "typologies : TypologyStore" as ts
+
+activate Director
+    Director -> UI : Inputs data.
+    activate UI
+        UI -> controller : createTypology(descriptionInput)
+        activate controller
+            controller --> dm : typologies = getTypologies()
+            activate dm
+            deactivate dm
+            controller --> ts : createTypology(descriptionInput)
+            activate ts
+            ts --> ts : isNewTypology(descriptionInput)
+            create participant "newTypology : Typology" as newTypology
+                ts --> newTypology : create (descriptionInput)
+                ts --> ts : add(newTypology)
+                ts --> controller : True
+            deactivate ts
+       controller --> UI : True
+       deactivate controller
+       UI --> Director : Creation is successful.
+    deactivate UI
+deactivate Director
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+left to right direction
+hide members
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+FontSize 20
+}
+
+class "<<Value Object>> Time"
+package Project {
+	class "<<Value Object>> ProjectBudget"
+	class "<<Value Object>> BusinessSector"
+	class "**<<Aggregate Root>> Project**" #CE9DD9 {
+		-status : enum
+	}
+	class "<<Value Object>> ProjectDescription"
+    class "<<Value Object>> ProjectName"
+	class "<<Value Object>> ProjectNumberOfPlannedSprints"
+	class "<<Value Object>> ProjectSprintDuration"
+	class "<<Value Object>> Time"
+	enum "<<Value Object>> ProjectStatus"
+}
+
+class "<<Value Object>> CustomerName" #CBC3E3
+
+class "<<Value Object>> TypologyDescription"
+
+class "<<Value Object>> ProjectCode" #CBC3E3
+
+class "<<Value Object>> TypologyDescription" #CBC3E3
+
+
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> ProjectSprintDuration"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> ProjectNumberOfPlannedSprints"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> ProjectBudget"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> BusinessSector"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> ProjectStatus"
+"<<Value Object>> Time" "1" <- "1" "**<<Aggregate Root>> Project**"
+"<<Value Object>> ProjectDescription" "1" <- "1" "**<<Aggregate Root>> Project**"
+"<<Value Object>> ProjectName" "1" <- "1" "**<<Aggregate Root>> Project**"
+"<<Value Object>> TypologyDescription" "1" <--- "1" "**<<Aggregate Root>> Project**"
+"**<<Aggregate Root>> Project**" "1" --> "1" "<<Value Object>> ProjectCode"
+"<<Value Object>> CustomerName" "1" <--- "1" "**<<Aggregate Root>> Project**"
+
+@enduml

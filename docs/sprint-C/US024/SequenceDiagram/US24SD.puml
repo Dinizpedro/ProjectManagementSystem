@@ -1,0 +1,48 @@
+@startuml
+autonumber
+actor Administrator
+participant ": UserAccountStatusListUI"
+participant ": GetUserAccountStatusController"
+participant ": AccountStatusMapper"
+participant ": DataManagement"
+participant "singletonDM: DataManagement"
+participant " userStore : UserStore"
+
+Administrator -> ": UserAccountStatusListUI" : types requested data
+activate Administrator
+activate ": UserAccountStatusListUI"
+": UserAccountStatusListUI" -> ": GetUserAccountStatusController" : getAccountStatusList()
+activate ": GetUserAccountStatusController"
+
+": GetUserAccountStatusController" -> ": DataManagement" : singletonDM = getInstance()
+activate ": DataManagement"
+deactivate ": DataManagement"
+
+
+": GetUserAccountStatusController" -> "singletonDM: DataManagement" : userStore = getUsers()
+activate "singletonDM: DataManagement"
+deactivate "singletonDM: DataManagement"
+
+": GetUserAccountStatusController" -> " userStore : UserStore" : userList = getUserList()
+activate " userStore : UserStore"
+deactivate " userStore : UserStore"
+
+": GetUserAccountStatusController" -> ": AccountStatusMapper" : toAccountStatusListDTO(userList)
+activate ": AccountStatusMapper"
+create participant "listAccountStatusDTO: List<AccountStatusDTO>"
+": AccountStatusMapper" -> "listAccountStatusDTO: List<AccountStatusDTO>" : create list
+loop For each user in userList
+create participant "userDTO: AccountStatusDTO"
+": AccountStatusMapper" -> "userDTO: AccountStatusDTO" : userDTO = toAccountStatusDTO(user)
+": AccountStatusMapper" -> "listAccountStatusDTO: List<AccountStatusDTO>" : add(usertDTO)
+activate "listAccountStatusDTO: List<AccountStatusDTO>"
+deactivate "listAccountStatusDTO: List<AccountStatusDTO>"
+end
+
+": AccountStatusMapper" --> ": GetUserAccountStatusController" : AccountStatusDTOList
+deactivate ": AccountStatusMapper"
+": GetUserAccountStatusController" --> ": UserAccountStatusListUI" : AccountStatusDTOList
+deactivate ": GetUserAccountStatusController"
+": UserAccountStatusListUI" --> Administrator : Account status shown
+
+@enduml

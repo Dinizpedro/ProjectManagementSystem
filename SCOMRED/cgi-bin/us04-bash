@@ -1,0 +1,109 @@
+#!/bin/bash
+USERS_IN_SERVER=/var/www/dataManagament/userStore
+PROFILES_IN_SERVER=/var/www/dataManagament/profileStore
+error_response() {
+  echo "Status: 400 Bad Request"
+  echo "Content-type: text/plain"
+  echo ""
+  echo "ERROR: ${1}"
+  exit
+}
+
+### Get content from JSON into global variables
+if [ -n "$CONTENT_LENGTH" ]; then
+  eval "$(jq -r '@sh "ADMIN_EMAIL_JSON=\(.adminEmail) PASS_ADMIN_JSON=\(.adminPass) SEARCH_FIELD_JSON=\(.searchField)
+  TYPE_OF_SEARCH_JSON=\(.typeOfSearch)"')"
+else
+  error_response "No content found on the request"
+fi
+
+if [ "$CONTENT_LENGTH" == "0" ]; then
+  error_response "No content found on the request"
+fi
+
+### If the wrong method is used
+if [ "$REQUEST_METHOD" != "POST" ]; then
+  error_response "Invalid method. The only supported method is POST."
+fi
+
+### Check if Admin exists and has the Administrator profile
+ADMIN_EMAIL_FOUND=0
+if [ -d "$USERS_IN_SERVER/$ADMIN_EMAIL_JSON" ]; then
+  ADMIN_EMAIL_FOUND=1
+fi
+
+if [ $ADMIN_EMAIL_FOUND -eq 0 ]; then
+  error_response "Admin email doesn't exist in server"
+fi
+
+ADMIN_HAS_ADMIN_PROFILE=0
+if [ -f "$USERS_IN_SERVER/$ADMIN_EMAIL_JSON/userProfiles/Administrator" ]; then
+  ADMIN_HAS_ADMIN_PROFILE=1
+fi
+
+if [ $ADMIN_HAS_ADMIN_PROFILE == 0 ]; then
+  error_response "Admin email inserted doesn't have the Administrator profile associated."
+fi
+
+### Hash current password and compare with the one stored in the system
+PASS_MATCH=0
+CURRENT_HASH=$(cat "$USERS_IN_SERVER"/"$ADMIN_EMAIL_JSON"/pass)
+OLD_HASH=$((0x$(sha1sum <<<"$PASS_ADMIN_JSON")0))
+if [ "$CURRENT_HASH" = "$OLD_HASH" ]; then
+  PASS_MATCH=1
+fi
+
+if [ $PASS_MATCH -eq 0 ]; then
+  error_response "The password you have entered is incorrect."
+fi
+
+### If Email Seach was chosen
+
+if [ $TYPE_OF_SEARCH_JSON == "searchEmail" ]; then
+  EMAIL_FOUND=0
+  if [ -d "$USERS_IN_SERVER/$SEARCH_FIELD_JSON" ]; then
+    EMAIL_FOUND=1
+  fi
+
+  if [ $EMAIL_FOUND -eq 0 ]; then
+    echo "Content-type: text/plain"
+    echo ""
+    echo "No matches found for the input email."
+    exit
+  fi  
+
+  echo "Content-type: text/plain"
+  echo ""
+  USER_NAME="$(cat $USERS_IN_SERVER/$SEARCH_FIELD_JSON/username)"
+  echo "User with <b>email</b>: $SEARCH_FIELD_JSON and <b>user name</b>: $USER_NAME  was found"
+  exit
+fi
+
+### If Profile Seach was chosen
+
+if [ $TYPE_OF_SEARCH_JSON == "searchProfile" ]; then
+  echo "Content-type: text/plain"
+  echo ""
+
+  ITERATOR=0
+  while read line; do
+    if [ -f "$USERS_IN_SERVER/$line/userProfiles/$SEARCH_FIELD_JSON" ]; then
+      ITERATOR=$((ITERATOR + 1))
+      if [ $ITERATOR -eq 1 ]; then
+        echo "<p>"
+        echo "Users with "$SEARCH_FIELD_JSON" profile found:"
+      fi
+
+      USER_NAME="$(cat $USERS_IN_SERVER/$line/username)"
+      echo "<p>"
+      echo "User with <b>email</b>: "$line" and <b>user name</b>: $USER_NAME."
+
+    fi
+  done <<<"$(ls $USERS_IN_SERVER)"
+
+  if [ $ITERATOR -eq 0 ]; then
+    echo "No users found with the input profile "$SEARCH_FIELD_JSON"."
+  fi
+fi
+###
+

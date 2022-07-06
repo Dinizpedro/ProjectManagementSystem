@@ -1,0 +1,70 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+participant "selectedProject: Project" as project
+participant "sprints: ProjectSprintList" as projectSprints
+participant "dto : CreateTaskDto" as dto
+participant ":TaskTimeMapper" as mapper
+participant "selectedSprint: Sprint" as sprint
+participant "sprintTasks: SprintTaskList" as sprintTasks
+
+project -> projectSprints : createTask(dto, plannedTaskStatus, responsible)
+activate projectSprints
+    group ref
+    projectSprints -> dto : sprintNumber = sprintNumberDto
+    activate dto
+    deactivate dto
+    projectSprints -> mapper : taskTime = getTime(dto)
+    ref over mapper : taskTime creation
+    projectSprints -> projectSprints : selectedSprint = validateAndGetSprint(sprintNumber, taskTime)
+    projectSprints -> dto :  name = nameDto
+    activate dto
+    deactivate dto
+    projectSprints -> dto :  description = descriptionDto
+    activate dto
+    deactivate dto
+    projectSprints -> dto : precendence= precedenceDto
+    activate dto
+    deactivate dto
+    projectSprints -> dto : effort = effortDto
+    activate dto
+    deactivate dto
+    projectSprints -> dto : typeOfTask = typeOfTaskDto
+    activate dto
+    deactivate dto
+    projectSprints -> sprint : createTask(name, description, precedence, effort, typeOfTask, taskTime, plannedTaskStatus, responsible)
+    activate sprint
+        sprint -> sprintTasks : createTask(name, description, precendence, effort, typeOfTask, taskTime, plannedTaskStatus, responsible)
+        activate sprintTasks
+            sprintTasks -> sprintTasks : number = generateTaskNumber()
+            create participant "newTask: Task" as task
+            sprintTasks -> task : newTask = create(number, name, description, taskTime, effort, precedence, typeOfTask, responsible, plannedTaskStatus)
+            sprintTasks -> sprintTasks : add(newTask)
+            sprintTasks --> sprint : True
+        deactivate sprintTasks
+    sprint --> projectSprints : True
+    deactivate sprint
+    end ref
+    projectSprints --> project : True
+deactivate projectSprints
+
+@enduml

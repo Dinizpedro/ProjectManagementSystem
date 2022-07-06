@@ -1,0 +1,17 @@
+@startuml
+class User  {
+	-email
+	-activation
+}
+
+class Activation {
+	-code
+    -isActivated
+    -activationDate;
+    -inactivationDate;
+}
+
+
+User "1" <-- " 1 " Activation : belongs to
+
+@enduml

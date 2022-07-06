@@ -1,0 +1,7 @@
+@startuml
+
+usecase (I want to get list of project I'm currently allocated.)
+
+
+(I want to get list of project I'm currently allocated.) -- :As Authenticated User:
+@enduml

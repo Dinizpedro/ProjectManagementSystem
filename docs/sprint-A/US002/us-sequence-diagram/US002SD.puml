@@ -1,0 +1,65 @@
+@startuml
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "Non-Activated User" as User
+boundary ": RouteUser" as Route #CBC3E3
+control ": IUserController" as Controller #CBC3E3
+participant "mapper:Json2DTO" as mapper #CBC3E3
+participant ": IAppUserService" as US #CBC3E3
+participant "id :UserID" as UID #CBC3E3
+participant "users :IUserRepository" as UR #CBC3E3
+entity "selectedUser: User" as selectedUser #CBC3E3
+participant ": Activation" as Activation #CBC3E3
+
+
+activate User
+activate Route
+User-> Route : Patch /users/{userid}/activate (json)
+activate Controller
+Route -> Controller :  activateAccount(json)
+Controller  --> Controller : validate(json)
+Controller --> mapper : map2UserDTO(json)
+activate mapper
+create participant "userDTO : UserDTO" as dto #CBC3E3
+mapper --> dto : create(json)
+deactivate mapper
+Controller -> US : activateAccount(int id, UserDTO userDTO) : dto.1
+activate US
+US -> UID : id = createUserID(int identity)
+activate UID
+deactivate UID
+US -> UR : selectedUser = findById(int userID)
+activate UR
+deactivate UR
+US -> selectedUser : activateAccount(String inputCode)
+activate selectedUser
+selectedUser -> Activation : validateActivation(String inputCode)
+activate Activation
+Activation --> selectedUser : true
+deactivate Activation
+selectedUser --> US : true
+deactivate selectedUser
+US --> Controller : true
+deactivate US
+Controller --> Route : true
+deactivate Controller
+Route --> User : Informs account is successfully activated
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+autonumber
+
+participant "iProjectRepository : ImplProjectRepository" #FFFFFF
+activate "iProjectRepository : ImplProjectRepository"
+
+
+participant  "projectCode : ProjectCode" #FFFFFF
+participant "iProjectRepositoryJPA: IProjectRepositoryJPA" #FFFFFF
+-> "iProjectRepository : ImplProjectRepository" : projectExistsInDB = projectExists(projectCode)
+"iProjectRepository : ImplProjectRepository" -> "projectCode : ProjectCode" ++ : projectCodeToFind = getCode()
+deactivate
+"iProjectRepository : ImplProjectRepository" -> "iProjectRepositoryJPA: IProjectRepositoryJPA" ++ : projectExistsInDB = existsByCode(descriptionToFind)
+deactivate
+
+deactivate "iProjectRepository : ImplProjectRepository"
+
+
+
+@enduml

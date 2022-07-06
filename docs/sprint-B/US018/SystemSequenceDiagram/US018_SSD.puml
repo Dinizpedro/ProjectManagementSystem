@@ -1,0 +1,29 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+
+ParticipantFontName Aapex
+ParticipantFontSize 14
+
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "PO/SM/TeamMember" as team
+participant ": System" as System
+Activate team
+Activate System
+team -> System : Consult product backlog by priority
+
+team -> System : Enters project(projectCode)
+loop
+team -> System : Search for projectCode
+end
+
+System --> team : User story list by priority
+
+@enduml

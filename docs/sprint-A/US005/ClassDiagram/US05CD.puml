@@ -1,0 +1,91 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+package "UI" {
+    class CreateProjectUI{}
+}
+
+package "Controller" {
+    class CreateProjectController {
+	    +createProject(code, name, description, businessSector,dates,numberOfPlannedSprints,budget,customer,typology,sprintDuration,projectManager,scrumMaster,productOwner,projectTeam) : boolean
+    }
+}
+
+package "Model" {
+class DataManagement {
+    -projectStatuses : ProjectStatusStore
+    -projectStore : ProjectStore
+	+getInstance() : DataManagement
+	+getProjectStatuses() : ProjectStatusStore
+	+getProjectStore() : ProjectStore
+}
+
+class ProjectBuilder{
+    +create(ProjectCode newProjectCode, Name nameInput, Description descriptionInput, Customer customerInput, Status defaultStatus) : ProjectBuilder
+    +create(ProjectBusinessSector businessSector) : ProjectBuilder
+    +create(ProjectBudget budget) : ProjectBuilder
+    +create(Time dates) : ProjectBuilder
+    +create(ProjectSprintDuration sprintDuration) : ProjectBuilder
+    +create(ProjectNumberOfPlannedSprints numberOfPlannedSprints) : ProjectBuilder
+    +create(Typology typology) : ProjectBuilder
+    +create(Resource projectManager) : ProjectBuilder
+    +create(Resource productOwner) : ProjectBuilder
+    +create(ArrayList<Resource> projectTeam) : ProjectBuilder
+    +build() : Project
+}
+
+class ProjectBuilderInterface{
+    +businessSector(ProjectBusinessSector businessSectorBuilder) : ProjectBuilder
+    +budget(ProjectBudget budgetBuilder) : ProjectBuilder
+    +dates(Time datesBuilder) : ProjectBuilder
+    +sprintDuration(ProjectSprintDuration sprintDurationBuilder) : ProjectBuilder
+    +numberOfPlannedSprints(ProjectNumberOfPlannedSprints numberOfPlannedSprintsBuilder) : ProjectBuilder
+    +typology(Typology typologyBuilder) : ProjectBuilder
+    +projectManager(Resource projectManagerBuilder) : ProjectBuilder
+    +scrumMaster(Resource scrumMasterBuilder) : ProjectBuilder
+    +productOwner(Resource productOwnerBuilder) : ProjectBuilder
+    +projectTeam(ArrayList<Resource> projectTeamBuilder) : ProjectBuilder
+    +build() : Project
+}
+
+class Project{
+        -projectCode ProjectCode
+        -name Name
+        -description Description
+        -customer Customer
+        -status Status
+        -businessSector ProjectBusinessSector
+        -dates Time
+        -numberOfPlannedSprints ProjectNumberOfPlannedSprints
+        -budget ProjectBudget
+        -typology Typology
+        +create(ProjectBuilder builder)
+}
+
+package "Stores" {
+    class ProjectStore {
+        -projectStore : Set<Project>
+        +addProject(newProject) : boolean
+        +createProject(code, name, description, businessSector,dates,numberOfPlannedSprints,budget,customer,typology,sprintDuration,projectManager,scrumMaster,productOwner,projectTeam) : boolean
+    }
+    class ProjectStatusStore{
+        -statuses : Set<Status>
+        +getDefaultProjectStatus(String pretendedStatusDescription)
+    }
+}
+
+Project "0...*" --> "1" ProjectStore : owned by
+ProjectStatusStore "1" --> "1" DataManagement : is parte of
+ProjectStore "1" --> "1" DataManagement : is parte of
+ProjectBuilderInterface <|-- ProjectBuilder : implements
+ProjectBuilder ..> Project
+ProjectBuilder <.. ProjectStore
+CreateProjectController ..> ProjectStatusStore
+CreateProjectController ..> ProjectStore
+CreateProjectController ......> DataManagement
+CreateProjectUI ..> CreateProjectController
+@enduml

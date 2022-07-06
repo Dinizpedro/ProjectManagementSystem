@@ -1,0 +1,60 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+class Project{
+    -code
+    -name
+    -description
+    -startDate
+    -endDate
+    -sprintDuration
+    -numberOfPlannedSprints
+    -budget
+    -projectStatus
+    -businessSector
+}
+
+class SprintBacklog{
+-sprintBacklog
+}
+
+
+class UserStory {
+-code
+-description
+-status
+}
+
+ class Sprint {
+ 	-number
+ 	-goal
+ 	-dates
+ 	-status
+ }
+
+ class Task {
+ 	-code
+ 	-name
+ 	-description
+ 	-taskTime
+ 	-hoursSpent
+ 	-effortEstimate
+ 	-percentageOfExecution
+ 	-precedence
+ 	-taskType
+ 	-responsible
+ 	-taskStatus
+ }
+
+Project "1" --> "*" "Sprint"
+SprintBacklog "1" --> "*" UserStory
+Sprint "1" --> "*" Task
+Sprint "1" --> "1" SprintBacklog
+Task "*" --> "0..1" UserStory : can be derived from
+
+
+@enduml

@@ -1,0 +1,73 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor "Project Member" as pm
+participant ": UpdateUserStoryStatusSbUI" as ui
+participant "controller: UpdateUserStoryStatusSbController" as controller
+participant ": DataMangement" as dataManagement
+participant "singletonDM: DataMangement" as singleton
+participant "projects: ProjectStore" as projectStore
+participant "project: Project" as project
+participant "projectSprints: ProjectSprintList" as projectSprints
+participant "currentSprint: Sprint" as currentSprint
+participant "sprintBacklog: SprintBacklog" as sprintBacklog
+participant "userStoryStatusList: UserStoryStatusStore" as statusList
+participant "userStory: UserStory" as userStory
+
+activate pm
+pm -> ui : Inputs data
+activate ui
+
+ui -> controller : updateUserStoryStatusSb(dto)
+activate controller
+
+controller -> dataManagement : singletonDM = DataManagement.getInstance()
+activate dataManagement
+deactivate dataManagement
+
+controller -> singleton : projects = getProjectStore()
+activate singleton
+deactivate singleton
+
+controller -> projectStore : project = getProject(projectCode)
+activate projectStore
+deactivate projectStore
+
+controller -> project : updateUserStoryStatusSprintBacklog(userEmail, userStoryCode, newStatus)
+activate project
+
+project -> project : isUserInProjectAsProjectMember(userEmail)
+project -> projectSprints : currentSprint = getCurrentSprint()
+activate projectSprints
+deactivate projectSprints
+
+project -> currentSprint : sprintBacklog = getSprintBacklog()
+activate currentSprint
+deactivate currentSprint
+
+project -> sprintBacklog : updateUserStoryStatusSprintBacklog(newStatus, userStoryCode)
+activate sprintBacklog
+
+sprintBacklog -> statusList : status = findStatus(newStatus)
+activate statusList
+deactivate statusList
+
+sprintBacklog -> sprintBacklog : userStory = getUserStory (userStoryCode)
+activate userStory
+sprintBacklog -> userStory : updateStatus(status)
+deactivate userStory
+
+sprintBacklog --> project : true
+deactivate sprintBacklog
+
+project --> controller : true
+deactivate project
+
+controller --> ui : true
+deactivate controller
+
+ui --> pm : Shoes data
+deactivate ui
+deactivate pm
+@enduml

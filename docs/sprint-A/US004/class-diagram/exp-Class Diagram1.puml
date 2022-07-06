@@ -1,0 +1,42 @@
+@startuml
+class SearchUserController #FFFFFF {
+	+searchUser(typeOfSearch, searchField) : List
+}
+
+class UserStore #FFFFFF {
+	-userList : List
+	+getUserByEmail(searchField) : List
+	+getUsersByProfileDescription(searchField) : List
+}
+
+
+class DataManagement #FFFFFF {
+	-userStore
+	+getUserStore()
+}
+
+class Email #FFFFFF {
+	-email : string
+	+getEmail() : string
+}
+
+class User #FFFFFF {
+	-profile : Profile
+	-email : Email
+	+compareEmail(searchField) : boolean
+	+compareProfileDesignation(searchField) : boolean
+}
+
+
+class Profile #FFFFFF {
+	-designation : string
+	+getProfileDesignation()
+}
+
+
+User "1" --> "*" Profile : has
+Email "1" <-- "1" User : has
+User "*" <--"1" UserStore : is part of
+SearchUserController ..> DataManagement
+DataManagement ..> UserStore
+@enduml

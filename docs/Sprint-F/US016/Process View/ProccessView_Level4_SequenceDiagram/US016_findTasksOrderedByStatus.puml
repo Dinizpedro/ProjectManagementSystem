@@ -1,0 +1,145 @@
+@startuml
+autonumber
+
+
+": ImplTaskRepository" as TaskRepo -> ": ITaskRepositoryJPA" as TaskRepoJPA : findTaskJPABy\nProjectCodeOrderByTaskStatus\n(projectCode.getCode())
+activate TaskRepo
+activate TaskRepoJPA
+create participant ": Iterable<TaskJPA>" as tasksJPA
+TaskRepoJPA -> tasksJPA
+loop
+	TaskRepoJPA -> tasksJPA : add taskJPA
+    activate tasksJPA
+
+	tasksJPA --> TaskRepoJPA : tasksJPA
+    deactivate tasksJPA
+    TaskRepoJPA --> TaskRepo : tasksJPA
+	deactivate TaskRepoJPA
+end
+
+loop
+TaskRepo -> ":ImplTaskAssemblerJPA" as taskAssemblerJPA : toDomain(taskJPA)
+activate taskAssemblerJPA
+participant ": ImplTaskAssemblerJPA" as taskAssemblerJPA
+participant ":TaskJPA" as taskJPA
+participant ": ImplTaskFactory" as taskFactory
+
+
+taskAssemblerJPA -> ":TaskJPA" as taskJPA : taskCode = getTaskCode()
+activate taskJPA
+create participant ":TaskCode" as taskCode
+taskJPA -> taskCode : taskCodeJPA = TaskCode.createTaskCode(taskCode)
+taskAssemblerJPA -> taskJPA : projectCodeJPA = getProjectCode()
+
+
+alt if (taskJPA.getSprintNumber() != null)
+taskAssemblerJPA -> taskJPA : sprintNumberJPA = getSprintNumber()
+deactivate taskJPA
+
+create participant ":SprintID" as sprintID
+taskAssemblerJPA -> sprintID : sprintIDJPA = createSprintID(projectCodeJPA, sprintNumberJPA)
+
+create participant ":TaskID" as taskID
+taskAssemblerJPA -> taskID : taskID = TaskID.createIDTask(taskCodeJPA,sprintIDJPA)
+
+end
+
+alt else
+taskAssemblerJPA -> taskJPA : userStoryCodeJPA = getUserStoryCode()
+activate taskJPA
+deactivate taskJPA
+create participant ":UserStoryID" as usID
+taskAssemblerJPA -> usID :  userStoryIDJPA = UserStoryID.createUserStoryID(projectCodeJPA,userStoryCodeJPA);
+
+
+create participant ":TaskID" as taskID
+taskAssemblerJPA -> taskID : taskID = TaskID.createIDTask(taskCodeJPA,userStoryIDJPA)
+activate taskID
+deactivate taskID
+end
+
+taskAssemblerJPA -> taskJPA : name = getName()
+activate taskJPA
+deactivate taskJPA
+create participant ":TaskName" as taskName
+taskAssemblerJPA -> taskName : taskName = TaskName.createTaskName(name)
+
+taskAssemblerJPA -> taskJPA : description = getDescription()
+activate taskJPA
+deactivate taskJPA
+create participant ":TaskDescription" as taskDescription
+taskAssemblerJPA -> taskDescription : taskDescription = TaskDescription.createTaskDescription(description)
+
+
+taskAssemblerJPA -> taskJPA : startDate = getStartDate()
+activate taskJPA
+taskAssemblerJPA -> taskJPA : endDate = getEndDate()
+deactivate taskJPA
+Create participant ":Time" as time
+taskAssemblerJPA -> time : time = Time.create(startDate,endDate)
+
+
+taskAssemblerJPA -> taskJPA : hoursSpent = getHoursSpent()
+activate taskJPA
+deactivate taskJPA
+create participant ":Hour" as hour
+taskAssemblerJPA -> hour : hoursSpent = Hour.createHour(hoursSpent)
+
+
+taskAssemblerJPA -> taskJPA : effortEstimate = getEffortEstimate()
+activate taskJPA
+deactivate taskJPA
+create participant ":EffortEstimate" as effort
+taskAssemblerJPA -> effort : effortEstimate = EffortEstimate.createEffortEstimate(effortEstimate)
+
+taskAssemblerJPA -> taskJPA : percentageOfExecution = getPercentageOfExecution()
+activate taskJPA
+deactivate taskJPA
+create participant ":PercentageOfExecution" as percentage
+taskAssemblerJPA -> percentage : taskPercentageOfExecution = TaskPercentageOfExecution.createPercentage(percentageOfExecution)
+
+
+taskAssemblerJPA -> taskJPA : precedenceList = getPrecedenceList()
+activate taskJPA
+taskAssemblerJPA -> taskJPA : typeOfTask = getTypeOfTask()
+deactivate taskJPA
+create participant ":TypeOfTask" as typeOfTask
+taskAssemblerJPA -> typeOfTask : typeOfTask = TypeOfTask.valueOf(typeOfTask)
+
+taskAssemblerJPA -> taskJPA : resourceResponsible = getResourceResponsible()
+activate taskJPA
+deactivate taskJPA
+create participant ":ResourceID" as resource
+taskAssemblerJPA -> resource : resourceID = ResourceID.createResourceID(resourceResponsible)
+
+taskAssemblerJPA -> taskJPA : logList = getTaskLogs()
+activate taskJPA
+taskAssemblerJPA -> taskJPA : taskStatus = getTaskStatus()
+deactivate taskJPA
+create participant ":TaskStatus" as status
+taskAssemblerJPA -> status : taskStatus = TaskStatus.valueOf(taskStatus)
+taskAssemblerJPA -> ":ImplTaskFactory" as taskFactory  : createTaskFromDB(taskID,taskName,\ntaskDescription,time,hoursSpent,effortEstimate,\ntaskPercentageOfExecution, precedenceList,\ntypeOfTask,resourceID,logList,taskStatus)
+
+create participant "task: Task" as task
+activate taskFactory
+taskFactory -> task
+taskFactory -> task :  createTaskFromDB(taskID,taskName,\ntaskDescription,time,hoursSpent,effortEstimate,\ntaskPercentageOfExecution, precedenceList,\ntypeOfTask,resourceID,logList,taskStatus)
+activate task
+task --> taskFactory : task
+task --> taskAssemblerJPA : task
+deactivate task
+deactivate taskFactory
+deactivate taskAssemblerJPA
+
+create participant ":List<Task>" as tasks
+TaskRepo -> tasks
+TaskRepo -> tasks : add(task)
+activate tasks
+
+end
+taskAssemblerJPA --> TaskRepo : tasks
+deactivate taskAssemblerJPA
+
+
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+autonumber
+actor Administrator #FFFFFF
+participant ": CreateProfileUI" #FFFFFF
+participant ": CreateProfileController" #FFFFFF
+participant ": DataManagement" #FFFFFF
+participant "dataManagement : DataManagement" #FFFFFF
+participant "profileStore: ProfileStore" #FFFFFF
+Administrator -> ": CreateProfileUI" : Requests creation of a new a new Profile
+": CreateProfileUI" -> ": CreateProfileController" : createNewProfile (profileDesignation)
+": CreateProfileController" -> ": DataManagement" : dataManagement = getInstance()
+": CreateProfileController" -> "dataManagement : DataManagement" : profileStore = getProfiles()
+": CreateProfileController" -> "profileStore: ProfileStore" : createProfile (profileDesignation)
+create participant "newProfile: Profile" #FFFFFF
+"profileStore: ProfileStore" -> "newProfile: Profile" : createProfile (profileDesignation)
+"profileStore: ProfileStore" -> "profileStore: ProfileStore" : addProfileToProfileStore (newProfile)
+": CreateProfileController" --> ": CreateProfileUI" : true
+": CreateProfileUI" --> Administrator : Informs operation success
+
+@enduml

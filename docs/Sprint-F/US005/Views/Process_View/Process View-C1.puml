@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor Director #FFFFFF
+participant "Project Management System" #FFFFFF
+
+activate "Director"
+"Director" -> "Project Management System" ++: Initiates process to create a new Project
+"Project Management System" --> "Director" : Requests the necessary information to create a new Project
+deactivate
+
+"Director" -> "Project Management System" ++: Input data
+"Project Management System" --> "Director" : Inform operation result and return information about the newly created Project
+deactivate
+
+@enduml

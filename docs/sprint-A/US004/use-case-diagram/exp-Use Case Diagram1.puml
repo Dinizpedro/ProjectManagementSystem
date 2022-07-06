@@ -1,0 +1,7 @@
+@startuml
+
+usecase (I want to search for users.) #FFFFFF
+actor Administrator #FFFFFF
+
+:Administrator: -- (I want to search for users.)
+@enduml

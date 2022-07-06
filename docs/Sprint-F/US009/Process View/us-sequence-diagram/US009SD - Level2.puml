@@ -1,0 +1,34 @@
+@startuml
+autonumber
+actor "Product Owner" #FFFFFF
+participant "Project Management UI" #FFFFFF
+participant "Project Management Business Logic" #FFFFFF
+participant "SGBD" #FFFFFF
+
+activate "Product Owner"
+"Product Owner" -> "Project Management UI" ++: Initiates process to create a new user story
+
+"Project Management UI" --> "Product Owner" : Requests the necessary information to create a new user story
+deactivate "Project Management UI"
+
+"Product Owner" -> "Project Management UI" ++: Inserts new user story description
+
+"Project Management UI" -> "Project Management Business Logic" ++: create new user story (REST)
+
+"Project Management Business Logic" -> "SGBD" ++ : does project exist?
+
+"SGBD" --> "Project Management Business Logic" : true
+deactivate "SGBD"
+
+"Project Management Business Logic"  -> "SGBD" ++: save new user story
+
+"SGBD" --> "Project Management Business Logic"  : return representation of saved user story
+deactivate
+
+"Project Management Business Logic" -> "Project Management UI" : Inform operation result (REST - json and Http Status)
+deactivate
+
+"Project Management UI" -> "Product Owner" : Show newly created user story
+deactivate
+
+@enduml

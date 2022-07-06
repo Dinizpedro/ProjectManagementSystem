@@ -1,0 +1,63 @@
+@startuml
+autonumber
+actor Administrator #FFFFFF
+participant ": ProfileRoute" #FFFFFF
+participant "iProfileController : IProfileController" #FFFFFF
+participant "mapper : JsonToDTO" #FFFFFF
+
+
+
+Administrator -> ": ProfileRoute" ++ : POST /profiles (json)
+
+": ProfileRoute" -> "iProfileController : IProfileController" ++ : addNewProfile (json)
+
+"iProfileController : IProfileController" -> "iProfileController : IProfileController" ++-- : validate(json)
+
+"iProfileController : IProfileController" -> "mapper : JsonToDTO" ++ : profileCreationDTO = mapToProfileCreationDTO(json)
+
+create participant "profileCreationDTO : ProfileCreationDTO" #FFFFFF
+"mapper : JsonToDTO" -> "profileCreationDTO : ProfileCreationDTO" -- : create(json)
+
+
+participant "iAppProfileService : IAppProfileService" #FFFFFF
+participant "iProfileRepository : IProfileRepository" #FFFFFF
+
+
+"iProfileController : IProfileController" -> "iAppProfileService : IAppProfileService" ++ : profileIDInteger = addNewProfile(profileCreationDTO.description)
+"iAppProfileService : IAppProfileService" -> "iProfileRepository : IProfileRepository" ++ : profileInRepo = getProfileByDescription(description)
+deactivate "iProfileRepository : IProfileRepository"
+"iAppProfileService : IAppProfileService" -> "iProfileRepository : IProfileRepository" ++ : nextProfileID = nexProfileID()
+deactivate "iProfileRepository : IProfileRepository"
+
+participant ": ProfileID" #FFFFFF
+"iAppProfileService : IAppProfileService" -> ": ProfileID" ++ :profileID = createProfileID(nextProfileID)
+create participant "newProfileID : ProfileID" #FFFFFF
+": ProfileID" -> "newProfileID : ProfileID" -- : create(nextProfileID)
+
+participant ": ProfileDescription" #FFFFFF
+"iAppProfileService : IAppProfileService" -> ": ProfileDescription" ++ : profileDescription = createProfileDescription(description)
+create participant "profileDescription : ProfileDescription" #FFFFFF
+": ProfileDescription" -> "profileDescription : ProfileDescription" -- :createProfileDescription(description)
+
+
+participant "profileFactory : ProfileFactory" #FFFFFF
+
+"iAppProfileService : IAppProfileService" -> "profileFactory : ProfileFactory" ++ : profile = createProfile(profileDescription, profileID)
+create participant "newProfile : Profile" #FFFFFF
+"profileFactory : ProfileFactory" -> "newProfile : Profile" ** : create(profileDescription, profileID)
+deactivate "profileFactory : ProfileFactory"
+
+"iAppProfileService : IAppProfileService" -> "iProfileRepository : IProfileRepository" ++ : transaction = addProfileToProfileStore(newProfile)
+deactivate
+
+"iAppProfileService : IAppProfileService" -> "newProfileID : ProfileID" ++: profileIDInteger = getProfileID()
+deactivate
+
+deactivate "iAppProfileService : IAppProfileService"
+create participant "response : ResponseEntity<Object>" #FFFFFF
+"iProfileController : IProfileController" -> "response : ResponseEntity<Object>" : create(link, status)
+
+"iProfileController : IProfileController" --> ": ProfileRoute" : response
+": ProfileRoute" --> Administrator : response
+
+@enduml

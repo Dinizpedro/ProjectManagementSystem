@@ -1,0 +1,60 @@
+@startuml
+autonumber
+participant "Routing" #FFFFFF
+participant "Controller" #FFFFFF
+participant "DTO" #FFFFFF
+participant "Application Service" #FFFFFF
+participant "Domain Model" #FFFFFF
+participant "Repository" #FFFFFF
+participant "Data Model" #FFFFFF
+participant "Persistence" #FFFFFF
+
+-> "Routing" ++ : POST api/projectCode/{projectCode} (json)
+"Routing" -> "Controller" ++ : createUserStory(projectCode, dto)
+note left #FFFFFF
+Data Transfer Object with the
+new user story description as a String 
+and project code as @PathVariable
+end note
+
+"Controller" -> "Application Service" ++ : add new user story (projectCode, description)
+"Application Service" -> "Repository" ++: check if project already exists in repo
+"Repository" -> "Persistence" ++ : check if project exists in database
+"Persistence" --> "Repository" : boolean
+deactivate "Persistence"
+"Repository" --> "Application Service" : boolean
+deactivate "Repository"
+
+"Application Service" -> "Domain Model" ++ : create new user story
+deactivate
+
+"Application Service" -> "Repository" ++ : save new user story
+"Repository" -> "Data Model" ++ : create data schema obejct to store in database
+deactivate "Data Model"
+"Repository" -> "Persistence" ++ : save data schema object in database
+"Persistence" -> "Data Model" ++: create representative data schema object
+deactivate
+
+"Persistence" --> "Repository" : return saved object that was stored in database
+deactivate "Persistence"
+"Repository" -> "Domain Model" ++ : transform data schema object into user story domain model object
+"Domain Model" --> "Repository" : user story domain model object
+deactivate "Domain Model"
+"Repository" --> "Application Service" : return user story domain model object
+deactivate "Repository"
+
+"Application Service" -> "DTO" ++ : transform profile domain model object \n into data transfer object
+"DTO" --> "Application Service" : data transfer object
+deactivate "DTO"
+"Application Service" --> "Controller" : return data transfer object
+
+deactivate "Application Service"
+
+"Controller" -> "DTO" ++ : add link to data transfer object
+deactivate "DTO"
+
+"Controller" --> "Routing" : return data transfer object \n with created http status
+deactivate "Controller"
+<-- "Routing" : return data transfer object \n with created http status
+
+@enduml

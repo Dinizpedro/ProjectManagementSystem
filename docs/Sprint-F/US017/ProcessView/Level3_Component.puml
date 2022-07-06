@@ -1,0 +1,50 @@
+@startuml
+autonumber
+boundary ": Route" as route
+
+ -> route : GET users/projects/{email}
+activate route
+route -> "Controller" as Controller : Get Allocated Projects(email)
+activate Controller
+participant DTO
+Controller -> "Application Service" as AppServ : get Allocated Projects(email)
+activate AppServ
+AppServ -> "Repository" as Repository : checks if user exists in database
+participant "Data Model" as DM
+participant DomainModel
+activate Repository
+Repository -> "Persistence" as Persistence : checks if user exists in database
+activate Persistence
+Persistence --> Repository : true
+deactivate Persistence
+Repository --> AppServ : true
+deactivate Repository
+AppServ -> Repository : get resources associated \n with selected user
+activate Repository
+Repository -> Persistence : get data from resources associated \n with selected user
+activate Persistence
+
+Persistence -> DM : Creates Representative \n Data Schema Objects
+activate DM
+deactivate DM
+Persistence --> Repository : return data from resources \n associated with selected user
+deactivate Persistence
+Repository -> DomainModel : transforms data schema into \n domain model objects
+activate DomainModel
+DomainModel --> Repository : domain model objects
+deactivate DomainModel
+Repository --> AppServ : return domain model objects
+deactivate Repository
+AppServ -> DTO : transforms domain model \n objects into data transfer objects
+activate DTO
+DTO --> AppServ : data transfer objects
+deactivate DTO
+AppServ --> Controller : return list of data transfer \n objects of allocated projects
+deactivate AppServ
+Controller -> DTO : adds link to each data trasfer object
+activate DTO
+deactivate DTO
+Controller --> route : return data transfer \n object and http status ok
+<--route : return data transfer \n object and http status ok
+
+@enduml

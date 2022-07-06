@@ -1,0 +1,112 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+autoactivate on
+
+actor "ProjectManager" as PM
+boundary ": ProjectRoute" #FFFFFF
+control ": ImplProjectController" #FFFFFF
+
+activate PM
+
+    PM -> ": ProjectRoute" ++ : Post(value=/api/projects) (jsonInput)
+
+            ": ProjectRoute" -> ": ImplProjectController" ++ : createProject (dtoInput)
+
+                    ": ImplProjectController" -> ": ImplAppProjectService" : createAndSaveProject(dtoInput)
+
+                        ": ImplAppProjectService" -> ": ImplProjectAssembler" : toDomain(dtoInput)
+
+                        note right
+                            Mapping dtoInput to Domain Objects (dtoDomain)
+                        endnote
+
+                        ": ImplProjectAssembler" --> ": ImplAppProjectService" : dtoDomain
+
+                        note left
+                            Validate if project NOT exists, customer exists, typology exists and user (PM) exists
+                        endnote
+
+                        alt !projectExists, customerExists, typologyExists, userExists
+
+                            ": ImplAppProjectService" -> ": IProjectBuilder" : create (attr)
+
+                            ": IProjectBuilder" -> "newProject : Project" **
+
+                            ": IProjectBuilder" --> ": ImplAppProjectService" : newProject
+
+                            ": ImplAppProjectService" -> ": ImplResourceService" : createProjectManager (attr)
+
+                            ref over ": ImplResourceService"
+                                [[us005sd-createPM.puml Create resource]]
+                            end
+
+                            ": ImplResourceService" --> ": ImplAppProjectService" : newResource
+
+                            ": ImplAppProjectService" -> ": ImplProjectRepository" : saveProject(newProject)
+
+                            ref over ": ImplProjectRepository"
+                                [[us005sd-saveProject.puml Save new project]]
+                            end
+
+                            ": ImplProjectRepository" --> ": ImplAppProjectService" : newProjectInDB
+
+                            ": ImplAppProjectService" -> ": ImplResourceRepository" : saveResource(newResource)
+
+                            ref over ": ImplResourceRepository"
+                                [[us005sd-savePM.puml Save new resource]]
+                            end
+
+                            ": ImplResourceRepository" --> ": ImplAppProjectService" : newResourceInDB
+
+                            ": ImplAppProjectService" -> ": ImplProjectMapper" : toDTO(newProjectInDB, newResourceInDB)
+
+                            note right
+                                Mapping Entities (newProject and newResource) to ProjectDTO
+                            endnote
+
+                            ": ImplProjectMapper" -> "dtoOutput : ProjectDTO" **
+
+                            ": ImplProjectMapper" --> ": ImplAppProjectService" : dtoOutput
+
+                        end alt
+
+                        ": ImplAppProjectService" --> ": ImplProjectController" : dtoOutput
+
+                    ": ImplProjectController" -> "link : Link" ** : create
+
+                    note right
+                        linkTo(methodOn(ImplProjectController.class)
+                                        .getProject(dtoInput.getProjectCode()))
+                                        .withSelfRel();
+                    endnote
+
+                    ": ImplProjectController" -> "dtoOutput : ProjectDTO" : add(link)
+
+                    deactivate
+
+                    ": ImplProjectController" -> "response : ResponseEntity<Object>" ** : create(dtoOutput, HttpStatus.CREATED)
+
+                    ": ImplProjectController" --> ": ProjectRoute" : response
+
+            ": ProjectRoute" --> PM : jsonOutput
+
+@enduml

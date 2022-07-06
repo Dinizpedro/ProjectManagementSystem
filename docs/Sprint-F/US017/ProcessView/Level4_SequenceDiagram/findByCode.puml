@@ -1,0 +1,34 @@
+@startuml
+
+participant ": ImplProjectRepository" as projectRepository
+participant " code : ProjectCode" as projectCode
+
+-> projectRepository : findByCode(code)
+activate projectRepository
+projectRepository -> projectCode : getCode()
+activate projectCode
+projectCode --> projectRepository : projectCode
+deactivate projectCode
+
+participant ": IProjectRepositoryJPA" as projectRepositoryJPA
+projectRepository -> projectRepositoryJPA : existsByCode(projectCode)
+activate projectRepositoryJPA
+projectRepositoryJPA --> projectRepository : projectExists
+deactivate projectRepositoryJPA
+projectRepository -> projectRepositoryJPA : findByCode(projectCode).get
+activate projectRepositoryJPA
+projectRepositoryJPA --> projectRepository : theProjectJPA
+deactivate projectRepositoryJPA
+
+participant ": ImplProjectAssemblerJPA" as projectAssembler
+projectRepository -> projectAssembler : toDomain(projectJPA)
+activate projectAssembler
+projectAssembler -->projectRepository :theProject
+note right
+mapping projectJPA
+to Domain Objects
+endnote
+deactivate projectAssembler
+<-- projectRepository : theProject
+
+@enduml

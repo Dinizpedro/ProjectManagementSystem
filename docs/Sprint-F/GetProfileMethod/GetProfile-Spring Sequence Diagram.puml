@@ -1,0 +1,89 @@
+@startuml
+autonumber
+!pragma teoz true
+actor Administrator #FFFFFF
+boundary ": ProfileRoute" #FFFFFF
+
+participant ": ImplProfileController" #FFFFFF
+
+Administrator -> ": ProfileRoute" ++ : GET api/profiles/{profileDescription}
+
+": ProfileRoute" -> ": ImplProfileController" ++ : response = getProfile(profileDescription)
+
+participant "iAppProfileService : \nImplAppProfileService" #FFFFFF
+
+": ImplProfileController" -> "iAppProfileService : \nImplAppProfileService" ++ : optProfileDTO = getProfile(description)
+
+participant ": ProfileDescription" #FFFFFF
+"iAppProfileService : \nImplAppProfileService" -> ": ProfileDescription" ++ : profileDescriptionToFind = \ncreateProfileDescription(description)
+create participant "profileDescriptionToFind : \nProfileDescription" #FFFFFF
+": ProfileDescription" -> "profileDescriptionToFind : \nProfileDescription" -- :createProfileDescription(description)
+
+participant "iProfileRepository : \nImplProfileRepository" #FFFFFF
+
+"iAppProfileService : \nImplAppProfileService" -> "iProfileRepository : \nImplProfileRepository" ++: profileInRepo = getProfileByDescription(profileDescriptionToFind)
+
+ref over "iProfileRepository : \nImplProfileRepository"
+[[GetProfile-getProfileByDescription.puml getProfileByDescription]] ref
+end
+
+deactivate "iProfileRepository : \nImplProfileRepository"
+
+alt If profileInRepo is found in H2 database
+    participant "profileInRepo : \nOptional<Profile>" #FFFFFF
+    "iAppProfileService : \nImplAppProfileService" -> "profileInRepo : \nOptional<Profile>" ++ : profileFoundInDB = get()
+    deactivate "profileInRepo : \nOptional<Profile>"
+
+    participant "iProfileMapper : \n ImplProfileMapper" #FFFFFF
+    "iAppProfileService : \nImplAppProfileService" -> "iProfileMapper : \n ImplProfileMapper" ++ : profileDTO = toDTO(profileFoundInDB)
+
+    ref over "iProfileMapper : \n ImplProfileMapper"
+    [[GetProfile-mapperToDTO.puml mapperToDTOProfile]] ref
+    end
+    deactivate "iProfileMapper : \n ImplProfileMapper"
+
+else If profileInRepo is not found in H2 database
+
+    participant "iProfileWebRepository : \nImplProfileWebRepository" #FFFFFF
+    "iAppProfileService : \nImplAppProfileService" -> "iProfileWebRepository : \nImplProfileWebRepository" ++: optProfileInWS = getProfileByDescription(profileDescriptionToFind)
+
+    ref over "iProfileWebRepository : \nImplProfileWebRepository"
+    [[GetProfile-getProfileByDescriptionWEBAPI.puml getProfileByDescriptionWEBAPI]] ref
+    end
+    deactivate "iProfileWebRepository : \nImplProfileWebRepository"
+
+    participant "optProfileInWS : \n Optional<ProfileWS>" #FFFFFF
+    "iAppProfileService : \nImplAppProfileService" -> "optProfileInWS : \n Optional<ProfileWS>" ++ : profileFoundInWS = get()
+    deactivate
+
+    "iAppProfileService : \nImplAppProfileService" -> "iProfileMapper : \n ImplProfileMapper" ++: profileDTO = toDTO(profileFoundInWS)
+
+    ref over "iProfileMapper : \n ImplProfileMapper"
+    [[GetProfile-mapperToDTOProfileWS.puml mapperToDTOProfileWS]] ref
+    end
+    deactivate "iProfileMapper : \n ImplProfileMapper"
+end
+
+create participant "optProfileDTO : \nOptional<ProfileDTO>" #FFFFFF
+"iAppProfileService : \nImplAppProfileService" -> "optProfileDTO : \nOptional<ProfileDTO>" : create(profileDTO)
+deactivate "iAppProfileService : \nImplAppProfileService"
+
+": ImplProfileController" -> "optProfileDTO : \nOptional<ProfileDTO>" ++ : profileDTO = get()
+deactivate
+
+participant "profileDTO : ProfileDTO" #FFFFFF
+": ImplProfileController" -> "profileDTO : ProfileDTO" ++ : add(link)
+deactivate "profileDTO : ProfileDTO"
+note left #FFFFFF
+Link to self - "GET" request method
+end note
+
+create participant "response : \nResponseEntity<Object>" #FFFFFF
+": ImplProfileController" -> "response : \nResponseEntity<Object>" : create(profileDTO)
+deactivate ": ImplProfileController"
+note left #FFFFFF
+HTTP status OK associated
+in the response
+end note
+
+@enduml

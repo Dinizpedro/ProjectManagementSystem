@@ -1,0 +1,85 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+autoactivate on
+
+
+"projectController : \n ImplProjectController" -> "projectService : \n ImplAppProjectService" : createAndSaveProject(dtoInput)
+
+group ref
+
+"projectService : \n ImplAppProjectService" -> ": UserID" : createUserID(dtoInput.userID)
+": UserID" -> "projectManagerUserID : \n UserID"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": ProjectCode" : createProjectCode(dtoInput.projectCode)
+": ProjectCode" -> "code : \n ProjectCode"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": TypologyID" : stringToTypologyID(dtoInput.typologyID)
+": TypologyID" -> "typologyID : \n TypologyID"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": CustomerID" : stringToCustomerID(dtoInput.customerID)
+": CustomerID" -> "customerID : \n CustomerID"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" ->  ": ProjectName" : create(dtoInput.projectName)
+": ProjectName" -> "name : \nProjectName"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": ProjectDescription" : create(dtoInput.projectDescription)
+": ProjectDescription" -> "description : \nProjectDescription"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": ProjectBudget" : create(dtoInput.projectBudget)
+": ProjectBudget" -> "budget : \nProjectBudget"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": ProjectBusinessSector" : create(dtoInput.projectBusinessSector)
+": ProjectBusinessSector" -> "businessSector : \n ProjectBusinessSector"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": ProjectNumberOfPlannedSprints" : create(dtoInput.projectNumberOfPlannedSprints)
+": ProjectNumberOfPlannedSprints" -> "numberOfPlannedSprints : \n ProjectNumberOfPlannedSprints"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": ProjectSprintDuration" : create(dtoInput.projectSprintDuration)
+": ProjectSprintDuration" -> "sprintDuration : \n ProjectSprintDuration"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": Time" : create(dtoInput.startDate, dtoInput.endDate)
+": Time" -> "dates : Time"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": ResourceCostPerHour" : create(dtoInput.costPerHour)
+": ResourceCostPerHour" -> "projectManagerCostPerHour : \n ResourceCostPerHour"  ** : create
+deactivate
+
+"projectService : \n ImplAppProjectService" -> ": ResourcePercentageOfAllocation" : create(dtoInput.percentageOfAllocation)
+": ResourcePercentageOfAllocation" -> "projectManagerAllocation : \n ResourcePercentageOfAllocation"  ** : create
+deactivate
+
+deactivate "projectService : \n ImplAppProjectService"
+
+end ref
+
+@enduml

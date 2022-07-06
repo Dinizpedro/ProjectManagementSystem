@@ -1,0 +1,20 @@
+@startuml
+title Extract Domain Model
+
+class User {
+    -name
+    -email
+    -function
+    -password
+    -photo
+
+}
+
+class Activation{
+    -code
+    -isActivated
+}
+
+User "belongs to 1" --> "1"Activation
+
+@enduml

@@ -1,0 +1,216 @@
+@startuml
+'https://plantuml.com/class-diagramheader IMPLEMENTATION VIEW
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "Project Management System" {
+
+    folder dataModel {
+            class UserJPA {
+            - email : String
+            - password : String
+            }
+    }
+
+    folder assemblers {
+             package iAssemblers {
+                 interface IUserAssemblerJPA {
+                 +  toJPA(User user) : UserJPA
+                 }
+             }
+             package ImplAssemblers {
+                 class ImplUserAssemblerJPA {
+                 - IUserFactory userFactory;
+                 + toJPA(User user) : UserJPA
+                 }
+               }
+             }
+    folder mappers {
+            package iMappers {
+                interface IUserMapper{
+                + toDTOWithPassword (User user) : dto
+                }
+            }
+            package ImplMappers {
+                class ImplUserMapper{
+                + toDTOWithPassword (User user) : dto
+                }
+            }
+    }
+     folder dataTransferObjects #white{
+        class ChangePasswordDTO {
+            - oldPassword : String
+            - newPassword : String
+            - email : String
+            }
+        }
+
+
+    folder "INFRASTRUCTURES" %lighten("orchid", 40) {
+        package persistence %lighten("orchid", 30){
+            package iRepositories %lighten("orchid", 30) {
+                interface IUserRepositoryJPA #white{
+                   +update(User user) : Optional<User>;
+                }
+            }
+        }
+        package routes %lighten("orchid", 30) {
+            package iRoutes {}
+            package implRoutes {}
+            }
+    }
+    folder "INTERFACE ADAPTERS" %lighten("aquamarine", 20){
+
+        package "Controllers" %lighten("aquamarine", 10){
+            package "IControllers" #white {
+                interface  IUserController {
+                + changePassword ( ChangePasswordDTO passwordDTO: ResponseEntity<Object>
+                }
+            }
+            package "ImplControllers" #white{
+                class UserController {
+                - IAppUserService userService;
+                + changePassword(ChangePasswordDTO passwordDTO: ResponseEntity<Object>
+                }
+            }
+            package implRepositories #white {
+                class ImplUserRepository{
+                - IUserRepositoryJPA userStore;
+                -IUserAssemblerJPA userAssembler;
+                + findUserByEmail(String email) : Optional<User>
+                }
+            }
+        }
+    }
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES" %lighten("blue", 90){
+
+        package "AppServices"{
+            package "IAppServices" #white {
+                interface IAppUserService {
+                + changePassword (ChangePasswordDTO passwordDTO): Optional<userDTO>
+                }
+            }
+            package "ImpAppServices" #white{
+                class UserService{
+                - IUserRepository userStore;
+                - IUserFactory userFactory;
+                + changePassword(ChangePasswordDTO passwordDTO): Optional<userDTO>
+                }
+            }
+        }
+
+        package "IRepositories" #white{
+            interface IUserRepository{
+             findUserByEmail(String email) : Optional<User>
+            }
+            }
+
+    }
+    folder "ENTITIES / CORE / DOMAIN" %lighten("lightsalmon", 20){
+
+        package "Aggregates" %lighten("lightsalmon", 30) {
+            package User #white {
+                entity User{
+                - Email email;
+                - Password password;
+                + updatePassword(String oldPassword, String newPassword) : boolean;
+                + areTheSameHash (String inputOldPasswordString) : boolean;
+                }
+            }
+        }
+
+        interface Entity #white
+        interface AggregateRoot #white
+
+        package "Factories" %lighten("lightsalmon", 30){
+                   package "iFactories" %lighten("lightsalmon", 30){
+                        interface UserFactory {
+                        + createUser : User
+                        }
+                   }
+
+                   package "implFactories" %lighten("lightsalmon", 30){
+                        class ImplUserFactory{
+                        + createUser : User
+                        }
+                    }
+                }
+
+        package "Shared" %lighten("lightsalmon", 30){
+            package "Value Objects" %lighten("lightsalmon", 30){
+                 class Password #white{
+                    - userPassword : String
+                    - Password(String password)
+                    + createPassword() : Password
+                    + createPasswordFromDB(String passwordHash) : Password
+                    - generateHash(String passwordToHash) : String
+                    - validatePassword (String password): boolean
+
+                 }
+                 class Email #white{
+                 - userEmail : String;
+                 + createEmail(String userEmail)) : Email;
+                 }
+            }
+        }
+        interface ValueObject #white
+    }
+
+
+
+iRoutes <|.. implRoutes
+routes ...> IUserController
+
+IUserRepositoryJPA ..> UserJPA
+
+IUserAssemblerJPA ..> UserJPA
+
+ImplUserAssemblerJPA ..|> IUserAssemblerJPA
+
+ImplUserMapper ..|> IUserMapper
+
+UserService ......UP> IUserMapper
+
+ImplUserAssemblerJPA .......|> UserFactory
+
+ImplUserFactory ..|> UserFactory
+
+IUserController <|... UserController
+
+IUserRepositoryJPA <...IUserController
+
+IUserAssemblerJPA ..> ImplUserRepository
+
+UserController ..> ChangePasswordDTO
+
+ImplUserRepository ..|> IUserRepository
+
+UserController ...> IAppUserService
+
+IAppUserService <|... UserService
+
+UserService ...> User
+
+UserService .> IUserRepository
+
+Password ...|> ValueObject
+
+User o- Password
+Email ...|> ValueObject
+
+User o- Email
+
+User ..|> AggregateRoot
+
+AggregateRoot ..|> Entity
+@enduml

@@ -1,0 +1,9 @@
+@startuml
+autonumber
+actor "User" as actor
+participant "<<system(C4)>>Project Management System" as PMS
+actor -> PMS : Search the list of projects that a user is allocated to
+activate actor
+activate PMS
+PMS --> actor : User allocated projects data loaded
+@enduml

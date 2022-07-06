@@ -1,0 +1,98 @@
+@startuml
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "Non-Registered User" as User
+boundary ": RouteUser" as Route #CBC3E3
+control ": ImplUserController" as Controller #CBC3E3
+participant "mapper:Json2DTO" as mapper #CBC3E3
+participant "userService: ImpAppUserService" as service #CBC3E3
+participant "email : Email" as email #CBC3E3
+participant "password : Password" as password #CBC3E3
+participant "userName : UserName" as userName #CBC3E3
+participant "function : Function" as function #CBC3E3
+participant "userID : UserID" as ID #CBC3E3
+participant "userstore :IUserRepository" as repository #CBC3E3
+participant "userFactory :UserFactoryImplementation" as factory #CBC3E3
+
+
+
+
+User-> Route : Post /users/ (json)
+activate User
+Route -> Controller :  createUser(json)
+activate Controller
+Controller  --> Controller : validate(json)
+Controller --> mapper : map2UserDTO(json)
+activate mapper
+create participant "userDTO : UserDTO" as dto #CBC3E3
+mapper --> dto : create(json)
+deactivate mapper
+Controller -> service : createAndSaveUser(UserDTO userDTO)
+activate service
+service -> repository : userOptional = findByEmail(userDTO.email)
+activate repository
+deactivate repository
+service -> repository : userOptional.isPresent()
+activate repository
+deactivate repository
+alt true
+service -> email : email = createEmail(userDTO.email)
+activate email
+create participant ":Email" as newEmail #CBC3E3
+email->newEmail : createEmail(userDTO.email)
+deactivate email
+service -> password : password = createPassword(userDTO.password)
+activate password
+create participant ":Password" as newPassword #CBC3E3
+password->newPassword : createPassword(userDTO.password))
+deactivate password
+service -> userName : userName = createUserName(userDTO.userName)
+activate userName
+create participant ":UserName" as newUserName #CBC3E3
+userName->newUserName : createUserName(userDTO.userName)
+deactivate userName
+service -> function : function = createFunction(userDTO.function)
+activate function
+create participant ":Function" as newFunction #CBC3E3
+function->newFunction : createFunction(userDTO.function)
+deactivate function
+service -> repository : id = getNextUserID()
+activate repository
+deactivate repository
+service -> ID : userID = createUserID(id)
+activate ID
+create participant ":UserID" as newUserID #CBC3E3
+ID->newUserID : createUserID(id)
+deactivate ID
+service -> factory : newUser = createUser(userID,email,password, userName, function)
+activate factory
+create entity "newUser : User" as newUser #CBC3E3
+factory -> newUser : newUser = createUser(userID,email,password,userName,function)
+deactivate factory
+service -> repository : save(User newUser)
+end
+activate repository
+repository --> service : newUser
+deactivate repository
+service --> Controller : newUser
+Controller --> User : response
+
+
+@enduml

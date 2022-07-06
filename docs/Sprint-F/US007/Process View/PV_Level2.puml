@@ -1,0 +1,45 @@
+@startuml
+autonumber
+actor Director #FFFFFF
+participant "Project Management UI" #FFFFFF
+participant "Project Management Business Logic" #FFFFFF
+participant "SGBD" #FFFFFF
+
+activate "Director"
+"Director" -> "Project Management UI" ++: Initiates process to define a new Resource
+
+"Project Management UI" --> "Director" : Requests the necessary information to define a newResource
+
+"Director" -> "Project Management UI" : Inserts data
+
+"Project Management UI" -> "Project Management Business Logic" ++: Defined new resource team member
+
+"Project Management Business Logic" -> "SGBD" ++ : does project exist already?
+
+"SGBD" --> "Project Management Business Logic" : true
+
+"Project Management Business Logic" -> "SGBD"  : does user exist already?
+
+"SGBD" --> "Project Management Business Logic" : true
+
+"Project Management Business Logic" -> "SGBD"  : the resource doesn't yet exist?
+"Project Management Business Logic" <-- "SGBD": true
+
+"Project Management Business Logic" -> "Project Management Business Logic"   : is not a PO?
+"Project Management Business Logic" <-- "SGBD": true
+
+"Project Management Business Logic" -> "Project Management Business Logic"  : are resource dates within project dates?
+"Project Management Business Logic" --> "Project Management Business Logic" : true
+
+"Project Management Business Logic" -> "SGBD" : save new Resource
+
+"SGBD" --> "Project Management Business Logic"  : inform operation success
+deactivate
+
+"Project Management Business Logic" --> "Project Management UI" : Inform operation result and return information about the newly defined Resource
+deactivate
+
+"Project Management UI" --> "Director" : Show newly defined Resource Team Member
+deactivate
+
+@enduml

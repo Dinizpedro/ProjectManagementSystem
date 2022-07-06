@@ -1,0 +1,40 @@
+@startuml
+class UpdateProfileUI #FFFFFF
+class UpdateProfileController #FFFFFF {
+	-singletonDM : DataManagement
+	+updateProfile(selectedUser, actualProfile, pretendedProfile) : boolean
+}
+
+class DataManagement #FFFFFF {
+	-users : UserStore
+	-profiles : ProfileStore
+	+getUsers() : UserStore
+	+getProfiles() : ProfileStore
+}
+
+class ProfileStore #FFFFFF {
+	-profileList : List
+	+getProfileByDescription() : Profile
+	+profileExists() : boolean
+	+areProfileDifferent() : boolean
+}
+
+class UserStore #FFFFFF {
+	-userList : List
+	+findUser() : User
+	+emailExists() : boolean
+}
+
+class User #FFFFFF {
+	-profiles : List
+	+updateProfile() : boolean
+	+changeProfile() : boolean
+}
+
+
+UserStore "1" -- "*" User
+DataManagement "1" -- "1" ProfileStore
+DataManagement "1" -- "1" UserStore
+UpdateProfileController ..> DataManagement
+UpdateProfileUI ..> UpdateProfileController
+@enduml

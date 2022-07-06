@@ -1,0 +1,16 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+actor "User"
+usecase (UC011 - Change a User password.)
+
+:User: -- (UC011 - Change a User password.)
+@enduml

@@ -1,0 +1,55 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+
+autonumber
+actor Director as d
+participant AssociateResourceUI as ui
+participant CreateResourceController as controller
+participant " DataManagement" as dm
+participant "singletonDM: DataManagement" as sdm
+
+
+activate d
+d -> ui : Inputs data
+activate ui
+ui -> controller : createResource(user, project, dates, costPerHour, percentageOfAllocation, startSprint, endSprint)
+activate controller
+controller -> dm : singletonDM = getDataManagement()
+activate dm
+deactivate dm
+controller -> sdm : createResource(user, project, dates, costPerHour, percentageOfAllocation, startSprint, endSprint)
+activate sdm
+
+sdm -> "newResource : Resource" ** : newResource = Resource(user, project, dates, costPerHour,percentageOfAllocation,startSprint,endSprint)
+sdm -> sdm : associateResource(newResource)
+
+
+
+sdm --> controller: True/False
+deactivate sdm
+controller --> ui: True/False
+ui --> d : Shows data
+deactivate ui
+deactivate d
+@enduml

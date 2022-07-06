@@ -1,0 +1,90 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+package "ScrumBoardDTO Package" {
+	class UserStoryDTO {
+		-code : String
+		-effort : int
+		-priority : int
+		-description : String
+		-status : String
+	}
+
+	class UserStoryMapper {
+		+toUserStoryDTO(userStory) : UserStoryDTO
+	}
+
+	class UserStoryListMapper {
+		+toUserStoryListDTO(userStoryListInput) : List<UserStoryDTO>
+	}
+
+	class ScrumBoardMapper {
+		+toScrumBoardDTO(plannedUserStories, runningUserStories, blockedUserStories,finishedUserStories,
+		 plannedTasks, runningTasksDTO, blockedTasks, finishedTasks) : ScrumBoardDTO
+	}
+
+	class TaskListMapper {
+		+toTaskListDTO(taskListInput) : List<TaskDTO>
+	}
+
+	class TaskMapper {
+		+toTaskDTO(task) : TaskDTO
+	}
+
+	class TaskDTO {
+		-taskNumber : int
+		-taskName : String
+		-taskDescription : String
+		-parentUserStoryCode : String
+		-effortEstimate : int
+		-taskType : String
+		-responsibleResource : String
+		-statusOfTask : String
+	}
+
+	class ScrumBoardDTO {
+		-plannedUserStoriesDTO : List<UserStoryDTO>
+		-runningUserStoriesDTO : List<UserStoryDTO>
+		-blockedUserStoriesDTO : List<UserStoryDTO>
+		-finishedUserStoriesDTO : List<UserStoryDTO>
+		-plannedTasks : List<TaskDTO>
+		-runningTasks : List<TaskDTO>
+		-blockedTasks : List<TaskDTO>
+		-finishedTasks : List<TaskDTO>
+	}
+
+}
+
+class ScrumBoardController {
+	+getScrumBoardOfCurrentSprint(userEmail, projectCode) : ScrumBoardDTO
+}
+
+class Sprint {
+	+generateScrumBoard() : ScrumBoardDTO
+	-getPlannedUserStories() : List<UserStory>
+	-getRunningUserStories() : List<UserStory>
+	-getBlockedUserStories() : List<UserStory>
+	-getFinishedUserStories() : List<UserStory>
+	-getPlannedTasks() : List<Task>
+	-getRunningTasks() : List<Task>
+	-getBlockedTasks() : List<Task>
+	-getFinishedTasks() : List<Task>
+}
+
+
+Sprint ..> ScrumBoardDTO
+ScrumBoardController ..> ScrumBoardDTO
+Sprint ..> ScrumBoardMapper
+ScrumBoardDTO ..> UserStoryDTO
+ScrumBoardDTO ..> TaskDTO
+TaskMapper "1" -- "1" TaskDTO : creates
+UserStoryMapper "1" -- "1" UserStoryDTO : creates
+TaskListMapper ..> TaskMapper
+UserStoryListMapper ..> UserStoryMapper
+ScrumBoardMapper ..> UserStoryListMapper
+ScrumBoardMapper ..> TaskListMapper
+ScrumBoardMapper "1" -up- "1" ScrumBoardDTO : creates
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+title US26 - As Administrator, I want to activate a user account
+class ActivateAccountUI
+class User {
+	+setToActive() : boolean
+	-userNotActive() : boolean
+	-setActivationStatusToActive()
+	-setActivationDate()
+}
+
+class SetUserAccountToActiveController {
+	+activateUserAccount(emailInput) : boolean
+}
+
+class DataManagement {
+	+getUsers() : userStore
+}
+
+class UserStore {
+	+findUser(emailInput) : User
+}
+
+class Activation {
+    -isActivated : boolean
+    +setToActive()
+    +setActivationDate()
+}
+
+skinparam nodesep 200
+skinparam ranksep 100
+
+ActivateAccountUI ..> SetUserAccountToActiveController
+UserStore "1"--> "userList 1" User
+DataManagement "1"--> "users 1" UserStore
+SetUserAccountToActiveController ..> UserStore
+SetUserAccountToActiveController ..right> DataManagement
+SetUserAccountToActiveController ..left> User
+User "1"--> "activation 1" Activation
+@enduml

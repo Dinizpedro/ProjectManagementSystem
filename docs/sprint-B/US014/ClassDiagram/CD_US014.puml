@@ -1,0 +1,74 @@
+@startuml
+scale 1000 width
+skinparam SameClassWidth true
+skinparam ClassFontSize 10
+skinparam ArrowFontSize 15
+skinparam nodesep 200
+skinparam ranksep 100
+skinparam linetype ortho
+skinparam packageSize 100
+
+skinparam class {
+BackgroundColor White
+ArrowColor Black
+BorderColor Black
+
+}
+skinparam package {
+BackgroundColor White
+ArrowColor Black
+BorderColor Black
+
+}
+package "UI" {
+class AssociateResourceUI
+}
+package "Controller" {
+class AssociateResourceController {
+	+associateProductOwner(email : String, projectCodeInput : String) : boolean
+}
+}
+
+package "Model" {
+class Project {
+	+associateScrumMaster(resource : Resource, sprintNumber : int) : boolean
+}
+
+class ProjectSprintList {
+    +validateAndAddScrumMaster(resource : Resource, sprintNumber : int, project : Project) : boolean
+
+}
+
+class DataManagement {
+	+getUserStore() : UserStore
+	+getProjectStore() : ProjectStore
+	+getResourceStore() : ResourceStore
+}
+package "Stores" {
+
+class ProjectStore {
+	+getProject(projectCodeInput : String) : Project
+}
+class ResourceStore {
+	+getResource(user : User, project : Project, sprintNumber : int) : Resource
+}
+class UserStore {
+	+findUser(email : String) : User
+}
+}
+}
+
+AssociateResourceUI ..> AssociateResourceController
+AssociateResourceController ..> ResourceStore
+AssociateResourceController ..> ProjectStore
+AssociateResourceController ..right..> UserStore
+AssociateResourceController ...> DataManagement
+Project "       *    " <|-up- "1   "  ProjectStore
+
+DataManagement "       1" ---|> "     1  users           " UserStore
+DataManagement "   1" --|> "projectStore   1" ProjectStore
+
+ResourceStore "   1    resources" <|-- "   1" DataManagement
+Project " 1 projectSprints" <|-- " 1" ProjectSprintList
+
+@enduml

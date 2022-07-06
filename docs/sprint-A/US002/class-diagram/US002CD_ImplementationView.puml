@@ -1,0 +1,150 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "OPT SYSTEM" {
+
+    folder "INFRASTRUCTURES" %lighten("orchid", 40) {
+        package persistence %lighten("orchid", 30){
+            package iPersistence  {}
+            package implPersistence {}
+            }
+        package routes %lighten("orchid", 30) {
+            package iRoutes{}
+            package implRoutes{}
+        }
+    }
+
+    folder "INTERFACE ADAPTERS" %lighten("aquamarine", 20){
+
+        package "Controllers" %lighten("aquamarine", 10){
+            package "IControllers" #white {
+                interface  IUserController {
+                + activateAccount(int userID, UserDTO userDTO : ResponseEntity<Object>
+                }
+            }
+            package "ImplControllers" #white{
+                class UserController {
+                - IAppUserService userService;
+                + activateAccount(int userID, UserDTO userDTO : ResponseEntity<Object>
+                }
+            }
+            package implRepositories #white {
+                class UserStore{
+                - List<User> userList;
+                + findById(UserID id) : User
+                }
+            }
+            package dataTransObjects #white{
+                class UserDTO {
+                + code : String
+                }
+            }
+        }
+    }
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES" %lighten("blue", 90){
+
+        package "AppServices"{
+            package "IAppServices" #white {
+                interface IAppUserService {
+                + activateAccount(int id, UserDTO userDTO) : boolean
+                }
+            }
+            package "ImpAppServices" #white{
+                class UserService{
+                - IUserRepository userStore;
+                - IUserFactory userFactory;
+                + activateAccount(int id, UserDTO userDTO)
+                }
+            }
+        }
+
+        package "IRepositories" #white{
+            interface IUserRepository{
+             findById(UserID id) : User;
+            }
+            }
+
+        }
+
+    folder "ENTITIES / CORE / DOMAIN" %lighten("lightsalmon", 20){
+
+        package "Aggregates" %lighten("lightsalmon", 30) {
+            package User #white {
+                entity User{
+                - UserID id;
+                - Activation activation;
+                + activateAccount((String inputCode) : boolean;
+                }
+            }
+        }
+
+        interface Entity #white
+        interface AggregateRoot #white
+
+        package "Shared" %lighten("lightsalmon", 30){
+            package "Value Objects" %lighten("lightsalmon", 30){
+                 class Activation #white{
+                    - code : String
+                    - isActivated : boolean
+                    + Activation()
+                    - generateCode() : String
+                    - compareActivationCode(String inputCode) : boolean
+                    + validateActivation(String inputCode) : boolean
+                 }
+                 class UserID #white{
+                 - identity : int;
+                 + createUserID(int identity) : UserID;
+                 }
+            }
+        }
+        interface ValueObject #white
+    }
+
+iRoutes <|.d. implRoutes
+
+implRoutes ...> IUserController
+
+IUserController <|... UserController
+
+UserController ..> UserDTO
+
+UserStore ..|> IUserRepository
+
+UserController ...> IAppUserService
+
+IAppUserService <|... UserService
+
+UserService ...> User
+
+UserService .> IUserRepository
+
+UserStore...> iPersistence
+
+implPersistence ..|> iPersistence
+
+Activation ...|> ValueObject
+
+User *- Activation
+
+UserID ...|> ValueObject
+
+User *- UserID
+
+User ..|> AggregateRoot
+
+AggregateRoot ..|> Entity
+@enduml
+

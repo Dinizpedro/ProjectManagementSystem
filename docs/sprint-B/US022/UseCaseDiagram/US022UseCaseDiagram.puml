@@ -1,0 +1,20 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+actor ProjectManager as TM
+usecase (UC022 - create a sprint.) as UC
+
+:TM: -- UC
+@enduml
+
+
+
+

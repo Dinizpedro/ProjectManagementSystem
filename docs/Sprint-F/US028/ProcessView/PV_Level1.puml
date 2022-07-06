@@ -1,0 +1,11 @@
+@startuml
+autonumber
+actor "Director" as actor #FFFFFF
+participant "Project Management System" as PMS #FFFFFF
+actor -> PMS : Initiates process to get all the resources in the selected project
+activate PMS
+PMS --> actor : Inform operation result and \nreceives data of the resources in the selected project
+deactivate actor
+deactivate PMS
+
+@enduml

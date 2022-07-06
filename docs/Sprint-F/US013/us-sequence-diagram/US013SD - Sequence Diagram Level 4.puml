@@ -1,0 +1,94 @@
+@startuml
+autonumber
+!pragma teoz true
+boundary ": ProfileRoute" #FFFFFF
+
+participant ": ImplProfileController" #FFFFFF
+
+-> ": ProfileRoute" ++ : POST api/profiles (json)
+
+": ProfileRoute" -> ": ImplProfileController" ++ : response = addNewProfile(profileCreationDTO)
+note left
+profileCreationDTO : ProfileCreationDTO
+with the new profile description as a String
+end note
+
+participant "profileCreationDTO : \nProfileCreationDTO" #FFFFFF
+participant "iAppProfileService : \nImplAppProfileService" #FFFFFF
+
+": ImplProfileController" -> "profileCreationDTO : \nProfileCreationDTO" ++: inputProfileDescription = description
+deactivate "profileCreationDTO : \nProfileCreationDTO"
+
+": ImplProfileController" -> "iAppProfileService : \nImplAppProfileService" ++ : profileDTOOpt = addNewProfile(inputProfileDescription)
+
+participant ": ProfileDescription" #FFFFFF
+"iAppProfileService : \nImplAppProfileService" -> ": ProfileDescription" ++ : profileDescription = createProfileDescription(description)
+create participant "profileDescription : \nProfileDescription" #FFFFFF
+": ProfileDescription" -> "profileDescription : \nProfileDescription" -- :createProfileDescription \n (description)
+
+participant "iProfileRepository : \nImplProfileRepository" #FFFFFF
+
+"iAppProfileService : \nImplAppProfileService" -> "iProfileRepository : \nImplProfileRepository" : profileExistsInDB = profileExists(profileDescription)
+activate "iProfileRepository : \nImplProfileRepository"
+
+ref over "iProfileRepository : \nImplProfileRepository"
+[[US013SD-profileExistsInRepo.puml profileExistsInRepo]] ref
+end
+deactivate "iProfileRepository : \nImplProfileRepository"
+
+participant "profileFactory : \nProfileFactoryImplementation" #FFFFFF
+
+"iAppProfileService : \nImplAppProfileService" -> "profileFactory : \nProfileFactoryImplementation" ++ : newProfile = createProfile(profileDescription)
+
+
+note left
+If profileExistsInDB is false
+[Profile with that description doesn't exist
+in the database]
+end note
+
+create participant "newProfile : Profile" #FFFFFF
+"profileFactory : \nProfileFactoryImplementation" -> "newProfile : Profile" ** : create(profileDescription)
+deactivate "profileFactory : \nProfileFactoryImplementation"
+
+
+"iAppProfileService : \nImplAppProfileService" -> "iProfileRepository : \nImplProfileRepository" ++: profileInDB = save(newProfile)
+
+ref over "iProfileRepository : \nImplProfileRepository"
+[[US013SD-saveNewProfile.puml saveNewProfile]] ref
+end
+deactivate "iProfileRepository : \nImplProfileRepository"
+
+participant "iProfileMapper : \n ImplProfileMapper" #FFFFFF
+"iAppProfileService : \nImplAppProfileService" -> "iProfileMapper : \n ImplProfileMapper" ++ : profileDTO = toDTO(profileInDB)
+
+
+ref over "iProfileMapper : \n ImplProfileMapper"
+[[US013SD-mapperToDTO.puml mapperToDTO]] ref
+end
+deactivate "iProfileMapper : \n ImplProfileMapper"
+
+create participant "profileDTOOpt : \nOptional<ProfileDTO>" #FFFFFF
+"iAppProfileService : \nImplAppProfileService" -> "profileDTOOpt : \nOptional<ProfileDTO>" : create(profileDTO)
+
+deactivate "iAppProfileService : \nImplAppProfileService"
+
+": ImplProfileController" -> "profileDTOOpt : \nOptional<ProfileDTO>" ++ : profileDTO = get()
+deactivate
+
+participant "profileDTO : \nProfileDTO" #FFFFFF
+": ImplProfileController" -> "profileDTO : \nProfileDTO" ++ : add(link)
+deactivate "profileDTO : \nProfileDTO"
+note left #FFFFFF
+Link to self - "GET" request method
+end note
+
+create participant "response : \nResponseEntity<Object>" #FFFFFF
+": ImplProfileController" -> "response : \nResponseEntity<Object>" : create(profileDTO)
+deactivate ": ImplProfileController"
+note left #FFFFFF
+HTTP status created associated
+in the response
+end note
+
+@enduml

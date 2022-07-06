@@ -1,0 +1,20 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+usecase (UC016 - Get Status of Activities in a Project.)
+
+:Director: -- (UC016 - Get Status of Activities in a Project.)
+:PM: -- (UC016 - Get Status of Activities in a Project.)
+(UC016 - Get Status of Activities in a Project.) -- :PO:
+(UC016 - Get Status of Activities in a Project.) -- :SM:
+
+
+@enduml

@@ -1,0 +1,41 @@
+@startuml
+package ui{
+class ": GetUserStoryByPriorityUI" as ui
+}
+package controller {
+class ": GetUserStoryByPriorityController" as controller {
+	+getUserStoryByPriority(projectCode)
+	}
+}
+package model {
+skinparam nodesep 100
+skinparam ranksep 80
+class ": Project" as project {
+
+	+getProductBacklog()
+}
+
+class ": ProjectStore" as projectStore {
+	+getProject(projectCode)
+}
+
+class ": DataManagement" as dataManagement {
+	+getProjectStore()
+}
+
+class ": ProductBacklog" as productBacklog {
+	-userStoryList : ArrayList
+	+getUserStoryByPriority()
+}
+}
+
+
+project "1" --> "productBacklog   1" productBacklog
+controller ..> productBacklog
+projectStore "1" --> "projects    0..*" project
+dataManagement "1"  --> "projectStore  1" projectStore
+controller ..> project
+controller ..> projectStore
+controller ..> dataManagement
+ui ..> controller
+@enduml

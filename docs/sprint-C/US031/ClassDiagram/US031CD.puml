@@ -1,0 +1,182 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+package "UI"{
+class CreateUserSToryTaskUI{}
+}
+
+package "Controller"{
+class CreateUserStoryTaskController {
+	+createUserStoryTask(CreateUserStoryTaskDTO dto) : boolean
+}
+}
+package "Dto" {
+class CreateUserStoryTaskDTO {
+    	-nameDTO : String
+    	-descriptionDTO : String
+    	-parentUserStoryCodeDto : String
+    	-startDateDto : String
+    	-endDateDto : String
+    	-precedenceDto : List<Integer>
+    	-responsibleEmailDto : String
+    	-typeOfTaskDto : String
+    	-projectCodeDto : String
+    	-sprintNumberDto : int
+    	-effortDto : int
+    	+CreateUserStoryTaskDto(String nameInput, String descriptionInput, String parentUserStoryCodeInput, String startDateInput, String endDateInput, List<Integer> precedenceListInput, String responsibleEmailInput, String typeOfTaskInput, String projectCodeInput, int sprintNumberInput, int effortEstimateInput)
+    }
+}
+
+package "Model" {
+class DataManagement {
+	+getInstance() : DataManagement
+	+getProjectStore() : ProjectStore
+	+getResourceStore() : ResourceStore
+	+getTaskStatuses() : TaskStatusStore
+}
+
+
+package "Stores" {
+class ProjectStore {
+	+getProject(String code) : Project
+}
+
+class TaskStatusStore {
+	+getPlannedTaskStatus() : Status
+}
+
+class UserStoryStatusStore {
++ UserStoryStatusStore()
++ findUserStoryStatus (String status) : Status
+}
+
+class ResourceStore {
+	+getResource(String userEmail, Project project, int sprintNumber) : Resource
+}
+}
+
+class Project {
+	-projectCode : ProjectCode
+	- dates : Time
+	+createUserStoryTask(CreateUserStoryTaskDto dto, Status plannedTaskStatus, Resource responsible) : boolean
+}
+
+class ProjectCode {
+    -code : String
+    +create(String codeInput)
+    +isValidCode(String codeInput)
+}
+
+class ProjectSprintList {
+	-projectSprints : List
+	+createUserStoryTask(CreateUserStoryTaskDTO dto, Status plannedTaskStatus, Resource responsible) : boolean
+}
+
+class Resource{
+    -userInput : User
+    -projectInput : Project
+    -datesInput : Time
+}
+
+class Sprint {
+	-number : int
+    -dates : Time
+    -status : Status
+	+createUserStoryTask(String name, String description, List<Integer> precedence, int effort, String typeOfTask, Time taskTime, String parentUserStoryCode, Status plannedTaskStatus, Resource responsible) : boolean
+}
+
+class SprintBacklog {
+	+getUserStoryIfStatusNotFinished(String parentUserStoryCode) : UserStory
+}
+
+
+class SprintTaskList {
+	-tasks : Set<Task>
+	+createUserStoryTask(String nameInput, String descriptionInput, List<Integer> precedenceListInput, int effortEstimateInput, String typeOfTask, Time taskTime, Status plannedInput, Resource responsibleInput, UserStory parentUserStory) : boolean
+	+generateTaskNumber() :int
+	+addTask(Task newUserStoryTask) : void
+	+getPrecedenceTaskList(List precedenceListInput) : Set<Task>
+}
+
+class TaskTime {
+	-startDate : Date
+	-endDate : Date
+	+create(startDate, endDate)
+}
+
+class UserStoryTask {
+	-parentUserStory : UserStory
+	+UserStoryTask(int numberInput, Name nameInput, Description descriptionInput, UserStory parentUserStory, Time taskTimeInput, EffortEstimate effortEstimateInput, Set precedenceListInput, String taskTypeInput, Resource responsibleInput, Status statusOfTaskInput)
+	+getParentUserStory()
+}
+class Task {
+	- number : int
+	- name : Name
+	- description : Description
+	- taskTime : Time
+	- hoursSpent : Hour
+	- effortEstimate : EffortEstimate
+	- percentageOfExecution : double
+	- precedenceList : Set<Task>
+	- typeOfTask : String
+	- responsible : Resource
+	- statusOfTask : Status
+	+Task(int numberInput, Name nameInput, Description descriptionInput, Time taskTimeInput, EffortEstimate effortEstimateInput, Set<Task> precedenceListInput, String taskTypeInput, Resource responsibleInput, Status statusOfTaskInput)
+}
+
+class Status {
+    -statusDescription : String
+    +create(String statusDescription)
+}
+
+class UserStory {
+- code : String
+- effort : EffortEstimate
+- priority : int
+- description : String
+- status : Status
++ UserStory(String descriptionInput, String userStoryCode, Status userStoryStatus, int priority)
+}
+}
+
+UserStoryTask --|> "userStoryTask" Task : is an extension of
+Task "0...*" -> "1" SprintTaskList : is part of
+UserStoryTask "0...*" -> "1" SprintTaskList : is part of
+Status "0...*"-> "1" TaskStatusStore : is part of
+UserStoryStatusStore"status" <- Status
+UserStory "0..*" -> "userStoryStatuses 1" UserStoryStatusStore : has
+UserStory ->"userStoryTask 0..*" UserStoryTask : origins
+
+Sprint "1" --> "taskTime 1" TaskTime
+SprintTaskList "sprintTaskList 0..*" -- "1" Sprint
+SprintBacklog "sprintBacklog 1" --> "1..*" Sprint : is part of
+SprintBacklog "1" --> "0..*" UserStoryTask : has
+SprintBacklog "1" --> "1..*" UserStory : has
+ProjectSprintList "Sprint 1" <-- "0..*" Sprint : is part of
+ProjectSprintList "1"--> "1 projectSprintList" Project : is part of
+Project "1" --> "1..* resources" Resource : has
+Resource "1" --> "1..* Team Member" Task : creates
+Project "1"<-- "1"ProjectCode : is part of
+ProjectStore "1" <-- "project 0..*" Project : is part of
+DataManagement "1" --> "taskStatusStore 1" TaskStatusStore
+ResourceStore "1 resources" <-- "0..*" Resource : is part of
+DataManagement "1" --> "resourceStore 1" ResourceStore
+DataManagement "1" --> "projectStore 1" ProjectStore
+
+
+
+
+Sprint ..> CreateUserStoryTaskDTO
+CreateUserStoryTaskDTO .> "projectSprints" ProjectSprintList
+
+CreateUserStoryTaskController ..> "resourceStore" ResourceStore
+CreateUserStoryTaskController ..> "projectStore" ProjectStore
+CreateUserStoryTaskController ..> "DataManagement" DataManagement
+CreateUserStoryTaskController ....> "DTO" CreateUserStoryTaskDTO
+CreateUserStoryTaskController ..> "taskStatusStore" TaskStatusStore
+CreateUserSToryTaskUI ..> CreateUserStoryTaskController
+@enduml

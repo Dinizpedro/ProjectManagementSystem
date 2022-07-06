@@ -1,0 +1,17 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+actor TeamMember
+usecase (UC030 - I want to view the Scrum Board of current sprint.)
+
+:TeamMember: -- (UC030 - I want to view the Scrum Board of current sprint.)
+@enduml

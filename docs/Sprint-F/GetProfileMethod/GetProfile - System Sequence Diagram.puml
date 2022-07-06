@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor Administrator #FFFFFF
+participant "Project Management System" #FFFFFF
+
+activate "Administrator"
+"Administrator" -> "Project Management System" ++: Initiates process to get a Profile
+"Project Management System" --> "Administrator" : Requests the necessary information to get a Profile
+deactivate
+
+"Administrator" -> "Project Management System" ++: Inserts description of the Profile to be found
+"Project Management System" --> "Administrator" : Inform operation result and return information about the requested Profile
+deactivate
+
+@enduml

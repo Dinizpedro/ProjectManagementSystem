@@ -1,0 +1,22 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+actor TeamMember as TM
+actor ScrumMaster as SM
+usecase (UC032 - Create a task outside the scope of a user story.) as UC
+
+:TM: -- UC
+UC -- :SM:
+@enduml
+
+
+
+

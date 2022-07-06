@@ -1,0 +1,98 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+class Resource  {
+	-user
+	-project
+	-starDate
+	-endDate
+	-costPerHour
+	-percentageOfAllocation
+}
+
+class Project{
+    -code
+    -name
+    -description
+    -startDate
+    -endDate
+    -sprintDuration
+    -numberOfPlannedSprints
+    -budget
+    -projectStatus
+    -businessSector
+}
+
+
+
+class UserStory {
+	-code
+	-effort
+	-priority
+	-description
+	-status
+}
+
+class UserStoryTask{
+    -parentUserStory
+ }
+
+ Class ProjectBacklog {
+ -projectBacklog
+ }
+class Task {
+	-code
+	-name
+	-description
+	-parentUserStory
+	-taskTime
+	-hoursSpent
+	-effortEstimate
+	-percentageOfExecution
+	-precedence
+	-taskType
+	-responsible
+	-taskStatus
+}
+
+class ProjectSprintList{
+    -projectSprints
+ }
+
+class SprintBacklog  {
+	-userStoryStatusList
+	-sprintBacklog
+}
+
+class Sprint {
+	-number
+	-goal
+	-dates
+	-status
+	-sprintBacklog
+	-listOfTasks
+}
+
+Resource "1.* ScrumMaster" --- "1" Project
+
+Resource "1.* TeamMember" ---> "1.*" Task : creates
+Resource "1.* TeamMember" ---> "1.*" UserStoryTask : creates
+Resource "1 Creator" ----> "1.*" UserStory : creates
+Resource "1.* Developer" -------- "1" Project
+
+
+UserStory "1.*" --> "1" ProjectBacklog : is added to
+UserStory "0.1" --> "0.*" UserStoryTask : is decomposed
+UserStoryTask "1" ---> "1" Task : extends
+Task "1.*" --> "1.*" SprintBacklog : origins
+SprintBacklog "1.*" --> "1.*"ProjectBacklog : is part of
+
+Sprint "1" --> "1" SprintBacklog : origins
+
+Sprint "0.*" --> "1"ProjectSprintList : is part of
+ProjectSprintList "1" --> "1" Project : is part of
+Project "1" --> "1" ProjectBacklog : has
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+scale 600 width
+
+skinparam SameClassWidth true
+skinparam ClassFontSize 10
+skinparam ArrowFontSize 7
+skinparam nodesep 150
+skinparam ranksep 20
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor White
+ArrowColor Black
+ArrowSize 1000
+BorderColor Black
+}
+class Resource  {
+	-startDate
+	-endDate
+	-costPerHour
+	-percentageOfAllocation
+}
+
+class Project {
+	-code
+	-name
+	-description
+	-dates
+	-sprintDuration
+	-numberOfPlannedSprints
+	-budget
+	-projectStatus
+	-businessSector
+}
+
+class User {
+	-name
+	-function
+	-email
+	-password
+}
+
+User "1     user   " --up--  " 0..*" Resource : is classified as >
+Project "1" ---right--- "  1     projectManager" Resource
+Project "1" ------ "  1        productOwner" Resource
+Project "1" ------ "  1        scrumMaster" Resource
+Project "1" ---- "  1     projectTeam  " Resource
+Project "1.*  "---- " 1  " User : is created by >
+Project "1.*  "-[hidden]-> " 1  " User : is created by
+@enduml

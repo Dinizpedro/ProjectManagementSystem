@@ -1,0 +1,13 @@
+@startuml
+autonumber
+actor "Product Owner"
+participant "System"
+activate "Product Owner"
+activate "System"
+"Product Owner"->"System" : Selects Project (inserts project code))
+"System" -> "Product Owner" : Project exists
+"Product Owner"->"System" : Selects UserStory (inserts user story code)
+"System" -> "Product Owner" : UserStory exists
+"Product Owner"-> "System" : Sets new priority (inserts new priority)
+"System" -> "Product Owner" : Confirms that priority was changed
+@enduml

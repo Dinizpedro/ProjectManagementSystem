@@ -1,0 +1,11 @@
+@startuml
+autonumber
+actor "Administrator"
+participant "System"
+activate "Administrator"
+activate "System"
+"Administrator"->"System" : Selects User (inserts email))
+"System" -> "Administrator" : User exists
+"Administrator"-> "System" : Inactivates User Account
+"System" -> "Administrator" : Confirms that user is inactivated
+@enduml

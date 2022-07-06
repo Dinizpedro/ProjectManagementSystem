@@ -1,0 +1,28 @@
+@startuml
+class Project {
+	-code
+	-name
+	-description
+	-startDate
+	-endDate
+	-sprintDuration
+	-budget
+	-projectStatus
+	-businessSector
+}
+
+class Resource {
+	-user
+	-project
+	-startDate
+	-endDate
+	-costPerHour
+	-percentageOfAllocation
+}
+
+
+Project "1" <-- "1..*" Resource : ProjectTeam
+Project "1" <-- "1..*" Resource : Scrum Master
+Project "1" <-- "1..*" Resource : Product Owner
+Project "1" <-- "1..*" Resource : Project Manager
+@enduml

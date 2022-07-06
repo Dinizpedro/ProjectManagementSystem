@@ -1,0 +1,8 @@
+@startuml
+
+actor ProjectMember
+usecase (UC034-Update the status of a user story in the scope of the current sprint backlog.)
+
+:ProjectMember: -- (UC034-Update the status of a user story in the scope of the current sprint backlog.)
+
+@enduml

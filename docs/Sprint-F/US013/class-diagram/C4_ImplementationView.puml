@@ -1,0 +1,245 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "Project Management SYSTEM" {
+
+    folder "INFRASTRUCTURE" %lighten("orchid", 40){
+
+        package persistence %lighten("orchid", 30){
+            package iRepositories  {
+                interface IProfileRepositoryJPA{
+                + existsProfileJPAByProfileDescription(String profileDescription) : boolean
+                + save(ProfileJPA profileJPA) : ProfileJPA
+                 }
+            }
+    }
+        package routes %lighten("orchid", 30) {
+        }
+    }
+
+
+    package assemblers {
+                package iAssemblersJPA{
+                    interface IProfileAssemblerJPA {
+                    + toDomain(ProfileJPA profileJPA) : Profile
+                    + toData(Profile profile) : ProfileJPA
+                    }
+                }
+                package implAssemblersJPA{
+                    class ImplProfileAssemblerJPA{
+                    + toDomain(ProfileJPA profileJPA) : Profile
+                    + toData(Profile profile) : ProfileJPA
+                    }
+                }
+            }
+
+    package dataModel #white{
+           class ProfileJPA {
+           - profileDescription : String
+           + ProfileJPA(String profileDescription) : ProfileJPA
+           + getProfileDescription() : String
+          }
+    }
+
+    folder "INTERFACE ADAPTERS" %lighten("aquamarine", 20){
+
+        package "Controllers" %lighten("aquamarine", 10){
+            package "IControllers" #white {
+                interface  IProfileController {
+                + addNewProfile(@RequestBody ProfileCreationDTO profileCreationDTO) : ResponseEntity<Object>
+                }
+            }
+            package "ImplControllers" #white{
+                class ImplProfileController {
+                + addNewProfile(@RequestBody ProfileCreationDTO profileCreationDTO) : ResponseEntity<Object>
+                }
+            }
+        }
+
+
+        package implRepositories %lighten("aquamarine", 10) {
+                class ImplProfileRepository{
+                + profileExists(ProfileDescription profileDescription) : boolean
+                + save(Profile newProfile) : Profile                }
+            }
+        }
+        }
+
+        package mappers {
+                    package iMappers{
+                        interface IProfileMapper {
+                        + toDTO(Profile profile) : ProfileDTO
+                        }
+                    }
+                    package implMappers{
+                        class ImplProfileMapper{
+                        + toDTO(Profile profile) : ProfileDTO
+                        }
+                    }
+                }
+
+         package dataTransferObjects #white{
+                        class ProfileDTO {
+                        + profileDescription : String
+                        + ProfileDTO(String profileDescription) : ProfileDTO
+                        }
+                    }
+
+
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES" %lighten("blue", 90){
+
+        package "AppServices"{
+            package "IAppServices" #white {
+                interface IAppProfileService {
+                + addNewProfile(String description) :  Optional<ProfileDTO>
+                }
+            }
+            package "ImpAppServices" #white{
+                class ImplAppProfileService{
+                + addNewProfile(String description) :  Optional<ProfileDTO>
+                }
+            }
+        }
+
+        package "IRepositories" #white{
+            interface IProfileRepository{
+            + profileExists(ProfileDescription profileDescription) : boolean
+            + save(Profile newProfile) : Profile
+            }
+        }
+
+    }
+
+    folder "ENTITIES / CORE / DOMAIN" %lighten("lightsalmon", 20){
+
+        package "Aggregates" %lighten("lightsalmon", 30) {
+            package Profile #white {
+                entity Profile{
+                + getDesignation() : String
+                + Profile(ProfileDescription designation) : Profile
+                }
+            }
+        }
+
+        interface Entity #white
+        interface AggregateRoot #white
+
+        package "Factories" %lighten("lightsalmon", 30){
+           package "iFactories" %lighten("lightsalmon", 30){
+                interface ProfileFactory {
+                + createProfile(ProfileDescription profileDescription) : Profile
+                }
+           }
+
+           package "implFactories" %lighten("lightsalmon", 30){
+                class ProfileFactoryImplementation{
+                + createProfile(ProfileDescription profileDescription) : Profile
+                }
+            }
+        }
+
+
+        package "Shared" %lighten("lightsalmon", 30){
+            package "Value Objects" %lighten("lightsalmon", 30){
+                 class ProfileDescription #white{
+                    - description : String
+                    + createProfileDescription(String ProfileDescription) : ProfileDescription
+                    + getDescription() : String
+                 }
+            }
+        }
+        interface ValueObject #white
+    }
+
+' //----INFRAESTRUCTURE----
+
+' ROUTE - CONTROLLER
+"INFRASTRUCTURE" --[hidden]-> "INTERFACE ADAPTERS"
+"INTERFACE ADAPTERS" --[hidden]-> "APPLICATION SERVICES / USE CASE SERVICES"
+"APPLICATION SERVICES / USE CASE SERVICES" --[hidden]> "ENTITIES / CORE / DOMAIN"
+
+routes .> IProfileController
+
+' ASSEMBLER  - FACTORY
+
+ImplProfileAssemblerJPA ..|> IProfileAssemblerJPA
+
+ImplProfileAssemblerJPA ..> ProfileFactory
+
+
+' REPOSITORY_JPA - REPOSITORY
+IProfileRepositoryJPA ..> ProfileJPA
+
+ImplProfileRepository .up.> IProfileRepositoryJPA
+ImplProfileRepository .down.> IProfileAssemblerJPA
+
+IProfileAssemblerJPA .> ProfileJPA
+IProfileAssemblerJPA ...> Profile
+
+IProfileRepository ..> ProfileDescription
+IProfileRepository ..> Profile
+
+' //----INTERFACE_ADAPTERS----
+
+' CONTROLLER - DTO
+
+IProfileController <|. ImplProfileController
+
+ImplProfileController .> ProfileDTO
+
+ImplProfileController ...> IAppProfileService
+
+ImplProfileRepository ..|> IProfileRepository
+' //----APPLICATION SERVICES----
+
+' SERVICE - REPOSITORY
+
+IAppProfileService <|. ImplAppProfileService
+
+ImplAppProfileService .> IProfileRepository
+
+ImplAppProfileService ..> ProfileFactory
+
+ImplAppProfileService ..> IProfileMapper
+
+' MAPPER  - FACTORY
+
+IProfileMapper <|. ImplProfileMapper
+
+IProfileMapper ...> ProfileDTO
+
+IProfileMapper ...> Profile
+
+' //----ENTITIES/CORE/DOMAIN----
+
+' FACTORIES
+
+ProfileFactoryImplementation .left.|> ProfileFactory
+
+ProfileFactory .> Profile
+
+' VALUE OBJECTS
+
+ProfileDescription ..|> ValueObject
+
+
+' AGREGGATE ROOT
+Profile .|> AggregateRoot
+
+Profile .> ProfileDescription
+
+AggregateRoot ..|> Entity
+@enduml

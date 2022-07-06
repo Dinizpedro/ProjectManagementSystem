@@ -1,0 +1,24 @@
+@startuml
+participant ": ImplUserStoryRepository" as usRepository
+participant ": ImplUserStoryAssemblerJPA" as usAssembleJPA
+participant ": UserStoryFactoryImplementation" as usFactory
+activate usRepository
+usRepository -> usAssembleJPA : userStory = userStoryJPAtoUserStory
+activate usAssembleJPA
+usAssembleJPA -> usFactory : UserStoryID userStoryID = getUserStoryIdFromUserStoryJPA(UserStoryJPA userStoryJPA)
+activate usFactory
+usAssembleJPA -> usFactory : ProjectCode projectCode = getProjectCodeFromUserStoryJPA(UserStoryJPA userStoryJPA)
+usAssembleJPA -> usFactory : UserStoryCode userStoryCode = getUserStoryCodeFromUserStoryJPA(UserStoryJPA userStoryJPA)
+usAssembleJPA -> usFactory : UserStoryDescription userStoryDescription = getUserStoryDescriptionFromUserStoryJPA(UserStoryJPA userStoryJPA)
+usAssembleJPA -> usFactory : SprintID sprintID = getSprintIdFromUserStoryJPA(UserStoryJPA userStoryJPA)
+usAssembleJPA -> usFactory : EffortEstimate effortEstimate = getEffortEstimateFromUserStoryJPA(userStoryJPA)
+usAssembleJPA -> usFactory : Priority priority = getPriorityFromUserStoryJPA(userStoryJPA)
+usAssembleJPA -> usFactory : UserStoryStatus userStoryStatus = getStatusFromUserStoryCodeJPA(userStoryJPA)
+usAssembleJPA -> usFactory : UserStoryCode parentUserStoryCode = getParentUserStoryCodeFromUserStoryJPA(userStoryJPA)
+deactivate usAssembleJPA
+deactivate usRepository
+create participant "userStory: UserStory" as us
+usFactory -> us : createUserStory
+deactivate usFactory
+
+@enduml

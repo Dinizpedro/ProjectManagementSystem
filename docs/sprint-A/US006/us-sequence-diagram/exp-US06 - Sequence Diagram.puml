@@ -1,0 +1,51 @@
+@startuml
+autonumber
+actor Administrator #FFFFFF
+participant ": UpdateProfileUI" #FFFFFF
+participant ": UpdateProfileController" #FFFFFF
+participant ": DataManagement" #FFFFFF
+participant ": ProfileStore"
+participant ": UserStore"
+participant "selectedUser: User" #FFFFFF
+Administrator -> ": UpdateProfileUI" : Inputs data
+activate Administrator
+activate ": UpdateProfileUI"
+": UpdateProfileUI" -> ": UpdateProfileController" : updateProfile(userEmail, actualProfile, pretendedProfile)
+activate ": UpdateProfileController"
+deactivate ": UpdateProfileController"
+": UpdateProfileController" -> ": DataManagement" : getUsers()
+activate ": DataManagement"
+deactivate ": DataManagement"
+": UpdateProfileController" -> ": DataManagement" : getProfiles()
+activate ": DataManagement"
+deactivate ": DataManagement"
+": UpdateProfileController" -> ": ProfileStore" : actualProfile = getProfileByDescription(actualProfile)
+activate ": ProfileStore"
+deactivate ": ProfileStore"
+": UpdateProfileController" -> ": ProfileStore" : pretendedProfile = getProfileByDescription(pretendedProfile)
+activate ": ProfileStore"
+deactivate ": ProfileStore"
+": UpdateProfileController" -> ": UserStore" : selectedUser = findUser(userEmail)
+activate ": UserStore"
+deactivate ": UserStore"
+": UpdateProfileController" -> ": UserStore" : userExists = emailExists(userEmail)
+activate ": UserStore"
+
+": UserStore" --> ": UpdateProfileController" : true
+deactivate ": UserStore"
+": UpdateProfileController" -> ": ProfileStore" : profileExists = profileExists(pretendedProfile)
+activate ": ProfileStore"
+": ProfileStore" --> ": UpdateProfileController" : true
+deactivate ": ProfileStore"
+": UpdateProfileController" -> ": ProfileStore" : profilesAreDifferent = areProfileDifferente(actualProfile,pretendedProfile)
+activate ": ProfileStore"
+": ProfileStore" --> ": UpdateProfileController" : true
+deactivate ": ProfileStore"
+opt usersExists == true && profileExists == true && profilesAreDifferent == true
+": UpdateProfileController" -> "selectedUser: User" : updateProfile(actualProfile, pretendedProfile)
+"selectedUser: User" --> ": UpdateProfileController" : true
+end
+": UpdateProfileController" --> ": UpdateProfileUI" : true
+": UpdateProfileUI" --> Administrator : Shows data and informs operation success
+
+@enduml

@@ -1,0 +1,12 @@
+@startuml
+
+actor PO
+actor TeamMember
+actor SM
+usecase (UC018-Consult the product backlog, i.e. to get the list of  user stories sorted by priority.)
+
+:PO: -- (UC018-Consult the product backlog, i.e. to get the list of  user stories sorted by priority.)
+:TeamMember: -- (UC018-Consult the product backlog, i.e. to get the list of  user stories sorted by priority.)
+:SM: -- (UC018-Consult the product backlog, i.e. to get the list of  user stories sorted by priority.)
+
+@enduml

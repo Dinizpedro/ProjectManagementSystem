@@ -1,0 +1,14 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor "User" as actor
+activate actor
+participant "Project Management System" as Project
+activate Project
+actor -> Project: Initiates process to change password
+Project --> actor: Request information to change the user password
+
+actor -> Project: Insert new Password
+actor <-- Project: Inform success of operation and return \n information about new password created
+@enduml

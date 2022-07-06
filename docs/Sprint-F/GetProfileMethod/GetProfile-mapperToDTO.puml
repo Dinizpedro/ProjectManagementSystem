@@ -1,0 +1,17 @@
+@startuml
+
+autonumber
+
+participant  "iProfileMapper : ImplProfileMapper" #FFFFFF
+activate "iProfileMapper : ImplProfileMapper"
+participant  "profileFoundInDB : Profile" #FFFFFF
+
+-> "iProfileMapper : ImplProfileMapper" : profileDTO = toDTO(profileFoundInDB)
+"iProfileMapper : ImplProfileMapper" -> "profileFoundInDB : Profile" ++: description = getDesignation()
+deactivate
+
+create participant "profileDTO : ProfileDTO" #FFFFFF
+"iProfileMapper : ImplProfileMapper" -> "profileDTO : ProfileDTO" : create(description)
+deactivate "iProfileMapper : ImplProfileMapper"
+
+@enduml

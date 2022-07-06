@@ -1,0 +1,7 @@
+@startuml
+
+usecase (I want to update profiles assigned to a user account) #FFFFFF
+actor Administrator #FFFFFF
+
+:Administrator: -- (I want to update profiles assigned to a user account)
+@enduml

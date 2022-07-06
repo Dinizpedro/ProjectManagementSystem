@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+
+ParticipantFontName Aapex
+ParticipantFontSize 14
+
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "Project Member" as PM
+participant ": System" as System
+Activate PM
+Activate System
+PM -> System : Update the status of a user story
+
+PM -> System : Enters Project(projectCode)
+loop
+PM -> System : Search for projectCode
+end
+System --> PM : Project found
+
+PM -> System : Enters UserStory(userStoryCode)
+loop
+PM -> System : Search for userStory
+end
+System --> PM : UserStory found
+
+PM -> System : Enters data (userEmail, newStatus)
+System -> System : validatesData
+System --> PM : User Story Updated Successfully
+
+@enduml

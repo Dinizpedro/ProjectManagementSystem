@@ -1,0 +1,29 @@
+@startuml
+
+autonumber
+
+participant  "iResourceMapper : \n ImplResourceMapper" #FFFFFF
+activate "iResourceMapper : \n ImplResourceMapper"
+participant  "resourcesInDB : Resource" #FFFFFF
+
+-> "iResourceMapper : \n ImplResourceMapper"  : eachResourceDTO = toDTO(resourcesInDB)
+"iResourceMapper : \n ImplResourceMapper" -> "resourcesInDB : Resource" ++ : resourceID = getResourceID()
+"iResourceMapper : \n ImplResourceMapper" -> "resourcesInDB : Resource"  : userID = getUserID()
+"iResourceMapper : \n ImplResourceMapper" -> "resourcesInDB : Resource"  : projectCode = getProjectCode()
+"iResourceMapper : \n ImplResourceMapper" -> "resourcesInDB : Resource"  : startDate = getStartDate()
+"iResourceMapper : \n ImplResourceMapper" -> "resourcesInDB : Resource"  : endDate = getEndDate()
+"iResourceMapper : \n ImplResourceMapper" -> ": TimeDTO" : dates = create(startDate, endDate)
+activate ": TimeDTO" #FFFFFF
+create participant "dates : TimeDTO" #FFFFFF
+": TimeDTO" -> "dates : TimeDTO" : create
+deactivate
+"iResourceMapper : \n ImplResourceMapper" -> "resourcesInDB : Resource"  : costPerHour = getCostPerHour()
+"iResourceMapper : \n ImplResourceMapper" -> "resourcesInDB : Resource"  : allocation = getAllocation()
+"iResourceMapper : \n ImplResourceMapper" -> "resourcesInDB : Resource"  : role = getRole()
+deactivate
+create participant "eachResourceDTO : ResourceDTO" #FFFFFF
+"iResourceMapper : \n ImplResourceMapper" ->  "eachResourceDTO : ResourceDTO" : create(resourceID, userID, projectCode, dates, costPerHour, allocation, role)
+
+
+
+@enduml

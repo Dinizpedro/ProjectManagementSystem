@@ -1,0 +1,23 @@
+@startuml
+autonumber
+
+participant "iProjectRepository : ImplProjectRepository" #FFFFFF
+activate "iProjectRepository : ImplProjectRepository"
+participant "iProjectRepositoryJPA: IProjectRepositoryJPA" #FFFFFF
+participant  "projCode : ProjectCode" #FFFFFF
+participant "iProjectAssemblerJPA: ImplProjectAssemblerJPA" #FFFFFF
+
+-> "iProjectRepository : ImplProjectRepository" : opProject = finByCode(projCode)
+"iProjectRepository : ImplProjectRepository" -> "projCode : ProjectCode" ++ : projectCode = getCode()
+deactivate
+"iProjectRepository : ImplProjectRepository" -> "iProjectRepositoryJPA: IProjectRepositoryJPA" ++ : projectExists = existsByCode(projectCode)
+deactivate
+"iProjectRepository : ImplProjectRepository" -> "iProjectRepositoryJPA: IProjectRepositoryJPA" ++ : theProjectJPA = findByCode(projectCode)
+deactivate
+"iProjectRepository : ImplProjectRepository" -> "iProjectAssemblerJPA: IImplProjectAssemblerJPA" ++ : theProject = toDomain(theProjectJPA)
+deactivate
+deactivate "iProjectRepository : ImplProjectRepository"
+
+
+
+@enduml

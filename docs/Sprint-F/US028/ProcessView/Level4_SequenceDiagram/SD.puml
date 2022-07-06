@@ -1,0 +1,81 @@
+@startuml
+autonumber
+actor "Director" as actor #FFFFFF
+boundary ": Route" as route #FFFFFF
+
+actor -> route : GET /resources/projectCode/{projectCode}
+activate actor
+activate route
+
+control ": ImplResourceController" as controller #FFFFFF
+route -> controller: getAllResourcesByProjectCode(projectCode)
+activate controller
+
+participant "iAppResourceService :\n ImplAppResourceService" as service #FFFFFF
+controller -> service : response = getResourcesByProjectCode(projectCode)
+
+activate service
+create participant "projectCode : ProjectCode" #FFFFFF
+service -> "projectCode : ProjectCode"  ** : create(code)
+
+participant "iProjectRepository :\n ImplProjectRepository" as PR #FFFFFF
+service -> PR ++ : projectExistsInDB = projectExists(projectCode)
+
+ref over PR
+[[SD_US028_projectExists.puml projectExistsInRepo]]
+end
+
+participant "iResourceRepository :\n ImplResourceRepository" as RR #FFFFFF
+service -> RR : resourcesList = findAllResourcesByProjectCode(projectCode)
+deactivate PR
+
+activate RR
+participant "iResourceRepositoryJPA :\nImplResourceRepositoryJPA" as RJPA #FFFFFF
+RR -> RJPA : resourcesInRepo = getResourceJPAByProjectCode(code)
+loop ResourceJPA each : resourcesInRepo
+participant "iResourceAssemblerJPA :\nImplResourceAssemblerJPA" as JPA #FFFFFF
+RR -> JPA : resourceDomain = toDomain(each)
+activate JPA
+ref over JPA
+[[SD_US028_toDomain.puml JPAtoDomain]]
+end
+
+RR -> RR : resourceList = add(resourceDomain)
+end
+deactivate JPA
+deactivate RR
+loop Resource resourcesInDB : resourcesList
+
+participant "iResourceMapper : \n ImplResourceMapper" as RA #FFFFFF
+service -> RA : eachResourceDTO = toDto(resourcesInDB)
+activate RA
+ref over RA
+[[SD_US028_mapperToDTO.puml mapperToDto]]
+end
+
+service -> service : resourcesDTO = add(eachResourceDTO)
+
+
+deactivate RA
+end
+
+deactivate service
+create participant  "link : Link" #FFFFFF
+controller -> "link : Link" : create
+note right
+                        linkTo(methodOn(ImplResourceController.class)
+                                        .getResource(resourcesDTO.resourceID))
+                                        .withRel(resourcesDTO.resourceID)
+                                        .withType("GET");
+                    endnote
+
+controller -> controller: resourcesLinks = add(link)
+
+
+create participant  "response : ResponseEntity<Object>" #FFFFFF
+controller -> "response : ResponseEntity<Object>" : create(resourcesLinks, HttpStatus.OK)
+
+
+
+
+@enduml

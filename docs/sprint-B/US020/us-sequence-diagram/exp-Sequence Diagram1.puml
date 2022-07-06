@@ -1,0 +1,32 @@
+@startuml
+autonumber
+actor ProductOwner #FFFFFF
+participant ": UserStoryRefinementUI" #FFFFFF
+participant ": UserStoryRefinementController" #FFFFFF
+participant ": DataManagement" #FFFFFF
+participant "dataManagement: DataManagement" #FFFFFF
+participant "projectStore: ProjectStore" #FFFFFF
+participant "selectedProject: Project" #FFFFFF
+participant "productBacklog: ProductBacklog" #FFFFFF
+participant "refinedUserStoriesList: RefinedUserStoriesList" #FFFFFF
+ProductOwner -> ": UserStoryRefinementUI" : Request the refinement of a UserStory in a ProductBacklog of a specific project
+": UserStoryRefinementUI" -> ": UserStoryRefinementController" : refineUserStory(selectedProjectCode, requestedUserStoryCode, newUserStoryDescriptionList)
+": UserStoryRefinementController" -> ": DataManagement" : dataManagement = getInstance()
+": UserStoryRefinementController" -> "dataManagement: DataManagement" : projectStore = getProjectStore()
+": UserStoryRefinementController" -> "projectStore: ProjectStore" : selectedProject = getProject(selectedProjectCode)
+": UserStoryRefinementController" -> ": UserStoryRefinementController" :  isProjectAvailableForUSRefinement(selectedProject)
+
+": UserStoryRefinementController" -> "selectedProject: Project" : productBacklog = getProductBacklog()
+": UserStoryRefinementController" -> "productBacklog: ProductBacklog" : doesUserStoryCodeExist(requestedUserStoryCode)
+"productBacklog: ProductBacklog" --> ": UserStoryRefinementController" : true
+": UserStoryRefinementController" -> ": UserStoryRefinementController" : validateInputDescriptions(newUserStoryDescriptionList,productBacklog)
+": UserStoryRefinementController" -> "selectedProject: Project" : addUserStoryToRefinedList(requestedUserStoryCode)
+"selectedProject: Project" -> "refinedUserStoriesList: RefinedUserStoriesList" : addUserStoryToRefinedUserStoryList(userStory)
+": UserStoryRefinementController" -> "productBacklog: ProductBacklog" : refineUserStory(userStoryCode, newUserStoryDescriptionList)
+"productBacklog: ProductBacklog" -> "productBacklog: ProductBacklog" : userStoryToRemove = getUserStory(requestedUserStoryCode)
+"productBacklog: ProductBacklog" -> "productBacklog: ProductBacklog" : removeUserStory(userStoryToRemove)
+"productBacklog: ProductBacklog" -> "productBacklog: ProductBacklog" :  createAndAddUserStory(description)
+": UserStoryRefinementController" --> ": UserStoryRefinementUI" : true
+": UserStoryRefinementUI" --> ProductOwner : Show the refinement successfully completed
+
+@enduml

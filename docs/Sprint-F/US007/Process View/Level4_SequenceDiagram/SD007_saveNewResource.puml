@@ -1,0 +1,33 @@
+@startuml
+autonumber
+
+participant "iResourceRepository : ImplResourceRepository" #FFFFFF
+activate "iResourceRepository : ImplResourceRepository"
+-> "iResourceRepository : ImplResourceRepository" : resourceInDb = save(newResource)
+
+participant "iResourceAssemblerJPA : ImplResourceAssemblerJPA" #FFFFFF
+"iResourceRepository : ImplResourceRepository" -> "iResourceAssemblerJPA : ImplResourceAssemblerJPA" ++ : resourceJPA = toData(newResource)
+deactivate
+participant "iResourceRepositoryJPA : IResourceRepositoryJPA"  #FFFFFF
+"iResourceRepository : ImplResourceRepository" -> "iResourceRepositoryJPA : IResourceRepositoryJPA" ++: resourceJPAResult = save(resourceJPA)
+create participant "resourceJPAResult : ResourceJPA" #FFFFFF
+"iResourceRepositoryJPA : IResourceRepositoryJPA" -> "resourceJPAResult : ResourceJPA" : create
+
+deactivate
+"iResourceRepository : ImplResourceRepository" -> "iResourceAssemblerJPA : ImplResourceAssemblerJPA" ++: newResourceInDB = toDomain(resourceJPAResult)
+
+ref over   "iResourceAssemblerJPA : ImplResourceAssemblerJPA"
+                                                            [[SD007_toDomain.puml toDomain]] ref
+                                                        end
+participant "resourceFactory : ResourceFactory" #FFFFFF
+"iResourceAssemblerJPA : ImplResourceAssemblerJPA" -> "resourceFactory : ResourceFactory" : newResourceInDB = createResource(resourceID, userID, projectCode, dates, costPerHour, allocation, role)
+
+create participant "newResourceInDB : Resource" #FFFFFF
+"resourceFactory : ResourceFactory" -> "newResourceInDB : Resource" : createResource(resourceID, userID, projectCode, dates, costPerHour, allocation, role)
+
+
+deactivate
+
+
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+!pragma teoz true
+autonumber
+
+participant "iTypologyRepository : \nImplTypologyRepository" #FFFFFF
+activate "iTypologyRepository : \nImplTypologyRepository"
+-> "iTypologyRepository : \nImplTypologyRepository" : saveNewTypology(newTypology)
+
+participant "iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" #FFFFFF
+"iTypologyRepository : \nImplTypologyRepository" -> "iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" ++ : typologyJPA = toData(newTypology)
+
+participant "newTypology : Typology" #FFFFFF
+"iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" -> "newTypology : Typology" ++ : description = getDescription()
+deactivate
+
+create participant "typologyJPA : TypologyJPA" #FFFFFF
+"iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" -> "typologyJPA : TypologyJPA" : create()
+"iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" -> "typologyJPA : TypologyJPA" ++ : setDescription(description)
+deactivate
+deactivate "iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA"
+
+participant "iTypologyRepositoryJPA: \nITypologyRepositoryJPA" #FFFFFF
+"iTypologyRepository : \nImplTypologyRepository" -> "iTypologyRepositoryJPA: \nITypologyRepositoryJPA" ++ : save(typologyJPA)
+
+create participant "typologyJPAResult : TypologyJPA" #FFFFFF
+"iTypologyRepositoryJPA: \nITypologyRepositoryJPA" ->  "typologyJPAResult : TypologyJPA" : create()
+deactivate
+
+"iTypologyRepository : \nImplTypologyRepository" -> "iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" ++ : toDomain(typologyJPA)
+
+"iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" -> "typologyJPAResult : TypologyJPA" ++: description = getDescription()
+deactivate
+
+participant ": TypologyDescription" #FFFFFF
+"iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" -> ": TypologyDescription" ++ : description = create(description)
+
+create participant "description : \nTypologyDescription" #FFFFFF
+": TypologyDescription" -> "description : \nTypologyDescription" : create \n (description)
+deactivate
+
+participant "typologyFactory : \n ImplTypologyFactory" #FFFFFF
+"iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA" -> "typologyFactory : \n ImplTypologyFactory" ++ : typologyJPA = create(description)
+
+create participant "typology : Typology" #FFFFFF
+"typologyFactory : \n ImplTypologyFactory" -> "typology : Typology" : create(description)
+deactivate "typologyFactory : \n ImplTypologyFactory"
+deactivate "iTypologyAssemblerJPA : \nImplTypologyAssemblerJPA"
+deactivate "iTypologyRepository : \nImplTypologyRepository"
+deactivate "iTypologyRepository : \nImplTypologyRepository"
+
+
+
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+
+autonumber
+autoactivate on
+
+actor "PO/SM/Team Member" as PO_SM_TM
+
+activate PO_SM_TM
+PO_SM_TM -> ": Route" : Get/projects/{projectCode}/listUserStories
+": Route" -> ": ImplUserStoryController" : response = getUserStoryByPriority(json)
+": ImplUserStoryController" -> ": ImplUserStoryController" ++-- : validate(json)
+": ImplUserStoryController" -> ": ImplAppUserStoryService" : listByPriority = getUserStoryListByPriority(projectCode)
+
+": ImplAppUserStoryService" -> ": ProjectCode" : projCode = createProjectCode(projectCode)
+": ProjectCode" -> "projCode : ProjectCode"  ** : create
+deactivate
+
+": ImplAppUserStoryService" -> ": ImplProjectStore" :  Optional<Project> opProject = findProject(projCode)
+deactivate
+
+": ImplAppUserStoryService" -> ": ImplAppUserStoryService" ++-- : opProject.isEmpty()
+
+": ImplAppUserStoryService" -> "listByPriority : List<UserStoryDTO>" ** : create
+": ImplAppUserStoryService" -> ": UserStoryRepository" : userStoryList = getUserStoryListProductBacklog(projCode)
+
+": UserStoryRepository" -> "listUserStory : List<UserStory>" ** : create
+ loop for each UserStory in UserStoryRepository
+": UserStoryRepository" -> "userStory : UserStory" : projectCode = getProjectCodeOfUserStory
+    deactivate "userStory : UserStory"
+": UserStoryRepository" -> "userStory : UserStory" : sprintID = getSprintID
+    deactivate "userStory : UserStory"
+
+opt projectCode.equals(projCode) && sprintID==null
+": UserStoryRepository" -> "listUserStory : List<UserStory>" : add(userStory)
+deactivate "listUserStory : List<UserStory>"
+end
+end
+
+loop for each UserStory in userStoryList
+": ImplAppUserStoryService" -> ": UserStoryAssembler" : userStoryDTO = toUserStoryDTO(userStory)
+": UserStoryAssembler" -> "userStory : UserStory" : userStoryATR = getUserStoryAtributtes()
+deactivate "userStory : UserStory"
+": UserStoryAssembler" -> "userStoryDTO : UserStroryDTO" ** : create(userStoryATR)
+deactivate ": UserStoryAssembler"
+
+": ImplAppUserStoryService" -> "listByPriority : List<UserStoryDTO>" : add(userStoryDTO)
+deactivate "listByPriority : List<UserStoryDTO>"
+end
+
+": Route" --> PO_SM_TM : Response
+
+@enduml

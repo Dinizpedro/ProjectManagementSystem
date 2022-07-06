@@ -1,0 +1,76 @@
+@startuml
+autonumber
+@startuml
+autonumber
+!pragma teoz true
+boundary ": Route" #FFFFFF
+
+participant ": ImplTypologyController" #FFFFFF
+
+-> ": Route" ++ : POST api/typologies (json)
+
+": Route" -> ": ImplTypologyController" ++ : response = createTypology(dto)
+
+participant "iAppTypologyService : \nImplAppTypologyService" #FFFFFF
+
+": ImplTypologyController" -> "dto : \nTypologyDTO" ++: typologyDescription = getDescription()
+deactivate "dto : \nTypologyDTO"
+
+": ImplTypologyController" -> "iAppTypologyService : \nImplAppTypologyService" ++ : newTypology = addNewTypology(description)
+
+participant ": TypologyDescription" #FFFFFF
+"iAppTypologyService : \nImplAppTypologyService" -> ": TypologyDescription" ++ : theTypologydescription = create(description)
+create participant "description : \nTypologyDescription" #FFFFFF
+": TypologyDescription" -> "description : \nTypologyDescription" -- :create \n (description)
+
+participant "iTypologyRepository : \nImplTypologyRepository" #FFFFFF
+
+"iAppTypologyService : \nImplAppTypologyService" -> "iTypologyRepository : \nImplTypologyRepository" : typologyJPA = findTypology(theTypologyDescription)
+activate "iTypologyRepository : \nImplTypologyRepository"
+
+ref over "iTypologyRepository : \nImplTypologyRepository"
+[[US0012SD-findTypology.png findTypology]] ref
+end
+deactivate "iTypologyRepository : \nImplTypologyRepository"
+
+participant "iTypologyFactory : \nImplTypologyFactory" #FFFFFF
+
+"iAppTypologyService : \nImplAppTypologyService" -> "iTypologyFactory : \nImplTypologyFactory" ++ : newTypology = createTypology(theTypologyDescription)
+
+create participant "newTypology : Typology" #FFFFFF
+"iTypologyFactory : \nImplTypologyFactory" -> "typology : Typology" ** : createTypology(description)
+deactivate "iTypologyFactory : \nImplTypologyFactory"
+
+
+"iAppTypologyService : \nImplAppTypologyService" -> "iTypologyRepository : \nImplTypologyRepository" ++: saveNewTypology(newTypology)
+deactivate "iAppTypologyService : \nImplAppTypologyService"
+ref over "iTypologyRepository : \nImplTypologyRepository"
+[[US0012SD-sequenceDiagram.png saveNewTypology]] ref
+end
+deactivate "iTypologyRepository : \nImplTypologyRepository"
+
+
+participant "typologyAssembler : \nTypologyAssembler" as assembler #FFFFFF
+": ImplTypologyController" -> assembler : typologyDTO = toDTO(newTypology)
+activate assembler
+
+create participant "typologyDTO : \nTypologyDTO" as dto #FFFFFF
+assembler -> dto : create
+deactivate assembler
+
+": ImplTypologyController" -> dto ++ : add(link)
+deactivate dto
+
+note left #FFFFFF
+Link to self  "GET"
+end note
+create participant "response : \nResponseEntity<Object>" #FFFFFF
+": ImplTypologyController" -> "response : \nResponseEntity<Object>" :create(typologyDTO, HttpStatus.CREATED)
+deactivate ": ImplTypologyController"
+note left #FFFFFF
+HTTP status created associated
+in the response
+end note
+
+
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+autonumber
+
+participant "iProfileRepository : ImplProfileRepository" #FFFFFF
+activate "iProfileRepository : ImplProfileRepository"
+participant  "profileDescriptionToFind : \nProfileDescription" #FFFFFF
+participant "iProfileRestRepository: \nImplProfileRestRepository" #FFFFFF
+
+-> "iProfileRepository : ImplProfileRepository" : optProfileInWS = getProfileByDescription(profileDescriptionToFind)
+"iProfileRepository : ImplProfileRepository" -> "profileDescriptionToFind : \nProfileDescription" ++ : description = getDescription()
+deactivate
+"iProfileRepository : ImplProfileRepository" -> "iProfileRestRepository: \nImplProfileRestRepository" ++ : optProfileRest = findProfileInExternalServiceByProfileDescription(description);
+
+participant ": WebClient" #FFFFFF
+"iProfileRestRepository: \nImplProfileRestRepository" -> ": WebClient" ++: webClient = builder()
+
+note right
+Creation of "webClient : WebClient" object
+with the external API url to get the requested profile
+end note
+
+
+create participant "webClient : WebClient" #FFFFFF
+": WebClient" -> "webClient : WebClient" : create()
+deactivate ": WebClient"
+
+"iProfileRestRepository: \nImplProfileRestRepository" -> "webClient : WebClient" ++ : profileRest = get()
+
+note right
+Fetch request and store in a "profileRest : ProfileRest" variable
+end note
+deactivate "webClient : WebClient"
+
+create participant "optProfileRest : Optional<ProfileRest>" #FFFFFF
+"iProfileRestRepository: \nImplProfileRestRepository" -> "optProfileRest : Optional<ProfileRest>" : create(profileRest)
+
+
+deactivate "iProfileRestRepository: \nImplProfileRestRepository"
+
+"iProfileRepository : ImplProfileRepository" -> "optProfileRest : Optional<ProfileRest>" ++ : profileRest = get()
+create participant "profileRest : ProfileRest" #FFFFFF
+"optProfileRest : Optional<ProfileRest>" -> "profileRest : ProfileRest" : create()
+deactivate
+
+participant "iRestProfileAssembler : \nImplRestProfileAssembler" #FFFFFF
+
+"iProfileRepository : ImplProfileRepository" -> "iRestProfileAssembler : \nImplRestProfileAssembler" ++ : profileToFind = toDomain(profileRest)
+
+"iRestProfileAssembler : \nImplRestProfileAssembler" -> "profileRest : ProfileRest" ++ : profileDescriptionRest = profileDescriptionRest()
+deactivate
+
+create participant "profileToFind : ProfileWS" #FFFFFF
+"iRestProfileAssembler : \nImplRestProfileAssembler" -> "profileToFind : ProfileWS" : create(profileDescriptionRest)
+
+deactivate "iRestProfileAssembler : \nImplRestProfileAssembler"
+
+create participant "optProfileInWS : Optional<ProfileWS>" #FFFFFF
+"iProfileRepository : ImplProfileRepository" -> "optProfileInWS : Optional<ProfileWS>" : create(profileToFind)
+
+
+deactivate "iProfileRepository : ImplProfileRepository"
+
+@enduml

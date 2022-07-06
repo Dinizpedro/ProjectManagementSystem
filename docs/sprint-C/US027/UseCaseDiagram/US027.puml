@@ -1,0 +1,8 @@
+@startuml
+scale 800 width
+skinparam monochrome true
+actor Director
+usecase (UC027 - Define a PO of a Project.)
+
+:Director: -----right-- (UC027 - Define a PO of a Project.)
+@enduml

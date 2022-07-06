@@ -1,0 +1,72 @@
+@startuml
+autonumber
+participant "Routing" as route #FFFFFF
+activate route
+-> route : GET api/resources\n/projectCode/{projectCode}
+participant "Controller" as C #FFFFFF
+route -> C : getAllResourcesByProjectCode(projectCode)
+activate C
+participant "DTO" as DTO #FFFFFF
+participant "Application Service" as S #FFFFFF
+
+C -> S : get all \nResources(projectCode)
+activate S
+
+participant "Repository" as R #FFFFFF
+S -> R : check if project \nexists in repo
+activate R
+
+
+participant "Persistence" as P #FFFFFF
+
+R -> P : check if project \nexists in database
+activate P
+P --> R : boolean
+deactivate P
+R --> S : boolean
+deactivate R
+
+S -> R : check if resources exists in this \nproject on repo
+activate R
+R -> P : check if resources exists in this  \nproject on database
+activate P
+P --> R : Optional<List<Resource>>
+deactivate P
+R --> S : Optional<List<Resource>>
+deactivate R
+S -> R : get all resources in the selected project
+activate R
+R -> P : get data from all resources \nin the selected project
+activate P
+P --> R : return data from resources stored in database
+deactivate P
+participant "Domain Model" as DM #FFFFFF
+R -> DM : transform data schema object into domain model object
+activate DM
+
+DM --> R : domain model object
+
+deactivate DM
+R --> S : return domain model object
+deactivate R
+
+
+S -> DTO : transform domain model object \n into data trasfer object
+activate DTO
+DTO --> S : data trasfer object
+deactivate DTO
+S --> C : return list of data transfer object of resources
+deactivate S
+C -> DTO : add link to transfer object
+activate DTO
+deactivate DTO
+C --> route : return list of data transfer object of resources\nwith OK http status
+deactivate C
+<-- route : return data transfer object \n with OK http status
+deactivate route
+
+
+
+
+
+@enduml

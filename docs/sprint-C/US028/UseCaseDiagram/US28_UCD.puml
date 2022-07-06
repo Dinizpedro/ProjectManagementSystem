@@ -1,0 +1,7 @@
+@startuml
+skinparam monochrome true
+actor Director
+usecase (UC028 - Get a list of all human resources of a project.)
+
+:Director: -- (UC028 - Get a list of all human resources of a project.)
+@enduml

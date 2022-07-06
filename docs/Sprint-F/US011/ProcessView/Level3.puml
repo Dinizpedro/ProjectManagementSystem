@@ -1,0 +1,58 @@
+@startuml
+autonumber
+boundary ": Route" as route
+
+-> route : PATCH /users/password/{email}
+activate route
+route -> "Controller" as controller : change password (passwordDTO)
+activate controller
+participant DTO
+controller -> "Application Service" as AppServ : change password (passwordDTO)
+activate AppServ
+participant "Domain Model" as DM
+AppServ -> "Repository" as repo : check if user exists in repository
+activate repo
+participant "Data Model" as dtm
+participant "Persistence" as persistence
+repo -> persistence : check if user exists in database
+activate persistence
+persistence --> repo : true
+deactivate persistence
+repo --> AppServ : returns user
+deactivate repo
+activate DM
+AppServ -> DM : Update password
+DM -> DM : Update user password
+DM -> DM : Create a new user password
+DM --> AppServ : New user password created \n and updated
+deactivate DM
+activate repo
+AppServ -> repo : User´s password updated
+
+activate dtm
+repo -> dtm : Create data schema object
+deactivate dtm
+repo -> persistence  ++: Save data schema in database
+persistence ->  dtm : create representative data schema object
+activate dtm
+deactivate dtm
+persistence --> repo : return saved object in database
+
+deactivate persistence
+repo --> AppServ : returns domain model object
+deactivate repo
+AppServ -> DTO : transform domain model objects\n into data transfer objects
+activate DTO
+DTO --> AppServ : data transfer objects
+deactivate DTO
+AppServ -->controller : returns Data Transfer Object
+deactivate AppServ
+controller -> DTO : add link to Data Transfer Object
+activate DTO
+deactivate DTO
+controller --> route : return data transfer object with http status OK
+deactivate controller
+<-- route : return data transfer object with http status OK
+deactivate route
+
+@enduml

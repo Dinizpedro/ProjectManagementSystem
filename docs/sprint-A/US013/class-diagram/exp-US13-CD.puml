@@ -1,0 +1,40 @@
+@startuml
+class CreateProfileUI #FFFFFF
+class DataManagement #FFFFFF {
+	+getInstance() : DataManagement
+	+getProfiles() : ProfileStore
+}
+
+class CreateProfileController #FFFFFF {
+	+createNewProfile(profileDesignation) : boolean
+}
+
+class Profile #FFFFFF {
+	-profileDescription : String
+}
+
+class ProfileStore #FFFFFF {
+ +createProfile (profileDesignation) : boolean
+ -addProfileToProfileStore (newProfile) : boolean
+}
+
+class ProfileFactoryImplementation #FFFFFF {
+ +getInstance () : ProfileFactoryImplementation
+ +createProfile (profileDesignation) : Profile
+}
+
+interface ProfileFactory #FFFFFF {
+ +createProfile (profileDesignation) : Profile
+}
+
+
+CreateProfileController ..> ProfileStore
+ProfileStore "1" --> "*" Profile
+DataManagement "1" --> "profiles 1" ProfileStore
+DataManagement "1" ..> "1" ProfileFactoryImplementation
+ProfileFactoryImplementation " " ..> " " ProfileFactory
+ProfileFactoryImplementation " " ..> " " Profile
+ProfileStore "*" --> "profileFactory 1" ProfileFactoryImplementation
+CreateProfileController ..> DataManagement
+CreateProfileUI ..> CreateProfileController
+@enduml

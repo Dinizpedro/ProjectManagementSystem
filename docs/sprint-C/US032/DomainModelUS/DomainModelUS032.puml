@@ -1,0 +1,71 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+class Resource  {
+	-user
+	-project
+	-starDate
+	-endDate
+	-costPerHour
+	-percentageOfAllocation
+}
+
+class Project{
+    -code
+    -name
+    -description
+    -startDate
+    -endDate
+    -sprintDuration
+    -numberOfPlannedSprints
+    -budget
+    -projectStatus
+    -businessSector
+}
+
+class ProjectSprintList{
+    -projectSprints
+ }
+
+ class Sprint {
+ 	-number
+ 	-goal
+ 	-dates
+ 	-status
+ 	-sprintBacklog
+ 	-listOfTasks
+ }
+
+class SprintTaskList{
+    -tasks
+ }
+
+class Task  {
+ 	-code
+ 	-name
+ 	-description
+ 	-parentUserStory
+ 	-taskTime
+ 	-hoursSpent
+ 	-effortEstimate
+ 	-percentageOfExecution
+ 	-precedence
+ 	-taskType
+ 	-responsible
+ 	-taskStatus
+ }
+
+Resource "1.* TeamMember" -----> "1.*" Task : creates
+Resource "1.* ScrumMaster" -- "1" Project
+Resource "1.* Developer" -- "1" Project
+
+Task "0.*" -> "1" SprintTaskList : is part of
+SprintTaskList "1" -> "1" Sprint : owned by
+Sprint "0.*" -> "1" ProjectSprintList : is part of
+ProjectSprintList "0.*" -> "1" Project : owned by
+
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+
+class Project  {
+	-code
+	-name
+	-description
+	-starDate
+	-endDate
+	-sprintDuration
+	-numberOfPlannedSprints
+	-budget
+	-businessSector
+}
+
+class ProductBacklog  {
+	-userStoryStatusList
+	-userStoryList
+}
+
+class UserStory {
+	-code
+	-effort
+	-priority
+	-description
+	-status
+}
+
+
+
+Project "1" --> "1" ProductBacklog : has
+ProductBacklog "1" <-- "0.*" UserStory : is added to
+
+@enduml

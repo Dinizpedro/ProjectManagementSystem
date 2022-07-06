@@ -1,0 +1,271 @@
+@startuml
+'https://plantuml.com/class-diagramheader IMPLEMENTATION VIEW
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "Project Management SYSTEM" {
+ package assemblers {
+                     package iAssemblersJPA {
+                         interface IResourceAssemblerJPA {
+                            +  toDomain(ResourceJPA resourceJPA) : Resource
+                         }
+
+                        }
+                     package ImplAssemblersJPA {
+                         class ImplResourceAssemblerJPA {
+                            - IResourceFactory resourceFactory;
+                            + toDomain(ResourceJPA resourceJPA) : Resource
+                         }
+                       }
+                                                }
+    folder "INFRASTRUCTURES" %lighten("orchid", 40) {
+
+     package routes #white {
+
+                              }
+
+        package persistence %lighten("orchid", 30) {
+
+            package iRepositories #white {
+                interface IResourceRepositoryJPA #white{
+                   +getResourceJPAByProjectCode(String projectCode) :\n  ArrayList<ResourceJPA>
+                }
+            interface IProjectRepositoryJPA #white{
+                               +existsByCode(String code) :\n  boolean
+                            }
+}
+
+                        }
+
+}
+
+ package "dtos" #white{
+                                                              class ResourceDTO {
+                                                              - String resourceID;
+                                                              - String userID;
+                                                              - String projectCode;
+                                                              - TimeDTO dates;
+                                                              - double costPerHour;
+                                                              - double percentageOfAllocation;
+                                                              - String role;
+                                                              }
+                                                          }
+
+                                                          package dataModel #white{
+                                                                     class ResourceJPA {
+                                                                     - resourceID : String
+                                                                     - userID : String
+                                                                     - projectCode : String
+                                                                     - startDate : String
+                                                                     - endDate : String
+                                                                     - costPerHour : double
+                                                                     - percentageOfAllocation : double
+                                                                     - role : String
+                                                                     -----
+                                                                     + getResourceID : String
+                                                                     + getUserID : String
+                                                                     + getProjectCode: String
+                                                                     + getStartDate : String
+                                                                     + getEndDate: String
+                                                                     + getCostPerHour : double
+                                                                     + getPercentageOfAllocation : double
+                                                                     + getRole : String
+                                                                    }
+                                                              }
+    folder "INTERFACE ADAPTERS" %lighten("aquamarine", 20){
+
+        package "Controllers" %lighten("aquamarine", 10)  {
+
+            package "ImplControllers" #white{
+                class ImplResourceController {
+                - IAppResourceService resourceService;
+                + getAllResourcesByProjectCode (String projectCode) : ResponseEntity<Object>
+                }
+            }
+             package "IControllers" #white {
+                            interface  IResourceController {
+                            + getAllResourcesByProjectCode (String projectCode) : ResponseEntity<Object>
+                            }
+                        }
+
+
+        }
+        package implRepositories %lighten("aquamarine", 10)  {
+                           class ImplResourceRepository{
+                           - IResourceRepositoryJPA iResourceRepositoryJPA;
+                           - IResourceAssemblerJPA iResourceAssemblerJPA;
+                           + findAllResourcesByProjectCode(ProjectCode code) : Optional<List<Resource>>
+                           }
+                       }
+                               package implRepositories %lighten("aquamarine", 10) {
+                                                  class ImplProjectRepository{
+                                                  - IProjectRepositoryJPA iProjectRepositoryJPA;
+                                                  + projectExists(ProjectCode projectCode) : boolean
+                                                  }
+                                              }
+
+
+    }
+
+   package "mappers" #white {
+            package "mappersApp" #white {
+
+                package "iMappers" {
+                interface IResourceMapper {
+                + toDTO(Resource resource) : ResourceDTO
+                }
+            }
+
+                package "implMappers" {
+                            class ImplResourceMapper {
+                            + toDTO(Resource resource) : ResourceDTO
+                            }
+                        }
+                        }
+                        }
+    folder "APPLICATION SERVICES / USE CASE SERVICES" %lighten("blue", 90) {
+
+        package "AppServices" %lighten("blue", 90) {
+            package "IAppServices" #white {
+                interface IAppResourceService {
+                + getResourcesByProjectCode(String code): Optional<List<ResourceDTO>>
+                }
+            }
+
+
+            package "ImpAppServices" #white{
+                class ImplResourceService{
+                - IProjectRepository iProjectRepository;
+                - IResourceRepository iResourceRepository;
+                + getResourcesByProjectCode(String code): Optional<List<ResourceDTO>>
+                }
+            }
+ }
+        package "IRepositories" #white{
+            interface IResourceRepository{
+                + findAllResourcesByProjectCode(ProjectCode code) : Optional<List<Resource>>
+            }
+
+            interface IProjectRepository{
+                            + projectExists(ProjectCode projectCode) : boolean
+                        }
+      }
+}
+
+    folder "ENTITIES / CORE / DOMAIN" #white {
+
+package "factories" #white{
+                     package iFactories #white{
+                        interface IResourceFactory #white{
+                        + createResource(ResourceID identityInput, ,\n Email userIdInput, ProjectCode projectCodeInput, Time datesInput,\n ResourceCostPerHour costPerHourInput,\n ResourcePercentageOfAllocation allocationInput,Role roleInput) : Resource
+                        }
+                     }
+
+                    package implFactories #white{
+                                            class ResourceFactoryImplementation implements IResourceFactory {
+            + createResource(ResourceID identityInput, ,\n Email userIdInput, ProjectCode projectCodeInput, Time datesInput,\n ResourceCostPerHour costPerHourInput,\n ResourcePercentageOfAllocation allocationInput,Role roleInput) : Resource
+
+                                            }
+                                         }
+                     }
+        package "Aggregates" #white {
+            package Resource #white {
+                entity Resource{
+                - ResourceID resourceID;
+                - Email userID;
+                - ProjectCode projectCode;
+                - Time dates;
+                - ResourceCostPerHour costPerHour;
+                - ResourcePercentageOfAllocation allocation;
+                - Role role;
+                }
+            }
+        }
+
+        interface Entity #white
+        interface AggregateRoot #white
+
+
+                             package "Shared" #white {
+            package "Value Objects"#white {
+                 class ResourceID #white{
+                    - uuid : UUID
+                 }
+                 class Email #white{
+                 - userEmail : String;
+                 }
+
+                 class ProjectCode #white{
+                                  - code : String;
+                                  }
+  class Time #white{
+                    - startDate : Date;
+                     - endDate : Date;
+                     }
+class ResourceCostPerHour #white{
+                    - costPerHour : double;
+ }
+                     class ResourcePercentageOfAllocation #white{
+                                         - allocation : double;
+            }
+ enum Role #white{
+                                         TEAM_MEMBER
+                                         PRODUCT_OWNER
+                                         PROJECT_MANAGER
+                                         SCRUM_MASTER
+                                         }
+
+            }
+
+        }
+        interface ValueObject #white
+    }
+
+
+routes .> IResourceController
+IResourceController <|. ImplResourceController
+ImplResourceAssemblerJPA ..-|> IResourceAssemblerJPA
+ResourceDTO <.- ImplResourceController
+IResourceAssemblerJPA .> ResourceJPA
+IResourceMapper .> Resource
+IResourceRepositoryJPA .> ResourceJPA
+IProjectRepositoryJPA <. ImplProjectRepository
+ImplProjectRepository -|> IProjectRepository
+IResourceAssemblerJPA <.. ImplResourceRepository
+IResourceRepositoryJPA <.. ImplResourceRepository
+IResourceMapper .--.> ResourceDTO
+
+ImplResourceRepository ..|> IResourceRepository
+
+ImplResourceController .-> IAppResourceService
+ImplResourceService .-> IResourceMapper
+ImplResourceMapper .-|> IResourceMapper
+IAppResourceService <|. ImplResourceService
+IProjectRepository ..> ProjectCode
+ImplResourceAssemblerJPA .> IResourceFactory
+ImplResourceService .> IResourceRepository
+ImplResourceService .> IProjectRepository
+ImplResourceService ...-> Resource
+IResourceAssemblerJPA ..> Resource
+ImplResourceService ..> ResourceDTO
+ProjectCode ..|> ValueObject
+Email .|> ValueObject
+ResourceID .|> ValueObject
+ResourcePercentageOfAllocation ..|> ValueObject
+ResourceCostPerHour ..|> ValueObject
+Role .|> ValueObject
+Time ..|> ValueObject
+Resource .-> ResourceID
+Resource ---|> AggregateRoot
+
+AggregateRoot ..|> Entity
+@enduml

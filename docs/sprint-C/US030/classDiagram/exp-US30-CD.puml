@@ -1,0 +1,110 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+package "ScrumBoardDTO Package" {
+	class ScrumBoardMapper {
+		+toScrumBoardDTO(plannedUserStories, runningUserStories,
+		 blockedUserStories, finishedUserStories, plannedTasks,
+		 runningTasksDTO, blockedTasks, finishedTasks) : ScrumBoardDTO
+	}
+
+	class ScrumBoardDTO {
+		-plannedUserStoriesDTO : List<UserStoryDTO>
+		-runningUserStoriesDTO : List<UserStoryDTO>
+		-blockedUserStoriesDTO : List<UserStoryDTO>
+		-finishedUserStoriesDTO : List<UserStoryDTO>
+		-plannedTasks : List<TaskDTO>
+		-runningTasks : List<TaskDTO>
+		-blockedTasks : List<TaskDTO>
+		-finishedTasks : List<TaskDTO>
+	}
+
+}
+
+class SprintTaskList {
+	+getTasks() : Set<Task>
+}
+
+class Task {
+	+getStatusOfTask() : Status
+}
+
+class Status {
+	+compareStatus(description) : boolean
+}
+
+class ScrumBoardUI
+class SprintBacklog {
+	+getSprintBacklog() : Set<UserStory>
+}
+
+class UserStory {
+	+getStatus() : Status
+}
+
+class ScrumBoardController {
+	+getScrumBoardOfCurrentSprint(userEmail, projectCode) : ScrumBoardDTO
+}
+
+class Sprint {
+	+generateScrumBoard() : ScrumBoardDTO
+	-getPlannedUserStories() : List<UserStory>
+	-getRunningUserStories() : List<UserStory>
+	-getBlockedUserStories() : List<UserStory>
+	-getFinishedUserStories() : List<UserStory>
+	-getPlannedTasks() : List<Task>
+	-getRunningTasks() : List<Task>
+	-getBlockedTasks() : List<Task>
+	-getFinishedTasks() : List<Task>
+}
+
+class DataManagement {
+	+getProjectStore() : ProjectStore
+	+getInstance() : DataManagement
+}
+
+class ProjectSprintList {
+	+getCurrentSprint() : Sprint
+}
+
+class Project {
+	-projectCode : ProjectCode
+	+isUserInProjectTeam(email)
+	+getCurrentSprint() : Sprint
+}
+
+class ProjectStore {
+	+getProject(projectCode) : Project
+}
+
+ScrumBoardUI ..> ScrumBoardController
+ScrumBoardController ..> Sprint
+ScrumBoardController ..> Project
+ScrumBoardController ..>  ProjectStore
+ScrumBoardController ..> DataManagement
+ScrumBoardController ..> ScrumBoardDTO
+DataManagement "1" --> "projectStore 1" ProjectStore
+ProjectStore "1" --> "projectStore *" Project
+Project "1" --> "projectSprints 1" ProjectSprintList
+ProjectSprintList "1" --down> "projectSprints *" Sprint
+Sprint ..> ScrumBoardMapper
+Sprint ..> ScrumBoardDTO
+Sprint ..> Task
+Sprint ..> UserStory
+Sprint "1" -down-> "listOfTasks 1" SprintTaskList
+Sprint "1" -down-> "sprintBacklog 1" SprintBacklog
+SprintBacklog "1" --down> "sprintBacklog *" UserStory
+SprintTaskList "1" --down> "tasks *"  Task
+Task "*" --down> "statusOfTask 1" Status
+UserStory "*" --down> "status 1" Status
+
+
+
+
+
+
+
+@enduml

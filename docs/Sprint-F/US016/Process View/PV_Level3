@@ -1,0 +1,53 @@
+@startuml
+autonumber
+boundary ": Route" as route
+
+ -> route : GET /projects/{projectCode}/activities
+
+activate route
+route -> "Controller" as controller : getActivitiesStatus(projectCode)
+activate controller
+note left #CCCCFF : DTO with the project code as a String
+participant DTO
+controller -> "Application Service" as AppServ : get Activities Status\n(projectCode,activitiesDTO)
+activate AppServ
+participant "Domain Model" as DM
+AppServ -> "Repository" as repo : check if project \nexists in repository
+activate repo
+participant "Data Model" as DaM
+repo -> "Persistence" as persistence : check if project \nexists in database
+activate persistence
+persistence --> repo : true
+deactivate persistence
+repo --> AppServ : true
+deactivate repo
+AppServ -> repo : get status of all activities \nin the selected project
+activate repo
+repo -> persistence : get data from all activities status\n in the selected project
+activate persistence
+persistence -> DaM : create representative data schema objects
+activate DaM
+deactivate DaM
+persistence --> repo : return data from activities status\n  that were stored in database
+deactivate persistence
+
+DM <- repo : transform data schema objects into domain model objects
+activate DM
+DM --> repo : domain model objects
+deactivate DM
+repo --> AppServ : return domain model objects
+deactivate repo
+AppServ -> DTO : transform domain model objects\n into data transfer objects
+activate DTO
+DTO --> AppServ : data transfer objects
+deactivate DTO
+AppServ --> controller : return list of data transfer object of activities statuses
+deactivate AppServ
+controller -> DTO : add link to data transfer object
+activate DTO
+deactivate DTO
+controller --> route : return data transfer object with http status OK
+deactivate controller
+<-- route : return data transfer object with http status OK
+deactivate route
+@enduml

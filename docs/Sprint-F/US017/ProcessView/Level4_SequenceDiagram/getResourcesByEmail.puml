@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+participant ": ImplResourceRepository" as resourceRepository
+
+
+
+-> resourceRepository : resources = getResourcesByEmail(email)
+activate resourceRepository
+create participant "resources : List<Resource>" as resources
+resourceRepository -> resources : create
+
+participant ": IUserRepositoryJPA" as resourceRepositoryJPA
+resourceRepository -> resourceRepositoryJPA : getResourcesJPAByEmail(email)
+activate resourceRepositoryJPA
+resourceRepositoryJPA --> resourceRepository : resourcesJPA
+deactivate resourceRepositoryJPA
+
+loop resourceJPA : resourcesJPA
+participant ": ImplResourceAssemblerJPA" as resourceAssemblerJPA
+resourceRepository -> resourceAssemblerJPA : toDomain(resourceJPA)
+activate resourceAssemblerJPA
+resourceAssemblerJPA --> resourceRepository : theResource
+note right
+Mapping ResourceJPA
+to Domain Objects
+endnote
+deactivate resourceAssemblerJPA
+resourceRepository -> resources : add(theResource)
+activate resources
+deactivate resources
+<--resourceRepository : resources
+end
+
+@enduml

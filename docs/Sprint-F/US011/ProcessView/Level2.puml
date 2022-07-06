@@ -1,0 +1,41 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor "User" as actor
+activate actor
+
+participant "Project Management UI" as UI
+activate UI
+
+actor -> UI : Initiate process to change password
+UI --> actor : Request information to change \n the user password
+deactivate UI
+
+actor ->UI : Inserts data (new and old password)
+activate UI
+participant "Project Management Business Logic" as BL
+UI -> BL : Change password
+
+activate BL
+participant "SGBD" as BD
+BL -> BD : Search user by email
+
+activate BD
+BD --> BL : Returns user
+
+BL -> BD : Update user password
+BD --> BL : User password updated
+
+BL -> BD : Save user with new password
+BD --> BL : New user password saved
+deactivate BD
+
+BL --> UI : return HttpStatus.OK
+deactivate BL
+UI--> actor : return HttpStatus.OK
+deactivate UI
+
+
+
+@enduml

@@ -1,0 +1,68 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+
+autonumber
+autoactivate on
+
+actor "ProductOwner" as PO
+
+activate PO
+PO -> ": Route" : Post /userstories/projectCode/{projectCode}
+": Route" -> ": ImplUserStoryController" :  createUserStory(projectCode, description)
+
+": ImplUserStoryController" -> ": ImplAppUserStoryService" : createAndAddUserStory(projectCode, description)
+
+": ImplAppUserStoryService" -> ": ProjectCode" : createProjectCode(projectCode)
+": ProjectCode" -> "projCode : ProjectCode"  ** : create
+deactivate
+
+": ImplAppUserStoryService" -> ": ImplProjectRepository" :  Optional<Project> opProject = findProject(projCode)
+deactivate
+
+": ImplAppUserStoryService" -> ": ImplAppUserStoryService" ++-- : opProject.isEmpty()
+
+ref over ": ImplAppUserStoryService" : Build value objects: userStoryID, projCode, userStoryCode, defaultPriority, userStoryDescription \n
+
+": ImplAppUserStoryService" -> ": UserStoryFactoryImplementation" : createUserStory(userStoryID, projCode, userStoryCode, defaultPriority, userStoryDescription)
+": UserStoryFactoryImplementation" -> "newUserStory : UserStory"  ** : create
+deactivate
+
+": ImplAppUserStoryService" -> ": UserStoryRepository" : saveNewUserStory(newUserStory)
+
+": UserStoryAssemblerJPA" <- ": UserStoryRepository" : userStoryJPA = userStoryToUserStoryJPA (newUserStory)
+deactivate
+": UserStoryRepositoryJPA" <- ": UserStoryRepository" : save(userStoryJPA)
+deactivate
+
+deactivate
+
+
+": ImplAppUserStoryService" --> ": ImplUserStoryController" : response
+deactivate ": ImplAppUserStoryService"
+
+": ImplUserStoryController" --> ": Route" : response
+deactivate ": ImplUserStoryController"
+
+": Route" --> PO : response
+deactivate ": Route"
+
+deactivate PO
+@enduml

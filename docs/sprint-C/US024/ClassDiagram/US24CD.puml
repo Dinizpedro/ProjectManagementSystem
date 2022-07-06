@@ -1,0 +1,48 @@
+@startuml
+
+
+package "UI" {
+class ": UserAccountStatusListUI"
+}
+
+package "Controller" {
+class ": GetUserAccountStatusController" {
+	+getAccountStatusList() : List<AccountStatusDTO>
+}
+}
+
+package "Model" {
+class ": DataManagement" {
+	-users : UserStore
+	+getUsers() : UserStore
+}
+	class ": UserStore" {
+    	-userList : List<User>
+    	+getUserList()  List<User>
+    }
+    class ": User" {
+        	-Email : email
+        	-Activation : activation
+        }
+
+}
+package "DTO" {
+class ": AccountStatusMapper" {
+	+toAccountStatusListDTO(userList) : List<AccountStatusDTO>
+	+toAccountStatusDTO(selectedUser) : AccountStatusDTO
+}
+ class " :AccountStatusDTO" {
+ - email: String
+ - boolean: isActivated
+ }
+}
+
+": UserStore""1" --> "1"": DataManagement" : is part of
+": GetUserAccountStatusController" ..> ": DataManagement"
+": GetUserAccountStatusController" ..> ": AccountStatusMapper"
+": GetUserAccountStatusController" ..> ": UserStore"
+": UserAccountStatusListUI" ..> ": GetUserAccountStatusController"
+" :AccountStatusDTO" "1" <--"1"": AccountStatusMapper" : creates
+": GetUserAccountStatusController" ..> " :AccountStatusDTO"
+": User" "*" <--"1"": UserStore" : has
+@enduml

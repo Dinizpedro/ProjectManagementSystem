@@ -1,0 +1,44 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+
+package "UI" {
+    class CreateTypologyUI{}
+}
+
+package "Controller" {
+    class CreateTypologyController {
+	    +createSprint(String descriptionInput) : boolean
+    }
+}
+
+package "Model" {
+class DataManagement {
+	+getInstance() : DataManagement
+	+getTypologies() : TypologyStore
+}
+
+class Typology{
+    +create(String descriptionInput)
+    +descriptionIsValid(String descriptionInput)
+    +matchesTypologyList(String pretendedTypology)
+}
+
+package "Stores" {
+    class TypologyStore {
+	    +createTypology(String descriptionInput)
+	    -addTypologyDefaultValues()
+	    -isNewTypology(String descriptionInput)
+    }
+}
+}
+
+Typology "0...*" --> "1" TypologyStore : is part of
+TypologyStore "1"--> "1" DataManagement : owned by
+CreateTypologyController ...> DataManagement
+CreateTypologyController ...> TypologyStore
+CreateTypologyUI ..> CreateTypologyController
+@enduml

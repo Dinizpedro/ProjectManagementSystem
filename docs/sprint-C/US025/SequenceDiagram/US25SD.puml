@@ -1,0 +1,33 @@
+@startuml
+autonumber
+actor Administrator
+participant ": InactivateAccountUI"
+participant ": SetUserAccountToInactiveController"
+participant "singletonDM: DataManagement"
+participant "userStore: UserStore"
+participant "selectedUser: User"
+Administrator -> ": InactivateAccountUI" : types requested data
+activate Administrator
+activate ": InactivateAccountUI"
+": InactivateAccountUI" -> ": SetUserAccountToInactiveController" : inactivateUserAccount(emailInput)
+activate ": SetUserAccountToInactiveController"
+": SetUserAccountToInactiveController" -> "singletonDM: DataManagement" : userStore = getUsers()
+activate "singletonDM: DataManagement"
+deactivate "singletonDM: DataManagement"
+": SetUserAccountToInactiveController" -> "userStore: UserStore" : selectedUser = findUser(emailInput)
+activate "userStore: UserStore"
+deactivate "userStore: UserStore"
+": SetUserAccountToInactiveController" -> "selectedUser: User" : setToInactive()
+activate "selectedUser: User"
+"selectedUser: User" -> "selectedUser: User" : userActive = userActive()
+opt userActive == true
+"selectedUser: User" -> "selectedUser: User" : setActivationStatusToInactive()
+"selectedUser: User" -> "selectedUser: User" : setInactivationDate()
+end
+"selectedUser: User" --> ": SetUserAccountToInactiveController" : true
+deactivate "selectedUser: User"
+": SetUserAccountToInactiveController" --> ": InactivateAccountUI" : true
+deactivate ": SetUserAccountToInactiveController"
+": InactivateAccountUI" --> Administrator : shows user account has been inactivated
+deactivate ": InactivateAccountUI"
+@enduml

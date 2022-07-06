@@ -1,0 +1,49 @@
+@startuml
+!pragma teoz true
+autonumber
+
+participant "iAppUserStoryService : \nImplAppUserStoryService" #FFFFFF
+activate "iAppUserStoryService : \nImplAppUserStoryService"
+
+participant "iUserStoryRepository : \nImplUserStoryRepository" #FFFFFF
+participant "iUserStoryRepositoryJPA : \nImplUserStoryRepositoryJPA" #FFFFFF
+participant "userStoryList : \nList<UserStoryJPA>" #FFFFFF
+participant "code : \nUserStoryCode" #FFFFFF
+
+
+"iAppUserStoryService : \nImplAppUserStoryService" -> "iUserStoryRepository : \nImplUserStoryRepository" ++ : defaultCode = generatorCode(projCode)
+"iUserStoryRepository : \nImplUserStoryRepository" -> "iUserStoryRepository : \nImplUserStoryRepository" ++ : nextNumber = nextUserStoryNumber(projCode)
+deactivate
+"iUserStoryRepository : \nImplUserStoryRepository" -> "iUserStoryRepositoryJPA : \nImplUserStoryRepositoryJPA" ++ : userStoryList = findByUserStoryID_ProjectCode_OrderByPriority(projectCode)
+deactivate
+"iUserStoryRepository : \nImplUserStoryRepository" -> "userStoryList : \nList<UserStoryJPA>" ++ : nextUserStoryNumber = size
+deactivate
+deactivate
+
+"iAppUserStoryService : \nImplAppUserStoryService" -> "code : \nUserStoryCode" ++ : code = createUserStoru+yCode(defaultCode)
+deactivate
+
+"iAppUserStoryService : \nImplAppUserStoryService" -> "iUserStoryRepository : \nImplUserStoryRepository" ++ : defaultPriority = nextUserStoryNumber(projCode)
+
+"iUserStoryRepository : \nImplUserStoryRepository" -> "iUserStoryRepositoryJPA : \nImplUserStoryRepositoryJPA" ++ : userStoryList = findByUserStoryID_ProjectCode_OrderByPriority(projectCode)
+deactivate
+"iUserStoryRepository : \nImplUserStoryRepository" -> "userStoryList : \nList<UserStoryJPA>" ++ : nextUserStoryNumber = size
+deactivate
+deactivate
+
+participant ": Priority" #FFFFFF
+"iAppUserStoryService : \nImplAppUserStoryService" -> ": Priority" ++ : priority = createPriority(defaultPriority)
+create participant "priority : \nPriority" #FFFFFF
+": Priority" -> "priority : \nPriority" -- :create
+
+participant ": UserStoryID" #FFFFFF
+"iAppUserStoryService : \nImplAppUserStoryService" -> ": UserStoryID" ++ : userStoryID = createUserStoryID(projectCode, code)
+create participant "userStoryID : \nUserStoryID" #FFFFFF
+": UserStoryID" -> "userStoryID : \nUserStoryID" -- :create
+
+participant ": UserStoryDescription" #FFFFFF
+"iAppUserStoryService : \nImplAppUserStoryService" -> ": UserStoryDescription" ++ : userStoryDescription = createUserStoryDescription(description)
+create participant "userStoryDescription : \nUserStoryDescription" #FFFFFF
+": UserStoryDescription" -> "userStoryDescription : \nUserStoryDescription" -- :create
+
+@enduml

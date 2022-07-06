@@ -1,0 +1,8 @@
+@startuml
+scale 600 width
+skinparam monochrome true
+actor Director
+usecase (UC014 - Define a SM of a Project.)
+
+:Director: -- (UC014 - Define a SM of a Project.)
+@enduml

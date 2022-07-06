@@ -1,0 +1,106 @@
+@startuml
+'https://plantuml.com/class-diagram
+header IMPLEMENTATION VIEW
+
+skinparam linetype ortho
+hide empty methods
+top to bottom direction
+
+folder "OPT SYSTEM"{
+    folder "INFRASTRUCTURES"{
+        package persistence{
+            package iPersistence #strategy {}
+            package implPersistence #strategy {}
+            }
+        package routes {
+            package iRoutes #strategy{}
+            package implRoutes #strategy{}
+        }
+    }
+
+    folder "INTERFACE ADAPTERS"{
+        package controllers{
+            package iControllers{
+                class ITypologyController
+            }
+            package implControllers{
+                class ImplTypologyController
+            }
+        }
+        package implRepositories{
+            class ImplTypologyRepository
+        }
+    }
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES"{
+       package services{
+            package iAppServices{
+                class IAppServiceTypology
+            }
+            package implAppServices{
+                class ImplAppServiceTypology
+            }
+       }
+       package iRepositories{
+            class ITypologyRepository
+       }
+    }
+
+    folder "ENTITIES / CORE / DOMAIN"{
+        package aggregates{
+            entity Typology
+        }
+        interface Entity
+        interface AggregateRoot
+
+        package valueObjects{
+            class TypologyID
+            class TypologyDescription
+        }
+                    interface ValueObject
+
+        package factories{
+            package iFactories{
+                class ITypologyFactory
+            }
+            package implFactories{
+                class ImplTypologyFactory
+            }
+        }
+    }
+}
+
+iRoutes <|.d. implRoutes
+implRoutes ...> ITypologyController
+ITypologyController <|... ImplTypologyController
+
+ImplTypologyRepository ..|> ITypologyRepository
+
+ImplTypologyController ...> IAppServiceTypology
+
+IAppServiceTypology <|... ImplAppServiceTypology
+
+ImplAppServiceTypology ...> Typology
+
+ImplAppServiceTypology .> ITypologyRepository
+
+ImplTypologyRepository ...> iPersistence
+
+implPersistence ..|> iPersistence
+
+ImplAppServiceTypology ....> ITypologyFactory
+
+ITypologyFactory <|... ImplTypologyFactory
+
+Typology *- TypologyDescription
+
+Typology *- TypologyID
+
+TypologyID ...|> ValueObject
+TypologyDescription ...|> ValueObject
+
+Typology ...|> AggregateRoot
+
+AggregateRoot ..|> Entity
+
+@enduml

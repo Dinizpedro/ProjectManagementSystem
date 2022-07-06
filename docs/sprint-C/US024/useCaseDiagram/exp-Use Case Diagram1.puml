@@ -1,0 +1,7 @@
+@startuml
+
+usecase (As administrator I want to get a list all user account and their status)
+actor Administrator
+
+:Administrator: -- (As administrator I want to get a list all user account and their status)
+@enduml

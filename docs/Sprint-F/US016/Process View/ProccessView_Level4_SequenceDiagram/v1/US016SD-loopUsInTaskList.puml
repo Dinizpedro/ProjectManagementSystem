@@ -1,0 +1,28 @@
+@startuml
+
+participant "ImplAppProjectService" as service
+participant "taskList:List<Task>" as taskList
+participant "task : Task" as  task
+participant "taskID : TaskID" as taskID
+
+loop
+service -> taskList
+activate service
+activate taskList
+taskList -> task : String typeOfActivity = "Task"
+activate task
+task -> taskID : getIdTask()
+deactivate task
+activate taskID
+taskList -> taskID : String activityCode = getTaskCode()
+deactivate taskID
+taskList -> task : String activityStatus = getTaskStatus()
+activate task
+task --> service : task
+deactivate task
+deactivate taskList
+deactivate service
+end
+
+@enduml
+

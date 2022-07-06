@@ -1,0 +1,15 @@
+@startuml
+autonumber
+actor Administrator #FFFFFF
+participant "Project Management System" #FFFFFF
+
+activate "Administrator"
+"Administrator" -> "Project Management System" ++: Initiates process to create a new Profile
+"Project Management System" --> "Administrator" : Requests the necessary information to create a new Profile
+deactivate
+
+"Administrator" -> "Project Management System" ++: Inserts new profile description
+"Project Management System" --> "Administrator" : Inform operation result and return information about the newly created Profile
+deactivate
+
+@enduml

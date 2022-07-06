@@ -1,0 +1,13 @@
+@startuml
+autonumber
+
+skinparam monochrome true
+actor Director
+participant System
+activate Director
+activate System
+Director -> System : asks for a list with all human reosurces of a Project
+System -> System : Creates a list with all human resources of a Project
+System -> Director : shows requested list
+
+@enduml

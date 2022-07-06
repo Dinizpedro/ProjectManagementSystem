@@ -1,0 +1,54 @@
+@startuml
+autonumber
+
+participant "iProfileRepository : \nImplProfileRepository" #FFFFFF
+activate "iProfileRepository : \nImplProfileRepository"
+participant  "profileDescriptionToFind : \nProfileDescription" #FFFFFF
+participant "iProfileRepositoryJPA: \nIProfileRepositoryJPA" #FFFFFF
+
+-> "iProfileRepository : \nImplProfileRepository" : profileInRepo = getProfileByDescription(profileDescriptionToFind)
+"iProfileRepository : \nImplProfileRepository" -> "profileDescriptionToFind : \nProfileDescription" ++ : description = getDescription()
+deactivate
+"iProfileRepository : \nImplProfileRepository" -> "iProfileRepositoryJPA: \nIProfileRepositoryJPA" ++ : optProfileJPA = findProfileJPAByProfileDescription(description);
+
+create participant "optProfileJPA : \nOptional<ProfileJPA>" #FFFFFF
+"iProfileRepositoryJPA: \nIProfileRepositoryJPA" -> "optProfileJPA : \nOptional<ProfileJPA>" : create()
+deactivate "iProfileRepositoryJPA: \nIProfileRepositoryJPA"
+
+"iProfileRepository : \nImplProfileRepository" -> "optProfileJPA : \nOptional<ProfileJPA>" ++ : profileJPA = get()
+create participant "profileJPA : ProfileJPA" #FFFFFF
+"optProfileJPA : \nOptional<ProfileJPA>" -> "profileJPA : ProfileJPA" : create()
+deactivate
+
+participant "iProfileAssemblerJPA : \nImplProfileAssemblerJPA" #FFFFFF
+
+"iProfileRepository : \nImplProfileRepository" -> "iProfileAssemblerJPA : \nImplProfileAssemblerJPA" ++ : profileToFind = toDomain(profileJPA)
+
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> "profileJPA : ProfileJPA" ++ : profileDescriptionJPA = \ngetProfileDescription()
+deactivate
+
+participant ": ProfileDescription" #FFFFFF
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> ": ProfileDescription" ++ : newProfileDescription = \ncreateProfileDescription(profileDescriptionJPA)
+
+
+create participant "newProfileDescription : \nProfileDescription" #FFFFFF
+": ProfileDescription" -> "newProfileDescription : \nProfileDescription" : createProfileDescription\n(profileDescriptionJPA)
+deactivate ": ProfileDescription"
+
+participant "profileFactory : \nProfileFactory" #FFFFFF
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> "profileFactory : \nProfileFactory" ++ : profileToFind = createProfile(newProfileDescription)
+
+deactivate "iProfileAssemblerJPA : \nImplProfileAssemblerJPA"
+
+create participant "profileToFind : Profile" #FFFFFF
+"profileFactory : \nProfileFactory" -> "profileToFind : Profile" : create(newProfileDescription)
+deactivate "profileFactory : \nProfileFactory"
+
+
+create participant "profileInRepo : \nOptional<Profile>" #FFFFFF
+"iProfileRepository : \nImplProfileRepository" -> "profileInRepo : \nOptional<Profile>" : create(profileToFind)
+
+
+deactivate "iProfileRepository : \nImplProfileRepository"
+
+@enduml

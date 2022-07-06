@@ -1,0 +1,41 @@
+@startuml
+title US25 - As Administrator, I want to inactivate a user account
+
+class InactivateAccountUi
+class User  {
+	+setToInactive() : boolean
+	-userActive() : boolean
+	-setActivationStatusToInactive()
+	-setInactivationDate()
+}
+
+class SetUserAccountToInactiveController  {
+	+inactivateUserAccount(emailInput) : boolean
+}
+
+
+class DataManagement  {
+	+getUsers() : userStore
+}
+
+class UserStore  {
+	+findUser(emailInput) : User
+}
+
+class Activation {
+    -isActivated : boolean
+    +setToInactive()
+    +setInactivationDate()
+}
+
+skinparam nodesep 200
+skinparam ranksep 100
+
+UserStore "1"--> "userList 1" User
+DataManagement "1"--> "users 1" UserStore
+SetUserAccountToInactiveController ..left> User
+SetUserAccountToInactiveController ..right> DataManagement
+SetUserAccountToInactiveController ..> UserStore
+InactivateAccountUi ..> SetUserAccountToInactiveController
+User "1"--down> "activation 1"Activation
+@enduml

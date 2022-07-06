@@ -1,0 +1,79 @@
+@startuml
+autonumber
+actor Visitor #FFFFFF
+participant ": RequestRoute" #FFFFFF
+participant "iRequestController : IRequestController" #FFFFFF
+participant "mapper : JsonToDTO" #FFFFFF
+
+
+
+Visitor -> ": RequestRoute" : POST /requests (json)
+": RequestRoute" -> "iRequestController : IRequestController" ++ : createNewProfileRequest(json)
+
+"iRequestController : IRequestController" -> "iRequestController : IRequestController" ++-- : validate(json)
+
+"iRequestController : IRequestController" -> "mapper : JsonToDTO" ++ : requestCreationDTO = mapToRequestCreationDTO(json)
+
+create participant "requestCreationDTO : RequestCreationDTO" #FFFFFF
+"mapper : JsonToDTO" -> "requestCreationDTO : RequestCreationDTO" -- : create(json)
+
+participant "iAppRequestService : IAppRequestService" #FFFFFF
+
+"iRequestController : IRequestController" -> "iAppRequestService : IAppRequestService" ++ : requestIDString = createNewProfileRequest(requestCreationDTO.userID, requestCreationDTO.profileID)
+
+participant ": ProfileID" #FFFFFF
+"iAppRequestService : IAppRequestService" -> ": ProfileID" ++ :profileIDObj = createProfileID(profileID)
+create participant "profileIDObj : ProfileID" #FFFFFF
+": ProfileID" -> "profileIDObj : ProfileID" -- : create(profileID)
+
+participant "iProfileRepository: IProfileRepository" #FFFFFF
+"iAppRequestService : IAppRequestService" -> "iProfileRepository: IProfileRepository" ++:profileInRepo = getProfileByID(profileIDObj)
+deactivate
+
+
+participant ": UserID" #FFFFFF
+"iAppRequestService : IAppRequestService" -> ": UserID" ++ :userIDObj = createUserID(userID)
+create participant "userIDObj : UserID" #FFFFFF
+": UserID" -> "userIDObj : UserID" -- : create(profileID)
+
+participant "iUserRepository: IUserRepository" #FFFFFF
+"iAppRequestService : IAppRequestService" -> "iUserRepository: IUserRepository" ++ : userInRepo = findUser(userID)
+deactivate
+
+participant "iRequestRepository : IRequestRepository" #FFFFFF
+"iAppRequestService : IAppRequestService" -> "iRequestRepository : IRequestRepository" ++ : requestInRepo = getRequestByUserIDAndProfileID(userIDObj, profileIDObj)
+deactivate
+
+
+participant "userInRepo : Optional<User>" #FFFFFF
+"iAppRequestService : IAppRequestService" -> "userInRepo : Optional<User>" ++ : user = get()
+deactivate
+
+participant "user : User" #FFFFFF
+"iAppRequestService : IAppRequestService" -> "user : User" ++ : doesUserAlreadyHaveProfile = hasProfile(profileIDObj)
+deactivate
+
+participant ": RequestID" #FFFFFF
+"iAppRequestService : IAppRequestService" -> ": RequestID" ++ :requestID = createRequestID()
+create participant "requestID : RequestID" #FFFFFF
+": RequestID" -> "requestID : RequestID" -- : create()
+
+participant "requestFactory : RequestFactory" #FFFFFF
+"iAppRequestService : IAppRequestService" -> "requestFactory : RequestFactory" ++ : newRequest = createNewRequest(requestID,userIDObj, profileIDObj)
+create participant "newRequest : Request" #FFFFFF
+"requestFactory : RequestFactory" -> "newRequest : Request"  -- : create(requestID,userIDObj, profileIDObj)
+
+"iAppRequestService : IAppRequestService" -> "iRequestRepository : IRequestRepository" ++ : transaction = addNewRequestToRequestStore(newRequest)
+deactivate
+
+"iAppRequestService : IAppRequestService" -> "requestID : RequestID" ++--: requestIDString = toString()
+deactivate "requestID : RequestID"
+
+create participant "response : ResponseEntity<Object>" #FFFFFF
+"iRequestController : IRequestController" -> "response : ResponseEntity<Object>" ++ : create(link, status)
+
+"iRequestController : IRequestController" --> ": RequestRoute" : response
+
+": RequestRoute" --> Visitor : response
+
+@enduml

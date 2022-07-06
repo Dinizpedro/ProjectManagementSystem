@@ -1,0 +1,53 @@
+@startuml
+!pragma teoz true
+autonumber
+
+participant "iProfileRepository : \nImplProfileRepository" #FFFFFF
+activate "iProfileRepository : \nImplProfileRepository"
+-> "iProfileRepository : \nImplProfileRepository" : profileInDB = save(newProfile)
+
+participant "iProfileAssemblerJPA : \nImplProfileAssemblerJPA" #FFFFFF
+"iProfileRepository : \nImplProfileRepository" -> "iProfileAssemblerJPA : \nImplProfileAssemblerJPA" ++ : profileJPA = toData(newProfile)
+
+participant "newProfile : Profile" #FFFFFF
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> "newProfile : Profile" ++ : profileDescriptionJPA = getDesignation()
+deactivate
+
+create participant "profileJPA : ProfileJPA" #FFFFFF
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> "profileJPA : ProfileJPA" : create()
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> "profileJPA : ProfileJPA" ++ : setProfileDescription(profileDescriptionJPA)
+deactivate
+deactivate "iProfileAssemblerJPA : \nImplProfileAssemblerJPA"
+
+participant "iProfileRepositoryJPA: \nIProfileRepositoryJPA" #FFFFFF
+"iProfileRepository : \nImplProfileRepository" -> "iProfileRepositoryJPA: \nIProfileRepositoryJPA" ++ : profileJPAResult = save(profileJPA)
+
+create participant "profileJPAResult : ProfileJPA" #FFFFFF
+"iProfileRepositoryJPA: \nIProfileRepositoryJPA" ->  "profileJPAResult : ProfileJPA" : create()
+deactivate
+
+"iProfileRepository : \nImplProfileRepository" -> "iProfileAssemblerJPA : \nImplProfileAssemblerJPA" ++ : profileInDB = toDomain(profileJPAResult)
+
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> "profileJPAResult : ProfileJPA" ++: profileDescriptionJPA = getProfileDescription()
+deactivate
+
+participant ": ProfileDescription" #FFFFFF
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> ": ProfileDescription" ++ : newProfileDescription = createProfileDescription(profileDescriptionJPA)
+
+create participant "newProfileDescription : \nProfileDescription" #FFFFFF
+": ProfileDescription" -> "newProfileDescription : \nProfileDescription" : createProfileDescription \n (profileDescriptionJPA)
+deactivate
+
+participant "profileFactory : \n ProfileFactoryImplementation" #FFFFFF
+"iProfileAssemblerJPA : \nImplProfileAssemblerJPA" -> "profileFactory : \n ProfileFactoryImplementation" ++ : profileInDB = createProfile(newProfileDescription)
+
+create participant "profileInDB : Profile" #FFFFFF
+"profileFactory : \n ProfileFactoryImplementation" -> "profileInDB : Profile" : create(newProfileDescription)
+deactivate "profileFactory : \n ProfileFactoryImplementation"
+deactivate "iProfileAssemblerJPA : \nImplProfileAssemblerJPA"
+deactivate "iProfileRepository : \nImplProfileRepository"
+deactivate "iProfileRepository : \nImplProfileRepository"
+
+
+
+@enduml

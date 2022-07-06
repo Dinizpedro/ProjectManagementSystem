@@ -1,0 +1,81 @@
+@startuml
+autonumber
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+
+actor Director as D
+participant AssociateResourceUI as UI
+participant AssociateResourceController as CONTROLLER
+participant DataManagement as DM
+participant "singletonDM: DataManagement" as SINGLETON
+participant "users: UserStore" as users
+participant "projects: ProjectStore" as ps
+participant "resources: ResourceStore" as r
+participant ": ProjectSprintList" as psl
+participant ": Project" as p
+D -> UI : Inputs data
+activate UI
+
+UI -> CONTROLLER : associateScrumMaster(email, projectCode, sprintNumber)
+activate CONTROLLER
+
+CONTROLLER -> DM : singletonDM = getInstance()
+activate DM
+deactivate DM
+CONTROLLER -> SINGLETON : users = getUserStore()
+activate SINGLETON
+deactivate SINGLETON
+CONTROLLER -> users : user = findUser(email)
+activate users
+deactivate users
+CONTROLLER -> SINGLETON : projects = getProjectStore()
+activate SINGLETON
+deactivate SINGLETON
+CONTROLLER -> ps : project = getProject(projectCode)
+activate ps
+deactivate ps
+CONTROLLER -> SINGLETON : resources = getResourceStore()
+activate SINGLETON
+deactivate SINGLETON
+CONTROLLER -> r : resource = getResource(user, project, sprintNumber)
+activate r
+deactivate r
+CONTROLLER -> psl : validateAndAddProductOwner(sprintNumber, project, resource)
+activate psl
+activate p
+
+
+loop Sprint each : projectSprints
+alt isValidSprintNumber && isValidSprintStatus
+	psl -> p : associateScrumMaster(resource, sprintNumber)
+	p --> psl : True
+
+else
+
+end
+end
+psl --> CONTROLLER : True
+deactivate p
+deactivate psl
+CONTROLLER --> UI : True
+UI --> D : Shows data
+@enduml

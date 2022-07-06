@@ -1,0 +1,21 @@
+@startuml
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+class User  {
+	-user
+	-function
+	-email
+	-password
+	-photo
+}
+
+class Activation{
+    -code
+    -isActivated
+}
+
+User "1" <--- "1" Activation : belongs to
+@enduml

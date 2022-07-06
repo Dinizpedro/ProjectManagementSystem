@@ -1,0 +1,55 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequenceMessageAlign left
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+participant ": ImplResourceAssemblerJPA" as resourceAssemblerJPA
+participant "resourceFactory : ImplResourceFactory" as resourceFactory
+/'
+participant ": ImplResourceFactory" as resourceFactory
+'/
+participant ": ResourceJPA" as rJPA
+
+-> resourceAssemblerJPA : resource = toDomain(resourceJPA)
+activate resourceAssemblerJPA
+resourceAssemblerJPA -> rJPA : String resourceIDJPA = getResourceID()
+create participant "resourceID : ResourceID" as resourceID
+activate rJPA
+rJPA -> resourceID : resourceID = createResourceID(resourceIDJPA)
+resourceAssemblerJPA -> rJPA : String userIDJPA = getUserID()
+create participant "userID : Email" as userID
+rJPA -> userID : userID = createEmail(userIDJPA)
+resourceAssemblerJPA -> rJPA : String projectCodeJPA = getProjectCode()
+create participant "projectCode : ProjectCode" as projectCode
+rJPA -> projectCode : projectCode = createEmail(projectCodeJPA)
+resourceAssemblerJPA -> rJPA : String startDateJPA = getStartDate()
+resourceAssemblerJPA -> rJPA : String endDateJPA = getEndDate()
+create participant "dates : Time" as dates
+rJPA -> dates : dates = create(startDateJPA, endDateJPA)
+resourceAssemblerJPA -> rJPA : double costPerHourJPA = getCostPerHour()
+create participant "costPerHour : ResourceCostPerHour" as costPerHour
+rJPA -> costPerHour : costPerHour = create(costPerHourJPA)
+resourceAssemblerJPA -> rJPA : double ResourcePercentageOfAllocation = getAllocation()
+
+create participant "allocation : ResourcePercentageOfAllocation" as allocation
+rJPA -> allocation :  allocation = create(allocationJPA)
+resourceAssemblerJPA -> rJPA : String roleJPA = getRole()
+create participant "role : Role" as role
+rJPA -> role :  role = Role.valueOf(roleJPA)
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+actor "Director" as D
+participant ": System" as System
+Activate D
+Activate System
+D -> System :  Create a resource
+System -> D : Requests data(user, project, dates, costPerHour, percentageOfAllocation, startSprint, endSprint)
+D -> System :  Enters data
+System -> System : createResource
+System --> D : Resource
+
+@enduml

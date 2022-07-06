@@ -1,0 +1,38 @@
+@startuml
+
+class Resource  {
+	-user
+	-project
+	-starDate
+	-endDate
+	-costPerHour
+	-percentageOfAllocation
+}
+
+class UserStory {
+	-code
+	-effort
+	-priority
+	-description
+	-status
+}
+
+class SprintBacklog  {
+	-userStoryStatusList
+	-sprintBacklog
+}
+
+class Sprint {
+	-number
+	-goal
+	-dates
+	-status
+	-sprintBacklog
+	-listOfTasks
+}
+
+
+UserStory "1.*" --> "1" SprintBacklog : is added to
+Sprint "1" --> "1" SprintBacklog : origins
+Resource "1" --> "1.*" UserStory : creates
+@enduml

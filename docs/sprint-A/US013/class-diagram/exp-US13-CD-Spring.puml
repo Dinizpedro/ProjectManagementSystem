@@ -1,0 +1,116 @@
+@startuml
+header IMPLEMENTATION VIEW
+hide empty methods
+left to right direction
+
+package "Infrastructure" #FFFFFF {
+    package Routes #FFFFFF {
+        class ProfileRoute #FFFFFF
+    }
+
+}
+
+package "Interface Adapters" #FFFFFF {
+
+    package "Controllers" {
+        package ImplControllers #FFFFFF {
+                class ImplProfileController #FFFFFF {
+            	    +addNewProfile(profileCreationDTO) : ResponseEntity<Object>
+                }
+        }
+
+        package IControllers #FFFFFF {
+                interface IProfileController #FFFFFF {
+                    +addNewProfile(profileCreationDTO) : ResponseEntity<Object>
+        }
+    }
+
+    package "Repositories" {
+        class ProfileStore #FFFFFF {
+        + getProfileByDescription(profileDescription) : Optional<Profile>
+        + addProfileToProfileStore(newProfile) : boolean
+        + nextProfileID() : int
+        }
+    }
+}
+
+package "Application Services / Use Case Services" #FFFFFF {
+
+    package "App Services" #FFFFFF {
+
+        package "ImplAppServices" #FFFFFF {
+                class ImplAppProfileService #FFFFFF {
+                + addNewProfile(designation) : Optional<Integer>
+                }
+        }
+
+        package "IAppServices" #FFFFFF {
+                interface IAppProfileService #FFFFFF {
+                + addNewProfile(designation) : Optional<Integer>
+                }
+        }
+    }
+
+    package "IRepositories" #FFFFFF {
+        interface IProfileRepository #FFFFFF {
+        + getProfileByDescription(profileDescription) : Optional<Profile>
+        + addProfileToProfileStore(newProfile) : boolean
+        + nextProfileID() : int
+        }
+    }
+}
+
+
+package "Entities / Core / Domain" #FFFFFF {
+    package "Aggregates" #FFFFFF {
+
+        class Profile #FFFFFF {
+        }
+    }
+
+    package "Value Objects" #FFFFFF {
+        class ProfileID #FFFFFF {
+            -identity : int
+        }
+
+        class ProfileDescription #FFFFFF {
+            -description : String
+        }
+    }
+
+    package "Factories" #FFFFFF {
+
+        package iFactories #FFFFFF {
+            interface ProfileFactory #FFFFFF {
+                +createProfile (profileDesignation, identity) : Profile
+            }
+        }
+
+        package implFactories #FFFFFF {
+               class ProfileFactoryImplementation #FFFFFF {
+               +createProfile (profileDesignation, identity) : Profile
+               }
+        }
+    }
+
+    interface AggregateRoot #FFFFFF
+    interface ValueObject #FFFFFF
+}
+
+ProfileRoute ..> IProfileController
+ImplProfileController ..|> IProfileController
+ImplProfileController ..> IAppProfileService
+ImplAppProfileService ..|> IAppProfileService
+ImplAppProfileService ..> IProfileRepository
+ProfileStore ..|> IProfileRepository
+ImplAppProfileService ..> ProfileFactory
+ProfileFactoryImplementation ..|> ProfileFactory
+ProfileFactory ..> Profile
+Profile ..|> AggregateRoot
+Profile ..> ProfileDescription
+Profile ..> ProfileID
+ProfileID ..|> ValueObject
+ProfileDescription ..|> ValueObject
+
+
+@enduml

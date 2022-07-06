@@ -1,0 +1,51 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+autoactivate on
+
+actor "Director"
+
+activate Director
+
+    Director -> "Project Management UI" : Initiates the process to create a new Project
+    "Project Management UI" --> Director : Requests information to create a new Project
+
+    Director -> "Project Management UI" : Input data
+        "Project Management UI" -> "Project Management Business Logic" : create new Project (REST)
+            "Project Management Business Logic" -> DBMS : does Project already exists?
+            DBMS --> "Project Management Business Logic" : false
+            deactivate DBMS
+            "Project Management Business Logic" -> DBMS : does Customer already exists?
+            DBMS --> "Project Management Business Logic" : false
+            deactivate DBMS
+            "Project Management Business Logic" -> DBMS : does Typology already exists?
+            DBMS --> "Project Management Business Logic" : false
+            deactivate DBMS
+            "Project Management Business Logic" -> DBMS : does User (PM) already exists?
+            DBMS --> "Project Management Business Logic" : false
+            deactivate DBMS
+            "Project Management Business Logic" -> DBMS : save new Project
+            DBMS --> "Project Management Business Logic" : return representation of saved Project
+            "Project Management Business Logic" -> DBMS : save new Resource (PM)
+            DBMS --> "Project Management Business Logic" : return representation of saved Resource
+        "Project Management Business Logic" --> "Project Management UI" : Inform operation result(REST - json + HTTP Status)
+    "Project Management UI" --> Director : Present new Project
+@enduml

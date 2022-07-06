@@ -1,0 +1,27 @@
+@startuml
+!pragma teoz true
+autonumber
+
+participant "iUserStoryRepository : \nImplUserStoryRepository" #FFFFFF
+activate "iUserStoryRepository : \nImplUserStoryRepository"
+-> "iUserStoryRepository : \nImplUserStoryRepository" : userStorySaved = save(newUserStory)
+
+participant "iUserStoryAssemblerJPA : \nImplUserStoryAssemblerJPA" #FFFFFF
+"iUserStoryRepository : \nImplUserStoryRepository" -> "iUserStoryAssemblerJPA : \nImplUserStoryAssemblerJPA" ++ : userStoryJPA = userStoryToUserStoryJPA(newUserStory)
+deactivate
+
+participant "iUserStoryRepositoryJPA: \nIUserStoryRepositoryJPA" #FFFFFF
+"iUserStoryRepository : \nImplUserStoryRepository" -> "iUserStoryRepositoryJPA: \nIUserStoryRepositoryJPA" ++ : userStoryJPAInDb = save(userStoryJPA)
+deactivate
+
+"iUserStoryRepository : \nImplUserStoryRepository" -> "iUserStoryAssemblerJPA : \nImplUserStoryAssemblerJPA" ++ : userStory = userStoryJPAtoUserStory(userStoryJPAInDb)
+
+deactivate
+
+
+deactivate "iUserStoryAssemblerJPA : \nImplUserStoryAssemblerJPA"
+deactivate "iUserStoryRepository : \nImplUserStoryRepository"
+
+
+
+@enduml

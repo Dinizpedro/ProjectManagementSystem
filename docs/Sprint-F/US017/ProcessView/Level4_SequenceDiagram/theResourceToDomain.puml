@@ -1,0 +1,67 @@
+@startuml
+
+participant "ImplResourceAssemblerJPA" as resourceAssemblerJPA
+participant "resourceJPA : ResourceJPA" as resourceJPA
+participant "ResourceFactoryImplemenatation" as resourceFactory
+
+-> resourceAssemblerJPA : theResource = toDomain(resourceJPA)
+activate resourceAssemblerJPA
+resourceAssemblerJPA -> resourceJPA : resourceIDJPA = getResourceID()
+activate resourceJPA
+deactivate resourceJPA
+resourceAssemblerJPA -> resourceJPA : userIDJPA = getUserID()
+activate resourceJPA
+deactivate resourceJPA
+resourceAssemblerJPA -> resourceJPA : projectCodeJPA = getProjectCode()
+activate resourceJPA
+deactivate resourceJPA
+resourceAssemblerJPA -> resourceJPA : startDateJPA = getStartDate()
+activate resourceJPA
+deactivate resourceJPA
+resourceAssemblerJPA -> resourceJPA : endDateJPA = getEndDate()
+activate resourceJPA
+deactivate resourceJPA
+resourceAssemblerJPA -> resourceJPA : costPerHourJPA = getCostPerHour()
+activate resourceJPA
+deactivate resourceJPA
+resourceAssemblerJPA -> resourceJPA : allocationJPA = getPercentageOfAllocation()
+activate resourceJPA
+deactivate resourceJPA
+resourceAssemblerJPA -> resourceJPA : roleJPA = getRole()
+activate resourceJPA
+deactivate resourceJPA
+
+create participant "resourceID : ResourceID" as resourceID
+resourceAssemblerJPA -> resourceID : createResourceID(resourceIDJPA)
+
+create participant "userID : UserID" as userID
+resourceAssemblerJPA -> userID : createUserID(userIDJPA)
+
+create participant "projectCode : ProjectCode" as projectCode
+resourceAssemblerJPA -> projectCode : createProjectCode(resourceIDJPA)
+
+create participant "dates : Time" as dates
+resourceAssemblerJPA -> dates : create(startDateJPA, endDateJPA)
+
+create participant "costPerHour : ResourceCostPerHour" as costPerHour
+resourceAssemblerJPA -> costPerHour : createCostPerHour(costPerHourJPA)
+
+create participant "allocation : ResourcePercentageOfAllocation" as percentageOfAllocation
+resourceAssemblerJPA -> percentageOfAllocation : create(allocationJPA)
+
+create participant "role : Role" as role
+resourceAssemblerJPA -> role : valueOf(roleJPA)
+
+resourceAssemblerJPA -> resourceFactory : createResource(resourceID,userID,projectCode,dates,costPerHour,percentageOfAllocation,role)
+activate resourceFactory
+
+create participant "theResource : Resource" as resource
+resourceFactory -> resource : create
+
+deactivate resourceFactory
+<--resourceAssemblerJPA : theResource
+deactivate resourceAssemblerJPA
+
+
+
+@enduml

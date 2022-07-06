@@ -1,0 +1,16 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+actor "Product Owner"
+usecase (UC009 - Create a user story and add it to the Product Backlog.)
+
+:Product Owner: -- (UC009 - Create a user story and add it to the Product Backlog.)
+@enduml

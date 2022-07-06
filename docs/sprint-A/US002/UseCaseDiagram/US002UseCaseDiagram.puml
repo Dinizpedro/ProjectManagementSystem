@@ -1,0 +1,16 @@
+@startuml
+skinparam actor {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+skinparam usecase {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+}
+actor "Non-Activated User" as User
+usecase (UC002-I want to activate a just registered user account.)
+
+:User: -- (UC002-I want to activate a just registered user account.)
+@enduml

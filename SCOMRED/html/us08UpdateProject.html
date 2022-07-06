@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Update Project Info</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!--jquery-->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- CSS Files -->
+    <link href="./styles.css" rel="stylesheet" />
+    <script type="text/javascript" src="./scripts.js"></script>
+
+    <script>
+        var noResponse = "<h3>Sorry, no response from the backend, please try again.</h3>";
+
+        function sendRequest() {
+            var request = new XMLHttpRequest();
+            request.onload = function okCase() {
+                var msg = "";
+                if (this.status == 200) {
+                    msg += "Result from server: "
+                } else {
+                    msg += "Sorry, error " + this.status + " reported by the backend:";
+                }
+                document.getElementById("result").innerHTML = msg + this.responseText;
+            };
+
+            request.ontimeout = function timeoutCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+            request.onerror = function errorCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+
+            request.open("POST", "/cgi-bin/us08-bash", true);
+            request.timeout = 2000;
+            var data = JSON.stringify({
+                "email": document.getElementById("email").value,
+                "password": document.getElementById("password").value,
+                "projectCode": document.getElementById("projectCode").value,
+                "startDate": document.getElementById("startDate").value,
+                "endDate": document.getElementById("endDate").value,
+                "sprintDuration": document.getElementById("sprintDuration").value,
+                "numberOfPlannedSprints": document.getElementById("numberOfPlannedSprints").value,
+                "status": document.getElementById("status").value,
+"typology": document.getElementById("typology").value
+            });
+            request.send(data);
+        }
+
+        function SubmitTwo(email, password, projectCode, startDate, endDate, sprintDuration, numberOfPlannedSprints, status, typology) {
+            if (validateEmail(email)) {
+                if (validateCode(projectCode)) {
+                    if (dateTwoIsAfterDateOne(startDate, endDate)) {
+                        if (valueRangeCheck("Sprint duration", sprintDuration, 1, 10)) {
+                            if (valueRangeCheck("Number of planned sprints", numberOfPlannedSprints, 1, 99)) {
+                                sendRequest()
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function setSelectBoxByText(id, etxt) {
+            var eid = document.getElementById(id);
+            for (var i = 0; i < eid.options.length; ++i) {
+                if (eid.options[i].text === etxt)
+                    eid.options[i].selected = true;
+            }
+        }
+
+        function requestProjectDataInServer() {
+            var request = new XMLHttpRequest();
+            request.onload = function okCase() {
+                var msg = "";
+                if (this.status == 200) {
+                    var mydata = JSON.parse(this.responseText);
+                    document.getElementById("startDate").value = mydata.startDate;
+                    document.getElementById("endDate").value = mydata.endDate;
+                    document.getElementById("sprintDuration").value = mydata.sprintDuration;
+                    document.getElementById("numberOfPlannedSprints").value = mydata.numberOfPlannedSprints;
+                    setSelectBoxByText("status", mydata.status);
+setSelectBoxByText("typology", mydata.typology);
+                    document.getElementById("email").disabled = false;
+                    document.getElementById("password").disabled = false;
+                    document.getElementById("startDate").disabled = false;
+                    document.getElementById("endDate").disabled = false;
+                    document.getElementById("sprintDuration").disabled = false;
+                    document.getElementById("numberOfPlannedSprints").disabled = false;
+                    document.getElementById("status").disabled = false;
+document.getElementById("typology").disabled = false;
+                    document.getElementById("btn_updateProject").disabled = false;
+                } else {
+                    msg += this.responseText;
+                }
+                document.getElementById("result").innerHTML = msg;
+            };
+
+            request.ontimeout = function timeoutCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+            request.onerror = function errorCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+
+            request.open("POST", "/cgi-bin/us08-bash-requestProjectData", true);
+            request.timeout = 2000;
+            var data = JSON.stringify({
+                "email": document.getElementById("email").value,
+                "password": document.getElementById("password").value,
+                "projectCode": document.getElementById("projectCode").value,
+            });
+            request.send(data);
+        }
+
+        function requestProjectStatusesInServer() {
+            var request = new XMLHttpRequest();
+            request.onload = function okCase() {
+                var msg = "";
+                if (this.status == 200) {
+                    var mydata = JSON.parse(this.responseText);
+                    for (i = 0; i < mydata.length; ++i) {
+                        var opt = document.createElement('option');
+                        opt.value = mydata[i];
+                        opt.innerHTML = mydata[i];
+                        document.getElementById("status").appendChild(opt);
+                    }
+                } else {
+                    msg += "Sorry, error " + this.status + " reported by the backend:";
+                }
+                document.getElementById("result").innerHTML = msg;
+            };
+
+            request.ontimeout = function timeoutCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+            request.onerror = function errorCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+
+            request.open("GET", "/cgi-bin/request-project-statuses-in-server", true);
+            request.timeout = 2000;
+            request.send();
+        }
+
+        function requestTypologiesInServer() {
+            var request = new XMLHttpRequest();
+            request.onload = function okCase() {
+                var msg = "";
+                if (this.status == 200) {
+                    var mydata = JSON.parse(this.responseText);
+                    for (i = 0; i < mydata.length; ++i) {
+                        var opt = document.createElement('option');
+                        opt.value = mydata[i];
+                        opt.innerHTML = mydata[i];
+                        document.getElementById("typology").appendChild(opt);
+                    }
+                } else {
+                    msg += "Sorry, error " + this.status + " reported by the backend:";
+                }
+                document.getElementById("result").innerHTML = msg;
+            };
+
+            request.ontimeout = function timeoutCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+            request.onerror = function errorCase() {
+                document.getElementById("result").innerHTML = noResponse;
+            };
+
+            request.open("GET", "/cgi-bin/request-typologies-in-server", true);
+            request.timeout = 2000;
+            request.send();
+        }
+
+        function onLoad(){
+            requestTypologiesInServer();
+            requestProjectStatusesInServer();
+        }
+
+        function Submit(projectCode) {
+            if (validateEmail(email)) {
+                if (validateCode(projectCode)) {
+                    requestProjectDataInServer()
+                }
+            }
+            return false;
+        }
+    </script>
+
+</head>
+
+<header>
+    <div id="mySidenav" class="sidenav">
+        <a id="brand" href="#">swITch</a>
+        <ul class="nav nav-pills nav-justified">
+            <li class="nav-item">
+                <a class="nav-link" href="./us01CreateAccount.html">Create account</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us02ActivateAccount.html">Activate account</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us03CreateNewProfileRequest.html">Request profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us04SearchUsers.html">Search users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us05CreateProject.html">Create project</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="./us08UpdateProject.html">Edit project</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us06UpdateProfile.html">Update profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us07createResource.html">Associate resource</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us10UpdateUser.html">Update user</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us11ChangePassword.html">Change password</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us12CreateNewProjectTypology.html">Create project typology</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us13CreateUserProfile.html">Create user profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us14DefineScrumMasterOfAProject.html">Define Scrum Master</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us15GetListOfAllProjects.html">Get list of projects</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us24GetUsersAndStatus.html">Get Users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us25InactivateUser.html">Inactivate user</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us26ActivateUser.html">Activate user</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us27DefineProductOwnerOfAProject.html">Define Product Owner</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./us28GetListOfAllHumanResourcesInAProject.html">Get list of resources</a>
+            </li>
+        </ul>
+    </div>
+</header>
+
+<body onload="onLoad()">
+    <!-- Main div code -->
+    <div id="main">
+        <div class="h-tag">
+            <h1>Edit project</h1>
+        </div>
+        <!-- create account div -->
+        <div class="login">
+            <table cellspacing="2" cellpadding="8" border="0">
+                <tr>
+                    <td align="right">Email (Director):</td>
+                    <td><input type="text" id="email" placeholder="Insert Director email" class="tb" /></td>
+                </tr>
+                <tr>
+                    <td align="right">Password (Director):</td>
+                    <td><input type="password" placeholder="Insert Password here" id="password" class="tb" />
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Project code:</td>
+                    <td><input type="text" placeholder="Project Code" class="tb" id="projectCode" />
+                    <td><input type="submit" style="background-color: lightgray;" value="Find" class="btn"
+                            onclick="return Submit(projectCode)" />
+                    </td>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Start date:</td>
+                    <td><input type="date" placeholder="Start date" class="tb" id="startDate" disabled />
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">End date:</td>
+                    <td><input type="date" placeholder="End date" class="tb" id="endDate" disabled /></td>
+                </tr>
+                <tr>
+                    <td align="right">Sprint duration:</td>
+                    <td><input type="number" placeholder="Srint duration" class="tb" id="sprintDuration" disabled />
+                </tr>
+                <tr>
+                    <td align="right">Number of planned Sprints:</td>
+                    <td><input type="number" placeholder="Number of planned Sprints:" class="tb"
+                            id="numberOfPlannedSprints" disabled />
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">Typology to be assigned:</td>
+                    <td><select id="typology" name="typology" disabled> <br>
+                </tr>
+                <tr>
+                    <td align="right">Status to be assigned:</td>
+                    <td><select id="status" name="status" disabled> <br>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type="submit" style="background-color: lightgray;" value="Submit" class="btn"
+                            id="btn_updateProject" disabled
+                            onclick="return SubmitTwo(email, password, projectCode, startDate, endDate, sprintDuration, numberOfPlannedSprints, status,typology)" />
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <div id="result"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>

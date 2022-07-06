@@ -1,0 +1,413 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+header IMPLEMENTATION VIEW
+
+top to bottom direction
+skinparam linetype ortho
+
+skinparam class {
+BackgroundColor #white
+ArrowColor #black
+BorderColor #black
+
+}
+
+folder "Project Management SYSTEM" {
+
+    folder "INFRASTRUCTURE" %lighten("orchid", 40){
+
+        package persistence %lighten("orchid", 30){
+        package repositories {
+            package iRepositoriesJPA  {
+                interface IResourceRepositoryJPA{
+                 + getResourceJPAByProjectCode(String projectCode) : ArrayList<ResourceJPA>
+
+                 }
+                  interface IProjectRepositoryJPA{
+                                  + existsByCode(String code) : boolean
+                                  + findByCode(String code) : Optional<ProjectJPA>
+                                  }
+
+                                  interface IUserRepositoryJPA{
+                                                                    + existsByEmail(String email) : boolean
+                                                                    }
+                                                                    }
+            }
+
+        package assemblers {
+        package assemblersJPA {
+
+            package iAssemblersJPA{
+
+            interface IProjectAssemblerJPA{
+                                            + toData(Project project) : ProjectJPA
+                                            + toDomain(ProjectJPA projectJPA) : Project
+                                            }
+
+                interface IResourceAssemblerJPA{
+                + toData(Resource resource) : ResourceJPA
+                + toDomain(ResourceJPA resourceJPA) : Resource
+                }
+
+
+
+
+            }
+
+            package implAssemblersJPA{
+                            class ImplResourceAssemblerJPA{
+            - IResourceFactory resourceFactory;
+             + toData(Resource resource) : ResourceJPA
+            + toDomain(ResourceJPA resourceJPA) : Resource
+                            }
+
+
+class ImplProjectAssemblerJPA{
+                  - IProjectBuilder builder
+
+ + toData(Project project) : ProjectJPA
+                                + toDomain(ProjectJPA projectJPA) : Project
+                                }
+
+                }
+
+
+            }
+        }
+    }
+        package routes %lighten("orchid", 30) {
+            package iRoutes{}
+            package implRoutes{}
+        }
+    }
+
+    folder "INTERFACE ADAPTERS" %lighten("aquamarine", 20){
+
+        package "Controllers" #white {
+            package "iControllers" #white {
+                interface  IResourceController {
+                + definedTeamMemberOfAProject(@PathVariable ResourceCreationDTO dto) : ResponseEntity<Object>
+                }
+            }
+            package "implControllers" #white{
+                class ImplResourceController {
+                - IAppResourceService resourceService;
+                + definedTeamMemberOfAProject(@PathVariable ResourceCreationDTO dto) : ResponseEntity<Object>
+                }
+            }
+            }
+            package implRepositories #white {
+                class ImplResourceRepository{
+                - IResourceRepositoryJPA iResourceRepositoryJPA;
+                - IResourceAssemblerJPA iResourceAssemblerJPA;
+                + getResourcesByProjectCode(String projectCode) : ArrayList<Resource>
+                +save(Resource newResource) : Resource
+                }
+                class ImplProjectRepository {
+                -  IProjectRepositoryJPA projectRepositoryJPA;
+                - IProjectAssemblerJPA projectAssembler;
+                + projectExists(ProjectCode projectCode) : boolean
+                +findByCode(ProjectCode code) : Optional<Project>
+                }
+
+                  class ImplUserRepository {
+                                - IUserRepositoryJPA userStore;
+                                - IUserAssemblerJPA userAssembler;
+                                + userExists(String email) : boolean
+                                + findByCode(ProjectCode code) : Optional<Project>
+                                }
+            }
+            package dtos #white{
+                class ResourceDTO {
+                - resourceID : String
+                - userID : String
+                - projectCode : String
+                - dates : TimeDTO
+                - costPerHour : double
+                - percentageOfAllocation : double
+                - role : String
+                + ResourceDTO(String resourceID, String userID, String projectCode, \nTimeDTO dates, double costPerHour, double percentageOfAllocation, String role)
+                }
+
+                class ResourceCreationDTO {
+                                - userID : String
+                                - projectCode : String
+                                - dates : TimeDTO
+                                - costPerHour : double
+                                - percentageOfAllocation : double
+                                + ResourceCreationDTO(String userID, String projectCode, \nTimeDTO dates, double costPerHour, double percentageOfAllocation)
+                                }
+            }
+
+        }
+    }
+
+    folder "APPLICATION SERVICES / USE CASE SERVICES" %lighten("blue", 90){
+
+        package "appServices" #white{
+            package "iAppServices" #white {
+                interface IAppResourceService {
+                + definedTeamMemberOfAProject(ResourceCreationDTO dto) : Optional<ResourceDTO>
+                }
+            }
+            package "impAppServices" #white{
+                class ImplAppResourceService{
+                - IProjectRepository iProjectRepository;
+                - IUserRepository iUserRepository;
+                - IResourceRepository iResourceRepository;
+                - ImplResourceDomainService implResourceDomainService;
+                -  IResourceFactory resourceFactory;
+
+                + definedTeamMemberOfAProject(ResourceCreationDTO dto) : Optional<ResourceDTO>
+                }
+            }
+             package  "implAssemblers" #white {
+             class ResourceAssembler
+                    }
+
+        }
+
+        package "iRepositories" #white{
+
+            interface IResourceRepository{
+            + getResourcesByProjectCode(String projectCode) : ArrayList<Resource>
+            }
+            interface IProjectRepository {
+            - projectRepositoryJPA : IProjectRepositoryJPA
+            - projectAssemblerJPA : IProjectAssemblerJPA
+            + projectExists(ProjectCode code) : boolean
+            + findByCode(ProjectCode code) : Optional <Project>
+            }
+
+               interface IUserRepository {
+                        + userExists(String email) : boolean
+                        }
+        }
+
+
+
+    }
+
+
+    folder "ENTITIES / CORE / DOMAIN" %lighten("lightsalmon", 20){
+
+        package "aggregates" %lighten("lightsalmon", 30) {
+            package resource #white {
+                entity Resource{
+                + identity : ResourceID
+                + userID : Email
+                + projectCode : ProjectCode
+                + date : Time
+                + costPerHour : ResourceCostPerHour
+                + allocation : ResourcePercentageOfAllocation
+                Role : Role
+                }
+            }
+
+            package project #white {
+                            entity Project{
+                            - code : ProjectCode
+           }
+
+           interface IProjectBuilder{
+                      }
+
+                       class ImplProjectBuilder{
+                       - code : ProjectCode
+                       - name : ProjectName
+                       - description : ProjectDescription
+                       - businessSector : ProjectBusinessSector
+                       - dates : Time
+                       - numberOfPlannedSprints : ProjectNumberOfPlannedSprints
+                       - sprintDuration : ProjectSprintDuration
+                       - budget : ProjectBudget
+                       - typologyDescription : TypologyDescription
+                       - customerName : CustomerName
+                       - status : ProjectStatus
+                                            }
+                        }
+        }
+
+        interface Entity #white
+        interface AggregateRoot #white
+
+        package "factories" %lighten("lightsalmon", 30){
+           package "iFactories" %lighten("lightsalmon", 30){
+                interface IResourceFactory {
+                + createResource : Resource
+                }
+
+           }
+
+
+
+           package "implFactories" %lighten("lightsalmon", 30){
+                class ResourceFactoryImplementation{
+                + identityInput : ResourceID
+                + userIdInput : Email
+                + projectCodeInput : ProjectCode
+                + costPerHourInput : ResourceCostPerHour
+                + allocationInput : ResourcePercentageOfAllocation
+                roleInput : Role
+                - createResource(ResourceID identityInput, Email userIdInput, \nProjectCode projectCodeInput,
+                  Time datesInput, ResourceCostPerHour costPerHourInput, \nResourcePercentageOfAllocation allocationInput, Role roleInput)
+                }
+
+            }
+        }
+
+        package "domainServices" %lighten("lightsalmon", 30){
+                   package "iDomainServices" %lighten("lightsalmon", 30){
+                        interface IResourceDomainService {
+             + validateNewTeamMemberResource(ArrayList<Resource> resources, \nProject project, ResourceCreationDTO dto) : boolean
+
+                        }
+
+                   }
+
+
+
+                   package "ImplResourceDomainService" %lighten("lightsalmon", 30){
+                        class ImplResourceDomainService{
+                        + validateNewTeamMemberResource(ArrayList<Resource> resources, \nProject project, ResourceCreationDTO dto) : boolean
+                        }
+
+                    }
+                }
+
+        package "Shared" %lighten("lightsalmon", 30){
+            package "Value Objects" %lighten("lightsalmon", 30){
+                 class Time #white{
+                    - startDate : Date
+                    - endDate : Date
+                 }
+                 class Email #white{
+                                     - userEmail : String
+                                 }
+                 class ResourceCostPerHour #white{
+                    - costPerHour : double
+                }
+                class ResourcePercentageOfAllocation #white{
+                                    - allocation : double
+                                }
+                 class ProjectCode #white{
+                    - code : String
+                 }
+
+                  enum Role #white{
+                                     - ScrumMaster
+                                     - ProductOwner
+                                     - ProjectManager
+                                     - TeamMember
+                                  }
+                 class ResourceID #white{
+                    - uuid : UUID
+                 }
+            }
+        }
+        interface ValueObject #white
+    }
+
+' //----INFRAESTRUCTURE----
+
+' ROUTE - CONTROLLER
+"INFRASTRUCTURE" --[hidden]-> "INTERFACE ADAPTERS"
+"INTERFACE ADAPTERS" --[hidden]-> "APPLICATION SERVICES / USE CASE SERVICES"
+"APPLICATION SERVICES / USE CASE SERVICES" --[hidden]> "ENTITIES / CORE / DOMAIN"
+
+iRoutes <|.. implRoutes
+
+implRoutes .> IResourceController
+
+' ASSEMBLER  - FACTORY
+
+ImplResourceAssemblerJPA ..|> IResourceAssemblerJPA
+ImplProjectAssemblerJPA .|> IProjectAssemblerJPA
+
+ImplResourceAssemblerJPA ..|> IResourceFactory
+ImplProjectAssemblerJPA .|> IProjectBuilder
+
+' ID
+ResourceID -* Resource
+
+' REPOSITORY_JPA - REPOSITORY
+
+IResourceRepositoryJPA ...> ImplResourceRepository
+IProjectRepositoryJPA .> ImplProjectRepository
+IUserRepositoryJPA .> ImplUserRepository
+
+ImplResourceRepository ..> IProjectRepositoryJPA
+ImplResourceRepository ..> IProjectAssemblerJPA
+ImplUserRepository ..> IUserRepositoryJPA
+ImplResourceRepository ..> IResourceRepositoryJPA
+ImplResourceRepository ..> IResourceAssemblerJPA
+
+ImplProjectRepository  .|> IProjectRepository
+ImplResourceRepository ...|> IResourceRepository
+ImplUserRepository ...|> IUserRepository
+
+' ASSEMBLER_JPA - REPOSITORY
+IResourceAssemblerJPA .> ImplResourceRepository
+IProjectAssemblerJPA .> ImplProjectRepository
+
+
+
+' //----INTERFACE_ADAPTERS----
+
+' CONTROLLER - DTO
+
+IResourceController <|. ImplResourceController
+
+ImplResourceController .> ResourceDTO
+
+ImplResourceController .> ResourceCreationDTO
+
+' //----APPLICATION SERVICES----
+
+' SERVICE - REPOSITORY
+
+ImplResourceController ..> IAppResourceService
+ImplProjectBuilder ..|> IProjectBuilder
+ImplAppResourceService .> IProjectRepository
+ImplAppResourceService .> IUserRepository
+ImplAppResourceService .> IResourceRepository
+ImplAppResourceService .> IResourceDomainService
+ImplAppResourceService .> IResourceFactory
+ImplAppResourceService ..> ResourceAssembler
+
+
+
+
+' //----ENTITIES/CORE/DOMAIN----
+
+' FACTORIES
+
+ResourceFactoryImplementation ..|> IResourceFactory
+
+' VALUE OBJECTS
+
+ResourceID ..|> ValueObject
+
+Email ..|> ValueObject
+
+ProjectCode .|> ValueObject
+
+Time ..|> ValueObject
+
+ResourceCostPerHour ..|> ValueObject
+
+ResourcePercentageOfAllocation .|> ValueObject
+
+' DOMAIN SERVICE
+
+ImplResourceDomainService ..|> IResourceDomainService
+' AGREGGATE ROOT
+
+Resource ..|> AggregateRoot
+Project ..|> AggregateRoot
+
+AggregateRoot ...|> Entity
+Role .|> Entity
+@enduml
+

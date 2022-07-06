@@ -1,0 +1,52 @@
+@startuml
+'https://plantuml.com/sequence-diagramskinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+autonumber
+
+actor "Director" as Director
+
+participant ":UI" as UI
+participant ":ImplTypologyController" as TypologyController
+participant "ImplAppTypologyService" as TypologyService
+participant ":ImplTypologyRepository" as TypologyRepo
+participant ":ImplTypologyFactory" as TypologyFactory
+
+activate Director
+    Director -> UI : Create New Project Typology.
+    activate UI
+        UI -> TypologyController: createTypology(typologyDescription)
+        activate TypologyController
+            TypologyController -->  : createTypology(typologyDescription)
+            activate TypologyService
+            create participant "newDescritpion : TypologyDescription" as dtoDescription
+            TypologyService --
+            deactivate TypologyService
+            activate ts
+            create participant "newTypology : Typology" as newTypology
+                ts --> newTypology : create (descriptionInput)
+                ts --> ts : add(newTypology)
+                ts --> controller : True
+            deactivate ts
+       TypologyController --> UI : True
+       deactivate TypologyController
+       UI --> Director : Creation is successful.
+    deactivate UI
+deactivate Director
+@enduml

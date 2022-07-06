@@ -1,0 +1,111 @@
+@startuml
+skinparam SameClassWidth true
+skinparam ClassFontSize 10
+skinparam ArrowFontSize 15
+skinparam linetype ortho
+scale 600 width
+
+skinparam class {
+BackgroundColor White
+ArrowColor Black
+BorderColor Black
+}
+
+skinparam package {
+BackgroundColor White
+ArrowColor Black
+BorderColor Black
+
+}
+package UI  {
+class DefinedProductOwnerUI
+}
+
+package Controller {
+class DefinedProductOwnerController {
+	+defineProductOwnerOfAProject(CreateResourceDTO dto) : boolean
+}
+}
+
+package "Model" {
+class Project {
+     - productOwner : Resource
+     - resourceFactory : ResourceFactory
+     +createResourceAndAddAsProductOwner(selectedUser : User, dto : CreateResourceDTO) : boolean
+    +updateProductOwner (newResource : Resource) : void
+          }
+   class Resource {
+   - user : User
+   - startDate : String
+   - endDate : String
+   - costPerHour : double
+   - percentageOfAllocation : double
+   + Resource(userInput : User, startDate : String, endDate : String, costPerHourInput : double, percentageOfAllocation : double)
+}
+
+  class User {
+  - userName : String
+  - email : String
+  - function : String
+  - password : String
+  - profile : Profile
+  +User(userName : String, email : String, function : String, password : String, profile : Profile)
+}
+
+class DataManagement {
+	+getInstance() : DataManagement
+	+getProjectStore() : ProjectStore
+	+getUsers() : UserStore
+}
+
+package DTO {
+class CreateResourceDTO {
+- name : String
+- projectCode : String
+- dates : TimeDTO
+- costPerHour : double
+- percentageOfAllocation : double
++CreateResourceDTO(email : String, projectCode : String, dates : TimeDTO, costPerHour : double,  percentageOfAllocation : double) : void
+}
+}
+
+package "Stores" {
+
+class ProjectStore {
+	+getProject(code : String) : Project
+}
+class UserStore {
+	+findUser(email : String) : User
+}
+}
+}
+
+package "Factory" {
+class ResourceFactoryImplementation {
+    -instance : ResourceFactoryImplementation
+	+getInstance() : ResourceFactoryImplementation
+}
+interface ResourceFactory {
++createResource(userInput : User, startDate : String, endDate : String, costPerHourInput : double, percentageOfAllocationInput : double) : Resource
+}
+
+
+DefinedProductOwnerUI ..> DefinedProductOwnerController
+DefinedProductOwnerController ...> ProjectStore
+DefinedProductOwnerController ..> UserStore
+DefinedProductOwnerController ...> DataManagement
+DefinedProductOwnerController .....> "dto" CreateResourceDTO
+ProjectStore " 1  " <---- "0..* projects       "  Project
+Project ....>  "      dto" CreateResourceDTO
+ResourceFactoryImplementation <... ProjectStore
+
+
+DataManagement "              1         " <--- "1  users" UserStore
+DataManagement "1" <---"                                                                                            1 projectStore" ProjectStore
+User "    userList 0..*" ---> "1" UserStore
+ResourceFactoryImplementation ..> ResourceFactory
+Project <----------  "resourceFactory" ResourceFactoryImplementation
+Project "1" <--- "1..*" Resource
+ResourceFactory ..> Resource
+Resource "0.*               " <--- "    1" User
+@enduml

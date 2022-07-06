@@ -1,0 +1,58 @@
+@startuml
+class " UserStoryRefinementUI" #FFFFFF
+class UserStoryRefinementController #FFFFFF {
+	+refineUserStory(selectedProjectCode, requestedUserStoryCode, newUserStoryDescriptionList) : boolean
+	-validateInputDescriptions(newUserStoryDescriptionList, productBacklog) : boolean
+    -isProjectAvailableForUSRefinement(selectedProject)
+}
+
+class ProductBacklog #FFFFFF {
+	+refineUserStory(requestedUserStoryCode, newUserStoryDescriptionList) : boolean
+	+isValidDescription(description) : boolean
+	+doesUserStoryExistInProductBacklog(requestedUserStoryCode) : boolean
+	+getUserStory(requestedUserStoryCode) : UserStory
+	+removeUserStory(userStoryToRemove) : boolean
+	+createAndAddUserStory(description) : boolean
+	-updatesAllUserStoriesPriorities()
+}
+
+class Project #FFFFFF {
+	+getProductBacklog() : ProductBacklog
+	+addUserStoryToRefinedList(requestedUserStoryCode) : boolean
+	+getProjectStatus() : Status
+}
+
+class ProjectStore #FFFFFF {
+	+getProject(selectedProjectCode) : Project
+}
+
+class DataManagement #FFFFFF {
+	-instance : DataManagement
+	+getProjectStore() : ProjectStore
+	+getInstance() : DataManagement
+}
+
+class RefinedUserStoriesList #FFFFFF {
+	+addUserStoryToRefinedUserStoryList(refinedUserStory) : boolean
+}
+
+class UserStory #FFFFFF {
+     -description : String
+}
+
+UserStoryRefinementController ..> DataManagement
+UserStoryRefinementController ..> RefinedUserStoriesList
+UserStoryRefinementController ..> ProductBacklog
+UserStoryRefinementController ..> Project
+UserStoryRefinementController ..> ProjectStore
+DataManagement "1" --> "projectStore 1" ProjectStore
+ProjectStore "1" --> "projectStore *" Project
+Project "1" --> "productBacklog 1" ProductBacklog
+Project "1" --> "refinedUserStoriesList 1" RefinedUserStoriesList
+Project ..> UserStory
+ProductBacklog "1" --> "userStoryList *" UserStory
+RefinedUserStoriesList "1" --> "userStoryList *" UserStory
+
+
+" UserStoryRefinementUI" ..> UserStoryRefinementController
+@enduml

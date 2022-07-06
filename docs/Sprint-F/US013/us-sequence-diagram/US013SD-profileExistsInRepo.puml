@@ -1,0 +1,19 @@
+@startuml
+autonumber
+
+participant "iProfileRepository : ImplProfileRepository" #FFFFFF
+activate "iProfileRepository : ImplProfileRepository"
+participant "iProfileRepositoryJPA: IProfileRepositoryJPA" #FFFFFF
+participant  "profileDescription : ProfileDescription" #FFFFFF
+
+-> "iProfileRepository : ImplProfileRepository" : profileExistsInDB = profileExists(profileDescription)
+"iProfileRepository : ImplProfileRepository" -> "profileDescription : ProfileDescription" ++ : descriptionToFind = getDescription()
+deactivate
+"iProfileRepository : ImplProfileRepository" -> "iProfileRepositoryJPA: IProfileRepositoryJPA" ++ : profileExistsInDB = existsProfileJPAByProfileDescription(descriptionToFind)
+deactivate
+
+deactivate "iProfileRepository : ImplProfileRepository"
+
+
+
+@enduml

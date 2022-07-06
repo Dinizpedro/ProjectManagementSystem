@@ -1,0 +1,13 @@
+@startuml
+autonumber
+actor Administrator
+
+participant System
+activate System
+
+Administrator -> System : selected type of search
+Administrator -> System : types search field
+System -> System : search for specific user
+System --> Administrator : return a list with the result
+
+@enduml

@@ -1,0 +1,9 @@
+@startuml
+autonumber
+actor "Director/PM/PO/SM" as actor
+participant "<<system(C4)>>Project Management System" as PMS
+actor -> PMS : Search in a project the list of activities with projectCode
+activate actor
+activate PMS
+PMS --> actor : project activities data loaded
+@enduml

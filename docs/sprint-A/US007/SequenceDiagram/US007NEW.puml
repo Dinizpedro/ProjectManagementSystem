@@ -1,0 +1,87 @@
+@startuml
+skinparam roundcorner 20
+skinparam maxmessagesize 0
+skinparam sequenceParticipant underline
+skinparam sequence {
+ArrowColor black
+ActorBorderColor #black
+LifeLineBorderColor black
+LifeLineBackgroundColor white
+ParticipantBorderColor black
+ParticipantBackgroundColor #transparent
+ParticipantFontName Aapex
+ParticipantFontSize 14
+ParticipantFontColor black
+ActorBackgroundColor #transparent
+ActorFontColor black
+ActorFontSize 14
+ActorFontName Aapex
+}
+
+autonumber
+actor "Director" as Director
+
+Director-> ": RouteResource" : Post(value=/api/resources) (json)
+activate ": RouteResource"
+activate ": IResourceController"
+
+     ": RouteResource"-> ": IResourceController" : definedTeamMemberOfAProject(json)
+     ": IResourceController" -> ": IResourceController" : validate(json)
+
+     ": IResourceController" -> " assembler : Json2DTO" : assembler2ResourceDTO(json)
+     activate " assembler : Json2DTO"
+     create participant "resourceDTO : ResourceDTO" as dto #BCC6CC
+      " assembler : Json2DTO" --> dto : create(json)
+       deactivate " assembler : Json2DTO"
+
+
+    ": IResourceController" -> "iAppResourceService : IAppResourceService" : definedTeamMemberOfAProject(dto)
+    activate "iAppResourceService : IAppResourceService"
+    "iAppResourceService : IAppResourceService" -> ": ProjectCode" : projectCodeVO = createProjectCode(projectCodeDto)
+    activate ": ProjectCode"
+
+    create participant "projectCodeVO : ProjectCode" as pc #BCC6CC
+
+    ": ProjectCode" --> pc
+deactivate ": ProjectCode"
+
+
+"iAppResourceService : IAppResourceService" -> "iProjectStore : IProjectStore" : project = findProject(projectCodeVO)
+       activate "iProjectStore : IProjectStore"
+       deactivate "iProjectStore : IProjectStore"
+    "iAppResourceService : IAppResourceService" -> "iUserRepository : IUserRepository" : user = userExists(dto.userIdDto)
+       activate "iUserRepository : IUserRepository"
+       deactivate "iUserRepository : IUserRepository"
+
+       "iAppResourceService : IAppResourceService" -> "resourceDomainService : ResourceDomainService" : validateNewTeamMemberResource(resources, project, dto)
+              activate "resourceDomainService : ResourceDomainService"
+              deactivate "resourceDomainService : ResourceDomainService"
+ref over "iAppResourceService : IAppResourceService" : Create value objects
+
+              "iAppResourceService : IAppResourceService" -> "resourceFactory : IResourceFactory" : newResource = createResource(resourceID, userID, code, dates, costPerHour, allocation, role)
+                            activate "resourceFactory : IResourceFactory"
+
+
+                            create participant "newResource : Resource" as new #BCC6CC
+                                  "resourceFactory : IResourceFactory" --> new : createResource(resourceID, userID, code, dates, costPerHour, allocation, role)
+
+       deactivate "resourceFactory : IResourceFactory"
+
+        "iAppResourceService : IAppResourceService" -> "iResourceRepository : IResourceRepository" :  saveResource(newResource)
+                     activate "iResourceRepository : IResourceRepository"
+                     deactivate "iResourceRepository : IResourceRepository"
+
+                      "iAppResourceService : IAppResourceService" -> ": ResourceAssembler" : resourceDTO = toDto(newResource)
+                                          activate ": ResourceAssembler"
+                                          deactivate ": ResourceAssembler"
+
+
+                                          ": IResourceController" <-- "iAppResourceService : IAppResourceService" : true
+                                          ": RouteResource" <-- ": IResourceController" : true
+                                           Director <-- ": RouteResource" : true
+
+                                                                                    deactivate ": ResourceAssembler"
+
+    deactivate ": IResourceController"
+deactivate ": RouteResource"
+@enduml
